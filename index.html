@@ -53,13 +53,11 @@
     <div class="container bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-5xl space-y-8">
         <h1 class="text-3xl font-bold text-center text-indigo-400">Buscador de Equipos</h1>
         
-        <!-- Barra de búsqueda y botón -->
         <div class="flex justify-center items-center space-x-4">
             <input type="text" id="searchInput" placeholder="Buscar por serie..." class="form-input w-full max-w-lg">
             <button id="searchButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-full transition-colors">Buscar</button>
         </div>
 
-        <!-- Tabla de equipos existentes -->
         <div class="table-container bg-gray-700 p-6 rounded-xl shadow-md">
             <table class="w-full text-left table-auto">
                 <thead>
@@ -71,15 +69,14 @@
                     </tr>
                 </thead>
                 <tbody id="equipmentTableBody">
-                    <!-- Filas de equipos se insertan aquí -->
-                </tbody>
+                    </tbody>
             </table>
         </div>
     </div>
 
     <script type="text/javascript">
         // Reemplaza esta URL con la URL de tu Web App de Google Apps Script.
-        const API_URL = "https://script.google.com/macros/s/AKfycbwUuXFcthXkex1MLVgKF7x8XDZXx8PS2Wa1bacn7VxD2_4WAGdu-mLXT_2VEF4uKxRm/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxmBbC4B7dOiAWVfTZnNzVTrfAQGUcy1qoqsW3fJQUB20-nmp-WblZZRJqaAF8v3hPa/exec";
 
         // Elementos del DOM
         const searchInput = document.getElementById('searchInput');
@@ -152,5 +149,4 @@
     </script>
 </body>
 </html>
-
 
