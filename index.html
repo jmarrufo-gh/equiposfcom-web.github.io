@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE ahtml>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -14,7 +14,7 @@
         .container {
             min-height: 100vh;
         }
-        .input-group input, .input-group button {
+        .input-group input {
             border-radius: 9999px;
             padding: 0.75rem 1.5rem;
             outline: none;
@@ -24,105 +24,134 @@
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
         }
         .form-input {
-            width: 100%;
             background-color: #374151;
             border: 1px solid #4b5563;
             color: #ffffff;
         }
+        .table-container {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        /* Estilos para el scrollbar */
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #2d3748;
+            border-radius: 10px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 10px;
+        }
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #5a667b;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center p-6">
-    <div class="container bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-xl space-y-8">
-        <h1 class="text-3xl font-bold mb-6 text-center text-indigo-400">Buscador de Equipos</h1>
-        <p class="text-gray-400 text-center">Ingresa el número de serie para encontrar la información del equipo.</p>
+    <div class="container bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-5xl space-y-8">
+        <h1 class="text-3xl font-bold text-center text-indigo-400">Buscador de Equipos</h1>
         
-        <!-- Enlace a la página de administración -->
-        <div class="text-center">
-            <a href="admin.html" class="text-blue-400 hover:text-blue-300 transition-colors">Ir al Panel de Administración</a>
+        <!-- Barra de búsqueda y botón -->
+        <div class="flex justify-center items-center space-x-4">
+            <input type="text" id="searchInput" placeholder="Buscar por serie..." class="form-input w-full max-w-lg">
+            <button id="searchButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-full transition-colors">Buscar</button>
         </div>
 
-        <!-- Formulario de búsqueda -->
-        <div class="bg-gray-700 p-6 rounded-xl shadow-md space-y-4">
-            <form id="searchForm" class="flex flex-col sm:flex-row gap-4">
-                <input type="text" id="searchInput" placeholder="Número de Serie (ej. 5CG9426Q2D)" class="form-input flex-grow rounded-full">
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-full transition-colors">Buscar</button>
-            </form>
+        <!-- Tabla de equipos existentes -->
+        <div class="table-container bg-gray-700 p-6 rounded-xl shadow-md">
+            <table class="w-full text-left table-auto">
+                <thead>
+                    <tr class="bg-gray-600 rounded-lg">
+                        <th class="p-3 rounded-tl-lg">Serie del Equipo</th>
+                        <th class="p-3">Modelo</th>
+                        <th class="p-3">Proyecto</th>
+                        <th class="p-3 rounded-tr-lg">Usuario Actual</th>
+                    </tr>
+                </thead>
+                <tbody id="equipmentTableBody">
+                    <!-- Filas de equipos se insertan aquí -->
+                </tbody>
+            </table>
         </div>
-        
-        <!-- Contenedor de resultados -->
-        <div id="resultsContainer" class="bg-gray-700 p-6 rounded-xl shadow-md hidden">
-            <h2 class="text-2xl font-semibold mb-4 text-center text-indigo-300">Detalles del Equipo</h2>
-            <div id="equipmentDetails" class="space-y-4">
-                <!-- Detalles del equipo se insertan aquí -->
-            </div>
-        </div>
-
-        <!-- Contenedor de mensajes (errores o no encontrados) -->
-        <div id="message" class="mt-4 text-center hidden"></div>
     </div>
 
-    <script>
-        const searchForm = document.getElementById('searchForm');
+    <script type="text/javascript">
+        // Reemplaza esta URL con la URL de tu Web App de Google Apps Script.
+        const API_URL = "https://script.google.com/macros/s/AKfycbxfMAB69LvlyKdFOWiMwdhOWVP5RbhNVHruYODA1KVSfdGdP19rWgYNoMFxm1S18I5h/exec";
+
+        // Elementos del DOM
         const searchInput = document.getElementById('searchInput');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const equipmentDetails = document.getElementById('equipmentDetails');
-        const messageDiv = document.getElementById('message');
+        const searchButton = document.getElementById('searchButton');
+        const tableBody = document.getElementById('equipmentTableBody');
+        let allEquipos = [];
 
-        const getEquipos = () => {
-            const equipos = localStorage.getItem('equipos');
-            return equipos ? JSON.parse(equipos) : [];
+        const fetchData = async () => {
+            try {
+                if (!API_URL) {
+                    throw new Error("La URL de la API está vacía. Por favor, revisa el código.");
+                }
+                const response = await fetch(API_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (!response.ok) {
+                    throw new Error(`Error en la solicitud: ${response.statusText}`);
+                }
+                const data = await response.json();
+                console.log("Datos recibidos de Google Sheets:", data); // Línea de depuración agregada
+                allEquipos = data.equipos;
+                renderTable(allEquipos); // Muestra todos los equipos al inicio
+            } catch (e) {
+                console.error("Error al obtener datos de Google Sheets:", e);
+                tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-400">No se pudieron cargar los datos.</td></tr>';
+            }
         };
 
-        const displayMessage = (msg, isError = false) => {
-            messageDiv.textContent = msg;
-            messageDiv.className = `mt-4 p-3 rounded-lg text-center font-medium ${isError ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`;
-            messageDiv.classList.remove('hidden');
-        };
-
-        const hideMessage = () => {
-            messageDiv.classList.add('hidden');
-        };
-
-        const renderDetails = (data) => {
-            equipmentDetails.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-y-2">
-                    <div class="font-semibold text-gray-300">Tipo:</div>
-                    <div>${data.tipo}</div>
-                    <div class="font-semibold text-gray-300">Modelo:</div>
-                    <div>${data.modelo}</div>
-                    <div class="font-semibold text-gray-300">Serie:</div>
-                    <div>${data.serie}</div>
-                    <div class="font-semibold text-gray-300">Proyecto:</div>
-                    <div>${data.proyecto}</div>
-                </div>
-            `;
-            resultsContainer.classList.remove('hidden');
-        };
-
-        const searchEquipment = (e) => {
-            e.preventDefault();
-            const serie = searchInput.value.trim();
-            resultsContainer.classList.add('hidden');
-            hideMessage();
-
-            if (!serie) {
-                displayMessage("Por favor, ingresa un número de serie.", true);
+        const renderTable = (equipos) => {
+            tableBody.innerHTML = '';
+            if (equipos.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">No se encontraron equipos.</td></tr>';
                 return;
             }
-            
-            const equipos = getEquipos();
-            const foundEquipo = equipos.find(equipo => equipo.serie === serie);
-
-            if (foundEquipo) {
-                renderDetails(foundEquipo);
-            } else {
-                displayMessage(`No se encontró un equipo con la serie: ${serie}.`, true);
-            }
+            equipos.forEach(equipo => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-600 last:border-0';
+                row.innerHTML = `
+                    <td class="p-3">${equipo['serie del equipo']}</td>
+                    <td class="p-3">${equipo.modelo}</td>
+                    <td class="p-3">${equipo.proyecto}</td>
+                    <td class="p-3">${equipo['usuario actual']}</td>
+                `;
+                tableBody.appendChild(row);
+            });
         };
 
-        // Event listener
-        searchForm.addEventListener('submit', searchEquipment);
+        const handleSearch = () => {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            if (searchTerm === '') {
+                renderTable(allEquipos);
+                return;
+            }
+            const filteredEquipos = allEquipos.filter(equipo => 
+                equipo['serie del equipo'].toLowerCase() === searchTerm
+            );
+            renderTable(filteredEquipos);
+        };
+
+        // Event listener para el botón de búsqueda
+        searchButton.addEventListener('click', handleSearch);
+
+        // Carga inicial de datos
+        fetchData();
+        // Actualiza los datos cada 5 segundos
+        setInterval(fetchData, 5000);
     </script>
 </body>
 </html>
+
+
 
