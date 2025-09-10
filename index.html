@@ -61,10 +61,10 @@
       <table class="w-full text-left table-auto">
         <thead>
           <tr class="bg-gray-600 rounded-lg">
-            <th class="p-3 rounded-tl-lg">Serie del Equipo</th>
+            <th class="p-3 rounded-tl-lg">Tipo</th>
             <th class="p-3">Modelo</th>
-            <th class="p-3">Proyecto</th>
-            <th class="p-3 rounded-tr-lg">Usuario Actual</th>
+            <th class="p-3">Serie</th>
+            <th class="p-3 rounded-tr-lg">Proyecto</th>
           </tr>
         </thead>
         <tbody id="equipmentTableBody"></tbody>
@@ -91,17 +91,16 @@
         const row = document.createElement("tr");
         row.className = "border-b border-gray-600 last:border-0";
         row.innerHTML = `
-          <td class="p-3">${equipo.serie || ""}</td>
+          <td class="p-3">${equipo.tipo || ""}</td>
           <td class="p-3">${equipo.modelo || ""}</td>
+          <td class="p-3">${equipo.serie || ""}</td>
           <td class="p-3">${equipo.proyecto || ""}</td>
-          <td class="p-3">${equipo.usuarioactual || ""}</td>
         `;
         tableBody.appendChild(row);
       });
     }
 
     function parseGoogleSheetJSON(text) {
-      // Google Sheets devuelve JSON con padding JS, hay que limpiarlo
       const jsonText = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
       return JSON.parse(jsonText);
     }
@@ -111,7 +110,7 @@
         const response = await fetch(QUERY_URL);
         const text = await response.text();
         const data = parseGoogleSheetJSON(text);
-        // Extraer filas
+
         const rows = data.table.rows;
         const cols = data.table.cols.map(c => c.label.toLowerCase().replace(/\s/g, ""));
         allEquipos = rows.map(row => {
@@ -146,5 +145,6 @@
   </script>
 </body>
 </html>
+
 
 
