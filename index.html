@@ -1,147 +1,84 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Buscador de Equipos</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #1a1a2e;
-      color: #ffffff;
-    }
-    .container {
-      min-height: 100vh;
-    }
-    .input-group input {
-      border-radius: 9999px;
-      padding: 0.75rem 1.5rem;
-      outline: none;
-      transition: all 0.3s ease;
-    }
-    .input-group input:focus {
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
-    }
-    .form-input {
-      background-color: #374151;
-      border: 1px solid #4b5563;
-      color: #ffffff;
-    }
-    .table-container {
-      max-height: 60vh;
-      overflow-y: auto;
-    }
-    .table-container::-webkit-scrollbar {
-      width: 8px;
-    }
-    .table-container::-webkit-scrollbar-track {
-      background: #2d3748;
-      border-radius: 10px;
-    }
-    .table-container::-webkit-scrollbar-thumb {
-      background: #4a5568;
-      border-radius: 10px;
-    }
-    .table-container::-webkit-scrollbar-thumb:hover {
-      background: #5a667b;
-    }
-  </style>
-</head>
-<body class="bg-gray-900 text-white flex items-center justify-center p-6">
-  <div class="container bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-5xl space-y-8">
-    <h1 class="text-3xl font-bold text-center text-indigo-400">Buscador de Equipos</h1>
+<script>
+  const SHEET_ID = "1xw1VY3ojmDbbPD4q9ONPUSoMmPnhzyMaRdH6loaN-M0";
+  const QUERY_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-    <div class="flex justify-center items-center space-x-4">
-      <input type="text" id="searchInput" placeholder="Buscar por serie..." class="form-input w-full max-w-lg" />
-      <button id="searchButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-full transition-colors">Buscar</button>
-    </div>
+  const searchInput = document.getElementById("searchInput");
+  const searchButton = document.getElementById("searchButton");
+  const tableBody = document.getElementById("equipmentTableBody");
 
-    <div class="table-container bg-gray-700 p-6 rounded-xl shadow-md">
-      <table class="w-full text-left table-auto">
-        <thead>
-          <tr class="bg-gray-600 rounded-lg">
-            <th class="p-3 rounded-tl-lg">Tipo</th>
-            <th class="p-3">Modelo</th>
-            <th class="p-3">Serie</th>
-            <th class="p-3 rounded-tr-lg">Proyecto</th>
-          </tr>
-        </thead>
-        <tbody id="equipmentTableBody"></tbody>
-      </table>
-    </div>
-  </div>
+  let allEquipos = [];
+  let seriesIndex = {}; // <-- Índice por serie para búsquedas rápidas
 
-  <script>
-    const SHEET_ID = "1xw1VY3ojmDbbPD4q9ONPUSoMmPnhzyMaRdH6loaN-M0";
-    const QUERY_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-
-    const searchInput = document.getElementById("searchInput");
-    const searchButton = document.getElementById("searchButton");
-    const tableBody = document.getElementById("equipmentTableBody");
-    let allEquipos = [];
-
-    function renderTable(equipos) {
-      tableBody.innerHTML = "";
-      if (equipos.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">No se encontraron equipos.</td></tr>';
-        return;
-      }
-      equipos.forEach((equipo) => {
-        const row = document.createElement("tr");
-        row.className = "border-b border-gray-600 last:border-0";
-        row.innerHTML = `
-          <td class="p-3">${equipo.tipo || ""}</td>
-          <td class="p-3">${equipo.modelo || ""}</td>
-          <td class="p-3">${equipo.serie || ""}</td>
-          <td class="p-3">${equipo.proyecto || ""}</td>
-        `;
-        tableBody.appendChild(row);
-      });
+  function renderTable(equipos) {
+    tableBody.innerHTML = "";
+    if (equipos.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">No se encontraron equipos.</td></tr>';
+      return;
     }
+    equipos.forEach((equipo) => {
+      const row = document.createElement("tr");
+      row.className = "border-b border-gray-600 last:border-0";
+      row.innerHTML = `
+        <td class="p-3">${equipo.tipo || ""}</td>
+        <td class="p-3">${equipo.modelo || ""}</td>
+        <td class="p-3">${equipo.serie || ""}</td>
+        <td class="p-3">${equipo.proyecto || ""}</td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
 
-    function parseGoogleSheetJSON(text) {
-      const jsonText = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
-      return JSON.parse(jsonText);
-    }
+  function parseGoogleSheetJSON(text) {
+    const jsonText = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
+    return JSON.parse(jsonText);
+  }
 
-    async function fetchData() {
-      try {
-        const response = await fetch(QUERY_URL);
-        const text = await response.text();
-        const data = parseGoogleSheetJSON(text);
+  async function fetchData() {
+    try {
+      const response = await fetch(QUERY_URL);
+      const text = await response.text();
+      const data = parseGoogleSheetJSON(text);
 
-        const rows = data.table.rows;
-        const cols = data.table.cols.map(c => c.label.toLowerCase().replace(/\s/g, ""));
-        allEquipos = rows.map(row => {
-          const obj = {};
-          row.c.forEach((cell, idx) => {
-            obj[cols[idx]] = cell ? cell.v : "";
-          });
-          return obj;
+      const rows = data.table.rows;
+      const cols = data.table.cols.map(c => c.label.toLowerCase().replace(/\s/g, ""));
+      allEquipos = rows.map(row => {
+        const obj = {};
+        row.c.forEach((cell, idx) => {
+          obj[cols[idx]] = cell ? cell.v : "";
         });
-        renderTable(allEquipos);
-      } catch (e) {
-        console.error("Error cargando datos:", e);
-        tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-400">No se pudieron cargar los datos.</td></tr>';
-      }
+        return obj;
+      });
+
+      // Construimos el índice por serie
+      seriesIndex = {};
+      allEquipos.forEach(equipo => {
+        const key = (equipo.serie || "").toLowerCase();
+        if (!seriesIndex[key]) seriesIndex[key] = [];
+        seriesIndex[key].push(equipo);
+      });
+
+      renderTable(allEquipos);
+    } catch (e) {
+      console.error("Error cargando datos:", e);
+      tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-400">No se pudieron cargar los datos.</td></tr>';
+    }
+  }
+
+  function handleSearch() {
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    if (searchTerm === "") {
+      renderTable(allEquipos);
+      return;
     }
 
-    function handleSearch() {
-      const searchTerm = searchInput.value.toLowerCase().trim();
-      if (searchTerm === "") {
-        renderTable(allEquipos);
-        return;
-      }
-      const filtered = allEquipos.filter(equipo =>
-        (equipo.serie || "").toLowerCase().includes(searchTerm)
-      );
-      renderTable(filtered);
-    }
+    // Búsqueda rápida usando el índice
+    const result = seriesIndex[searchTerm] || [];
+    renderTable(result);
+  }
 
-    searchButton.addEventListener("click", handleSearch);
+  searchButton.addEventListener("click", handleSearch);
 
-    fetchData();
-  </script>
-</body>
-</html>
+  fetchData();
+</script>
+
+
