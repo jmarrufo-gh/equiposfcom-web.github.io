@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador de Equipos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a2e;
+            color: #ffffff;
+        }
+        .container {
+            min-height: 100vh;
+        }
+        .input-group input, .input-group button {
+            border-radius: 9999px;
+            padding: 0.75rem 1.5rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .input-group input:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+        }
+        .form-input {
+            width: 100%;
+            background-color: #374151;
+            border: 1px solid #4b5563;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center p-6">
+    <div class="container bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-xl space-y-8">
+        <h1 class="text-3xl font-bold mb-6 text-center text-indigo-400">Buscador de Equipos</h1>
+        <p class="text-gray-400 text-center">Ingresa el número de serie para encontrar la información del equipo.</p>
+        
+        <!-- Enlace a la página de administración -->
+        <div class="text-center">
+            <a href="admin.html" class="text-blue-400 hover:text-blue-300 transition-colors">Ir al Panel de Administración</a>
+        </div>
+
+        <!-- Formulario de búsqueda -->
+        <div class="bg-gray-700 p-6 rounded-xl shadow-md space-y-4">
+            <form id="searchForm" class="flex flex-col sm:flex-row gap-4">
+                <input type="text" id="searchInput" placeholder="Número de Serie (ej. 5CG9426Q2D)" class="form-input flex-grow rounded-full">
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-full transition-colors">Buscar</button>
+            </form>
+        </div>
+        
+        <!-- Contenedor de resultados -->
+        <div id="resultsContainer" class="bg-gray-700 p-6 rounded-xl shadow-md hidden">
+            <h2 class="text-2xl font-semibold mb-4 text-center text-indigo-300">Detalles del Equipo</h2>
+            <div id="equipmentDetails" class="space-y-4">
+                <!-- Detalles del equipo se insertan aquí -->
+            </div>
+        </div>
+
+        <!-- Contenedor de mensajes (errores o no encontrados) -->
+        <div id="message" class="mt-4 text-center hidden"></div>
+    </div>
+
+    <script>
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const equipmentDetails = document.getElementById('equipmentDetails');
+        const messageDiv = document.getElementById('message');
+
+        const getEquipos = () => {
+            const equipos = localStorage.getItem('equipos');
+            return equipos ? JSON.parse(equipos) : [];
+        };
+
+        const displayMessage = (msg, isError = false) => {
+            messageDiv.textContent = msg;
+            messageDiv.className = `mt-4 p-3 rounded-lg text-center font-medium ${isError ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`;
+            messageDiv.classList.remove('hidden');
+        };
+
+        const hideMessage = () => {
+            messageDiv.classList.add('hidden');
+        };
+
+        const renderDetails = (data) => {
+            equipmentDetails.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-y-2">
+                    <div class="font-semibold text-gray-300">Tipo:</div>
+                    <div>${data.tipo}</div>
+                    <div class="font-semibold text-gray-300">Modelo:</div>
+                    <div>${data.modelo}</div>
+                    <div class="font-semibold text-gray-300">Serie:</div>
+                    <div>${data.serie}</div>
+                    <div class="font-semibold text-gray-300">Proyecto:</div>
+                    <div>${data.proyecto}</div>
+                </div>
+            `;
+            resultsContainer.classList.remove('hidden');
+        };
+
+        const searchEquipment = (e) => {
+            e.preventDefault();
+            const serie = searchInput.value.trim();
+            resultsContainer.classList.add('hidden');
+            hideMessage();
+
+            if (!serie) {
+                displayMessage("Por favor, ingresa un número de serie.", true);
+                return;
+            }
+            
+            const equipos = getEquipos();
+            const foundEquipo = equipos.find(equipo => equipo.serie === serie);
+
+            if (foundEquipo) {
+                renderDetails(foundEquipo);
+            } else {
+                displayMessage(`No se encontró un equipo con la serie: ${serie}.`, true);
+            }
+        };
+
+        // Event listener
+        searchForm.addEventListener('submit', searchEquipment);
+    </script>
+</body>
+</html>
+
