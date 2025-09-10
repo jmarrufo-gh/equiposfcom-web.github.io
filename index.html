@@ -133,8 +133,8 @@
         renderTable(allEquipos);
         return;
       }
-      const filtered = allEquipos.filter(
-        (equipo) => (equipo.serie || "").toLowerCase() === searchTerm
+      const filtered = allEquipos.filter(equipo =>
+        (equipo.serie || "").toLowerCase().includes(searchTerm)
       );
       renderTable(filtered);
     }
@@ -145,6 +145,3 @@
   </script>
 </body>
 </html>
-
-
-
