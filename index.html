@@ -1,84 +1,140 @@
-<script>
-  const SHEET_ID = "1xw1VY3ojmDbbPD4q9ONPUSoMmPnhzyMaRdH6loaN-M0";
-  const QUERY_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-
-  const searchInput = document.getElementById("searchInput");
-  const searchButton = document.getElementById("searchButton");
-  const tableBody = document.getElementById("equipmentTableBody");
-
-  let allEquipos = [];
-  let seriesIndex = {}; // <-- Índice por serie para búsquedas rápidas
-
-  function renderTable(equipos) {
-    tableBody.innerHTML = "";
-    if (equipos.length === 0) {
-      tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">No se encontraron equipos.</td></tr>';
-      return;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buscador de Equipos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #1a1a2e;
+      color: #ffffff;
     }
-    equipos.forEach((equipo) => {
-      const row = document.createElement("tr");
-      row.className = "border-b border-gray-600 last:border-0";
-      row.innerHTML = `
-        <td class="p-3">${equipo.tipo || ""}</td>
-        <td class="p-3">${equipo.modelo || ""}</td>
-        <td class="p-3">${equipo.serie || ""}</td>
-        <td class="p-3">${equipo.proyecto || ""}</td>
-      `;
-      tableBody.appendChild(row);
-    });
-  }
+    .form-input {
+      background-color: #374151;
+      border: 1px solid #4b5563;
+      color: #ffffff;
+      padding: 0.75rem 1.5rem;
+      border-radius: 9999px;
+      outline: none;
+    }
+    .form-input:focus {
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+    }
+    .table-container {
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    .table-container::-webkit-scrollbar {
+      width: 8px;
+    }
+    .table-container::-webkit-scrollbar-track {
+      background: #2d3748;
+      border-radius: 10px;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+      background: #4a5568;
+      border-radius: 10px;
+    }
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #5a667b;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center p-6">
+  <div class="container bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-5xl space-y-8">
+    <h1 class="text-3xl font-bold text-center text-indigo-400">Buscador de Equipos</h1>
 
-  function parseGoogleSheetJSON(text) {
-    const jsonText = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
-    return JSON.parse(jsonText);
-  }
+    <div class="flex justify-center items-center space-x-4">
+      <input type="text" id="searchInput" placeholder="Buscar por serie..." class="form-input w-full max-w-lg">
+      <button id="searchButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-full transition-colors">Buscar</button>
+    </div>
 
-  async function fetchData() {
-    try {
-      const response = await fetch(QUERY_URL);
-      const text = await response.text();
-      const data = parseGoogleSheetJSON(text);
+    <div class="table-container bg-gray-700 p-6 rounded-xl shadow-md">
+      <table class="w-full text-left table-auto">
+        <thead>
+          <tr class="bg-gray-600 rounded-lg">
+            <th class="p-3">Tipo</th>
+            <th class="p-3">Modelo</th>
+            <th class="p-3">Serie</th>
+            <th class="p-3">Proyecto</th>
+          </tr>
+        </thead>
+        <tbody id="equipmentTableBody"></tbody>
+      </table>
+    </div>
+  </div>
 
-      const rows = data.table.rows;
-      const cols = data.table.cols.map(c => c.label.toLowerCase().replace(/\s/g, ""));
-      allEquipos = rows.map(row => {
-        const obj = {};
-        row.c.forEach((cell, idx) => {
-          obj[cols[idx]] = cell ? cell.v : "";
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbw1nGW9-idq3WFOLM8WolDWLlL-yQkpGWfZzP2U8dz11aqrty6ySorPTfc3QVH-U695/exec";
+
+    const searchInput = document.getElementById("searchInput");
+    const searchButton = document.getElementById("searchButton");
+    const tableBody = document.getElementById("equipmentTableBody");
+
+    let allEquipos = [];
+    let indexBySerie = {};
+
+    async function fetchData() {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+
+        allEquipos = data.equipos || [];
+
+        // Crear índice por serie (para buscar más rápido)
+        indexBySerie = {};
+        allEquipos.forEach(equipo => {
+          const serie = (equipo.serie || "").toLowerCase();
+          if (!indexBySerie[serie]) indexBySerie[serie] = [];
+          indexBySerie[serie].push(equipo);
         });
-        return obj;
-      });
 
-      // Construimos el índice por serie
-      seriesIndex = {};
-      allEquipos.forEach(equipo => {
-        const key = (equipo.serie || "").toLowerCase();
-        if (!seriesIndex[key]) seriesIndex[key] = [];
-        seriesIndex[key].push(equipo);
-      });
-
-      renderTable(allEquipos);
-    } catch (e) {
-      console.error("Error cargando datos:", e);
-      tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-400">No se pudieron cargar los datos.</td></tr>';
-    }
-  }
-
-  function handleSearch() {
-    const searchTerm = searchInput.value.toLowerCase().trim();
-    if (searchTerm === "") {
-      renderTable(allEquipos);
-      return;
+        renderTable(allEquipos);
+      } catch (error) {
+        console.error("Error al obtener datos:", error);
+        tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-400">No se pudieron cargar los datos.</td></tr>`;
+      }
     }
 
-    // Búsqueda rápida usando el índice
-    const result = seriesIndex[searchTerm] || [];
-    renderTable(result);
-  }
+    function renderTable(equipos) {
+      tableBody.innerHTML = "";
 
-  searchButton.addEventListener("click", handleSearch);
+      if (equipos.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400">No se encontraron equipos.</td></tr>`;
+        return;
+      }
 
-  fetchData();
-</script>
+      equipos.forEach(equipo => {
+        const row = document.createElement("tr");
+        row.className = "border-b border-gray-600 last:border-0";
+        row.innerHTML = `
+          <td class="p-3">${equipo.tipo || ""}</td>
+          <td class="p-3">${equipo.modelo || ""}</td>
+          <td class="p-3">${equipo.serie || ""}</td>
+          <td class="p-3">${equipo.proyecto || ""}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
 
+    function handleSearch() {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      if (!searchTerm) {
+        renderTable(allEquipos);
+        return;
+      }
+      renderTable(indexBySerie[searchTerm] || []);
+    }
+
+    searchButton.addEventListener("click", handleSearch);
+    searchInput.addEventListener("keyup", (e) => {
+      if (e.key === "Enter") handleSearch();
+    });
+
+    fetchData();
+  </script>
+</body>
+</html>
 
