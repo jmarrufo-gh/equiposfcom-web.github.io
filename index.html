@@ -1,143 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Buscador de Equipos</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #1a1a2e;
-      color: #ffffff;
-    }
-    .container {
-      min-height: 100vh;
-    }
-    .input-group input {
-      border-radius: 9999px;
-      padding: 0.75rem 1.5rem;
-      outline: none;
-      transition: all 0.3s ease;
-    }
-    .input-group input:focus {
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
-    }
-    .form-input {
-      background-color: #374151;
-      border: 1px solid #4b5563;
-      color: #ffffff;
-    }
-    .table-container {
-      max-height: 60vh;
-      overflow-y: auto;
-    }
-    /* Estilos para el scrollbar */
-    .table-container::-webkit-scrollbar {
-      width: 8px;
-    }
-    .table-container::-webkit-scrollbar-track {
-      background: #2d3748;
-      border-radius: 10px;
-    }
-    .table-container::-webkit-scrollbar-thumb {
-      background: #4a5568;
-      border-radius: 10px;
-    }
-    .table-container::-webkit-scrollbar-thumb:hover {
-      background: #5a667b;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validador de Series</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center p-6">
-  <div class="container bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-5xl space-y-8">
-    <h1 class="text-3xl font-bold text-center text-indigo-400">Buscador de Equipos</h1>
-    
-    <div class="flex justify-center items-center space-x-4">
-      <input type="text" id="searchInput" placeholder="Buscar por serie..." class="form-input w-full max-w-lg" />
-      <button id="searchButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-full transition-colors">Buscar</button>
+<body>
+    <div class="container">
+        <h1>Validador de Series de Equipos</h1>
+        <p>Ingresa el número de serie para validarlo.</p>
+        <div class="input-group">
+            <input type="text" id="serie-input" placeholder="Ej. ABC-123">
+            <button id="validate-button">Validar</button>
+        </div>
+        <div id="result"></div>
     </div>
-
-    <div class="table-container bg-gray-700 p-6 rounded-xl shadow-md">
-      <table class="w-full text-left table-auto">
-        <thead>
-          <tr class="bg-gray-600 rounded-lg">
-            <th class="p-3 rounded-tl-lg">Tipo</th>
-            <th class="p-3">Modelo</th>
-            <th class="p-3">Serie</th>
-            <th class="p-3 rounded-tr-lg">Proyecto</th>
-          </tr>
-        </thead>
-        <tbody id="equipmentTableBody">
-          <tr><td colspan="4" class="p-4 text-center text-gray-400">Cargando datos...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <script>
-    const tableBody = document.getElementById('equipmentTableBody');
-    const searchInput = document.getElementById('searchInput');
-    const searchButton = document.getElementById('searchButton');
-
-    let allEquipos = [];
-
-    // Función callback para JSONP
-    function callback(data) {
-      if(data.error){
-        tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-400">Error: ${data.error}</td></tr>`;
-        return;
-      }
-      allEquipos = data.equipos || [];
-      renderTable(allEquipos);
-    }
-
-    function renderTable(equipos) {
-      tableBody.innerHTML = '';
-      if(equipos.length === 0){
-        tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400">No se encontraron equipos.</td></tr>`;
-        return;
-      }
-      equipos.forEach(equipo => {
-        // Usamos las claves según lo que devuelve el script: tipo, modelo, serie, proyecto
-        const row = document.createElement('tr');
-        row.className = 'border-b border-gray-600 last:border-0';
-        row.innerHTML = `
-          <td class="p-3">${equipo.tipo || ''}</td>
-          <td class="p-3">${equipo.modelo || ''}</td>
-          <td class="p-3">${equipo.serie || ''}</td>
-          <td class="p-3">${equipo.proyecto || ''}</td>
-        `;
-        tableBody.appendChild(row);
-      });
-    }
-
-    function handleSearch() {
-      const searchTerm = searchInput.value.toLowerCase().trim();
-      if (searchTerm === '') {
-        renderTable(allEquipos);
-        return;
-      }
-      const filtered = allEquipos.filter(equipo => 
-        (equipo.serie || '').toString().toLowerCase().includes(searchTerm)
-      );
-      renderTable(filtered);
-    }
-
-    searchButton.addEventListener('click', handleSearch);
-
-    // También buscar al presionar Enter en el input
-    searchInput.addEventListener('keypress', function(e){
-      if(e.key === 'Enter'){
-        handleSearch();
-      }
-    });
-
-    // Cargar el script JSONP desde Google Apps Script
-    const script = document.createElement('script');
-    script.src = 'https://script.google.com/macros/s/AKfycbw_83DIrzYgCJxgT2n09xlosu--F6-2iZnZIzpunj20uTb1IQTBPMaBcw0hIILra2_9/exec?callback=callback';
-    document.body.appendChild(script);
-  </script>
+    <script src="script.js"></script>
 </body>
 </html>
+
 
