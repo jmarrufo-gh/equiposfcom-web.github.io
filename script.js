@@ -13,7 +13,6 @@ const loadData = async () => {
         const lines = data.split('\n').filter(line => line.trim() !== '');
 
         if (lines.length > 0) {
-            // Limpia y convierte a minúsculas los encabezados
             headers = lines[0].trim().split(',').map(header => header.trim().toLowerCase());
         }
 
@@ -21,9 +20,8 @@ const loadData = async () => {
             const line = lines[i];
             const values = line.split(',').map(value => value.trim());
             
-            // Asegúrate de que la fila tenga suficientes columnas para la serie (índice 2)
             if (values.length > 2 && values[2]) { 
-                const serie = values[2].toUpperCase(); // La tercera columna es la serie (índice 2)
+                const serie = values[2].toUpperCase();
                 
                 if (serie) {
                     const rowData = {};
@@ -58,21 +56,22 @@ document.getElementById('validate-button').addEventListener('click', () => {
     if (data) {
         let resultHTML = '';
         
-        // Mostrar la serie en sí primero, si lo deseas, pero el requisito era no mostrar "es válida"
-        // Si quieres que la serie aparezca como un dato más, puedes hacerlo aquí
-        // resultHTML += `<div class="result-item"><strong>Serie:</strong> ${input}</div>`;
-
-        // Iterar sobre los datos y mostrarlos
+        // Construir el HTML priorizando el 'proyecto'
         for (const [key, value] of Object.entries(data)) {
-            // Evitar mostrar la serie dos veces y ocultar campos vacíos
             if (key !== 'serie' && value && value.trim() !== '') {
-                const displayKey = key.charAt(0).toUpperCase() + key.slice(1); // Capitalizar la clave
+                const displayKey = key.charAt(0).toUpperCase() + key.slice(1);
                 
-                if (key === 'proyecto') { // Resaltar el Proyecto
+                if (key === 'proyecto') { // Si es el proyecto, lo añadimos primero
                     resultHTML += `<div class="result-item highlight"><strong>${displayKey}:</strong> ${value}</div>`;
-                } else {
-                    resultHTML += `<div class="result-item"><strong>${displayKey}:</strong> ${value}</div>`;
                 }
+            }
+        }
+
+        // Luego, añadir el resto de los datos (excepto el proyecto y la serie)
+        for (const [key, value] of Object.entries(data)) {
+            if (key !== 'serie' && key !== 'proyecto' && value && value.trim() !== '') {
+                const displayKey = key.charAt(0).toUpperCase() + key.slice(1);
+                resultHTML += `<div class="result-item"><strong>${displayKey}:</strong> ${value}</div>`;
             }
         }
         
