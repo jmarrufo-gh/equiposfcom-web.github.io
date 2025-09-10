@@ -1,62 +1,138 @@
+/* Importar una fuente moderna de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
+    font-family: 'Poppins', sans-serif; /* Usamos la nueva fuente */
+    background: linear-gradient(135deg, #f0f4f8, #d9e2ec); /* Fondo degradado suave */
     color: #333;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh; /* Usar min-height para que ocupe toda la altura */
     margin: 0;
+    line-height: 1.6;
 }
 
 .container {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px; /* Bordes más redondeados */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada y suave */
     text-align: center;
     width: 90%;
-    max-width: 500px;
+    max-width: 550px; /* Un poco más ancho */
+    animation: fadeIn 0.8s ease-out; /* Animación de entrada */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 h1 {
-    color: #4CAF50;
-    margin-bottom: 10px;
+    color: #2c3e50; /* Color oscuro para el título */
+    margin-bottom: 15px;
+    font-size: 2.2em; /* Título un poco más grande */
+    font-weight: 600; /* Más énfasis */
+}
+
+p {
+    color: #7f8c8d;
+    margin-bottom: 25px;
+    font-size: 1.1em;
 }
 
 .input-group {
     display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
+    flex-direction: column; /* Apilar en dispositivos pequeños */
+    gap: 15px; /* Espacio entre elementos */
+    margin-top: 30px;
+}
+
+@media (min-width: 600px) { /* Para pantallas más grandes, volver a fila */
+    .input-group {
+        flex-direction: row;
+    }
 }
 
 #serie-input {
     flex: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
+    padding: 14px 18px; /* Más padding para mayor área de toque */
+    border: 1px solid #cad3dd; /* Borde sutil */
+    border-radius: 8px; /* Bordes redondeados */
+    font-size: 1.1em;
+    outline: none; /* Quitar el contorno al enfocar */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Transición suave */
+}
+
+#serie-input:focus {
+    border-color: #3498db; /* Borde azul al enfocar */
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); /* Sombra al enfocar */
 }
 
 #validate-button {
-    padding: 10px 20px;
-    background-color: #4CAF50;
+    padding: 14px 28px;
+    background-color: #3498db; /* Azul vibrante */
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
+    font-size: 1.1em;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Animación de hover */
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); /* Sombra para el botón */
 }
 
 #validate-button:hover {
-    background-color: #45a049;
+    background-color: #2980b9; /* Azul más oscuro al hover */
+    transform: translateY(-2px); /* Pequeño levantamiento */
+}
+
+#validate-button:active {
+    transform: translateY(0); /* Vuelve a su posición original al hacer clic */
 }
 
 #result {
-    margin-top: 20px;
-    font-weight: bold;
-    font-size: 18px;
-    min-height: 25px;
+    margin-top: 30px;
+    font-weight: 600; /* Más énfasis */
+    font-size: 1.2em; /* Resultado más grande */
+    min-height: 40px; /* Más espacio para el mensaje */
+    display: flex; /* Para centrar el contenido verticalmente */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #ecf0f1; /* Fondo suave para el resultado */
+}
+
+/* Colores para los mensajes de resultado */
+#result span {
+    display: block; /* Cada línea en su propio bloque */
+    margin-bottom: 5px; /* Espacio entre líneas */
+}
+
+#result span:last-child {
+    margin-bottom: 0;
+}
+
+#result span[style*="green"] { /* Estilo para el mensaje de éxito */
+    color: #27ae60 !important; /* Verde más vibrante */
+    font-weight: 700;
+}
+
+#result span[style*="red"] { /* Estilo para el mensaje de error */
+    color: #e74c3c !important; /* Rojo más vibrante */
+    font-weight: 700;
+}
+
+#result span[style*="orange"] { /* Estilo para el mensaje de advertencia */
+    color: #f39c12 !important; /* Naranja más vibrante */
+    font-weight: 700;
+}
+
+/* Estilo para las etiquetas de los datos adicionales */
+#result strong {
+    color: #34495e; /* Color oscuro para las etiquetas */
+    font-weight: 600;
 }
