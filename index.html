@@ -3,19 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validador de Series</title>
-    <link rel="stylesheet" href="style.css"> 
+    <title>Consulta de Equipos - [Nombre de tu Empresa]</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Validador de Series de Equipos</h1>
-        <p>Ingresa el número de serie para validarlo.</p>
-        <div class="input-group">
-            <input type="text" id="serie-input" placeholder="Ej. ABC-123">
-            <button id="validate-button">Validar</button>
+        <div class="header">
+            <h1>Consulta de Información de Equipos</h1>
+            <p>Ingrese el número de serie para obtener los detalles.</p>
         </div>
-        <div id="result"></div>
+
+        <div class="input-group">
+            <input type="text" id="serie-input" placeholder="Ej. ABC-123" aria-label="Número de serie del equipo">
+            <button id="validate-button">Consultar</button>
+        </div>
+
+        <div id="result" class="result-card">
+            </div>
     </div>
-    <script src="script.js"></script> 
+
+    <script src="script.js"></script>
 </body>
 </html>
