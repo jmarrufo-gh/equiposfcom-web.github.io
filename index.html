@@ -79,7 +79,7 @@
 
     <script type="text/javascript">
         // Reemplaza esta URL con la URL de tu Web App de Google Apps Script.
-        const API_URL = "https://script.google.com/macros/s/AKfycbzvYt0pQS4rdZGpLLEbS82PRYLFfaGJkjARJgJSRY0I-tEQ12hIwxOzUc7Wxhyd3aVG/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwUuXFcthXkex1MLVgKF7x8XDZXx8PS2Wa1bacn7VxD2_4WAGdu-mLXT_2VEF4uKxRm/exec";
 
         // Elementos del DOM
         const searchInput = document.getElementById('searchInput');
@@ -121,10 +121,10 @@
                 const row = document.createElement('tr');
                 row.className = 'border-b border-gray-600 last:border-0';
                 row.innerHTML = `
-                    <td class="p-3">${equipo['serie del equipo']}</td>
+                    <td class="p-3">${equipo.serie}</td>
                     <td class="p-3">${equipo.modelo}</td>
                     <td class="p-3">${equipo.proyecto}</td>
-                    <td class="p-3">${equipo['usuario actual']}</td>
+                    <td class="p-3">${equipo.tipo}</td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -137,7 +137,7 @@
                 return;
             }
             const filteredEquipos = allEquipos.filter(equipo => 
-                equipo['serie del equipo'].toLowerCase() === searchTerm
+                equipo.serie.toLowerCase() === searchTerm
             );
             renderTable(filteredEquipos);
         };
