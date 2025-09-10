@@ -1,55 +1,71 @@
 /* Importar una fuente moderna de Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+:root {
+    /* Colores oscuros y empresariales */
+    --bg-color: #2c3e50; /* Azul oscuro */
+    --card-bg-color: #34495e; /* Gris oscuro azulado */
+    --text-color-light: #ecf0f1; /* Gris claro */
+    --text-color-medium: #bdc3c7; /* Gris medio */
+    --accent-color: #3498db; /* Azul corporativo */
+    --error-color: #e74c3c; /* Rojo de error */
+    --success-color: #2ecc71; /* Verde de éxito (para mensajes internos o icons) */
+    --border-color: #4a627a; /* Borde oscuro */
+    --shadow-color: rgba(0, 0, 0, 0.4); /* Sombra oscura */
+}
 
 body {
-    font-family: 'Poppins', sans-serif; /* Usamos la nueva fuente */
-    background: linear-gradient(135deg, #f0f4f8, #d9e2ec); /* Fondo degradado suave */
-    color: #333;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bg-color); /* Fondo oscuro */
+    color: var(--text-color-light);
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Usar min-height para que ocupe toda la altura */
+    min-height: 100vh;
     margin: 0;
     line-height: 1.6;
+    padding: 20px; /* Pequeño padding general */
 }
 
 .container {
-    background-color: #ffffff;
+    background-color: var(--card-bg-color);
     padding: 40px;
-    border-radius: 12px; /* Bordes más redondeados */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada y suave */
+    border-radius: 10px;
+    box-shadow: 0 15px 40px var(--shadow-color); /* Sombra más profunda */
     text-align: center;
     width: 90%;
-    max-width: 550px; /* Un poco más ancho */
-    animation: fadeIn 0.8s ease-out; /* Animación de entrada */
+    max-width: 600px; /* Un poco más ancho para más información */
+    animation: fadeIn 0.8s ease-out;
+    border: 1px solid var(--border-color); /* Borde sutil */
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
+    from { opacity: 0; transform: translateY(-30px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-h1 {
-    color: #2c3e50; /* Color oscuro para el título */
-    margin-bottom: 15px;
-    font-size: 2.2em; /* Título un poco más grande */
-    font-weight: 600; /* Más énfasis */
+.header h1 {
+    color: var(--accent-color); /* Título con color corporativo */
+    margin-bottom: 10px;
+    font-size: 2.4em;
+    font-weight: 700;
 }
 
-p {
-    color: #7f8c8d;
-    margin-bottom: 25px;
+.header p {
+    color: var(--text-color-medium);
+    margin-bottom: 30px;
     font-size: 1.1em;
 }
 
 .input-group {
     display: flex;
-    flex-direction: column; /* Apilar en dispositivos pequeños */
-    gap: 15px; /* Espacio entre elementos */
+    flex-direction: column;
+    gap: 15px;
     margin-top: 30px;
+    margin-bottom: 40px; /* Espacio extra debajo del input */
 }
 
-@media (min-width: 600px) { /* Para pantallas más grandes, volver a fila */
+@media (min-width: 600px) {
     .input-group {
         flex-direction: row;
     }
@@ -57,82 +73,106 @@ p {
 
 #serie-input {
     flex: 1;
-    padding: 14px 18px; /* Más padding para mayor área de toque */
-    border: 1px solid #cad3dd; /* Borde sutil */
-    border-radius: 8px; /* Bordes redondeados */
+    padding: 15px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
     font-size: 1.1em;
-    outline: none; /* Quitar el contorno al enfocar */
-    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Transición suave */
+    background-color: var(--bg-color); /* Fondo del input más oscuro */
+    color: var(--text-color-light);
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#serie-input::placeholder { /* Estilo del placeholder */
+    color: var(--text-color-medium);
+    opacity: 0.7;
 }
 
 #serie-input:focus {
-    border-color: #3498db; /* Borde azul al enfocar */
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); /* Sombra al enfocar */
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
 }
 
 #validate-button {
-    padding: 14px 28px;
-    background-color: #3498db; /* Azul vibrante */
+    padding: 15px 30px;
+    background-color: var(--accent-color);
     color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 1.1em;
-    font-weight: 600;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Animación de hover */
-    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); /* Sombra para el botón */
+    font-weight: 500;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
 }
 
 #validate-button:hover {
-    background-color: #2980b9; /* Azul más oscuro al hover */
-    transform: translateY(-2px); /* Pequeño levantamiento */
+    background-color: #217dbb; /* Un tono más oscuro de azul */
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.5);
 }
 
 #validate-button:active {
-    transform: translateY(0); /* Vuelve a su posición original al hacer clic */
+    transform: translateY(0);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
 }
 
-#result {
+/* Estilos para la tarjeta de resultados */
+.result-card {
     margin-top: 30px;
-    font-weight: 600; /* Más énfasis */
-    font-size: 1.2em; /* Resultado más grande */
-    min-height: 40px; /* Más espacio para el mensaje */
-    display: flex; /* Para centrar el contenido verticalmente */
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
+    padding: 25px;
+    background-color: var(--bg-color); /* Fondo de la tarjeta de resultado oscuro */
     border-radius: 8px;
-    background-color: #ecf0f1; /* Fondo suave para el resultado */
+    text-align: left; /* Alineado a la izquierda para los datos */
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra interna sutil */
+    border: 1px solid var(--border-color);
+    min-height: 100px; /* Para mantener el espacio */
+    display: flex; /* Para flexbox interno */
+    flex-direction: column;
+    justify-content: center; /* Centrar verticalmente cuando está vacío */
+    align-items: flex-start; /* Alinea los ítems a la izquierda */
+    gap: 10px; /* Espacio entre los elementos de la lista */
 }
 
-/* Colores para los mensajes de resultado */
-#result span {
-    display: block; /* Cada línea en su propio bloque */
-    margin-bottom: 5px; /* Espacio entre líneas */
+.result-item {
+    font-size: 1.1em;
+    color: var(--text-color-light);
+    width: 100%; /* Ocupa todo el ancho */
+    padding: 5px 0;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1); /* Separador sutil */
 }
 
-#result span:last-child {
-    margin-bottom: 0;
+.result-item:last-child {
+    border-bottom: none; /* Sin borde en el último elemento */
 }
 
-#result span[style*="green"] { /* Estilo para el mensaje de éxito */
-    color: #27ae60 !important; /* Verde más vibrante */
+.result-item strong {
+    color: var(--accent-color); /* Etiquetas en color corporativo */
+    min-width: 100px; /* Ancho mínimo para alinear */
+    display: inline-block; /* Para que strong y el valor estén en la misma línea */
+    margin-right: 10px;
+}
+
+.result-item.highlight { /* Estilo para el campo Proyecto */
+    font-size: 1.3em; /* Más grande */
     font-weight: 700;
+    color: var(--success-color); /* Un color que resalte, verde corporativo */
+    background-color: rgba(46, 204, 113, 0.1); /* Fondo suave para resaltar */
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid var(--success-color);
+    margin-bottom: 15px; /* Espacio extra */
+    text-align: center;
+}
+.result-item.highlight strong {
+    color: var(--success-color); /* La etiqueta también en verde */
 }
 
-#result span[style*="red"] { /* Estilo para el mensaje de error */
-    color: #e74c3c !important; /* Rojo más vibrante */
+/* Mensaje de Serie no encontrada */
+.result-card .error-message {
+    color: var(--error-color);
     font-weight: 700;
-}
-
-#result span[style*="orange"] { /* Estilo para el mensaje de advertencia */
-    color: #f39c12 !important; /* Naranja más vibrante */
-    font-weight: 700;
-}
-
-/* Estilo para las etiquetas de los datos adicionales */
-#result strong {
-    color: #34495e; /* Color oscuro para las etiquetas */
-    font-weight: 600;
+    font-size: 1.3em;
+    text-align: center;
+    width: 100%;
 }
