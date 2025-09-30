@@ -3,13 +3,13 @@
 const sheetURLs = {
     // URL de Hoja 1
     'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
-    // URL de BBDD PM 4 (Mantenemos la URL, pero la carga está comentada)
+    // URL de BBDD PM 4
     'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
 };
 
 // Mapas de datos globales para almacenar la información de las hojas
 let equiposMap = new Map();
-let problemsMap = new Map(); // Estará vacío temporalmente
+let problemsMap = new Map(); 
 
 // --- Elementos del DOM ---
 const serieInput = document.getElementById('serie-input');
@@ -36,7 +36,7 @@ const displayMessage = (message, isError = false) => {
  * Obtiene el contenido CSV de una URL con tiempo de espera.
  */
 const fetchSheet = async (url, sheetName) => {
-    // --- TIMEOUT AUMENTADO A 30 SEGUNDOS ---
+    // Usamos el timeout extendido
     const TIMEOUT_MS = 30000; 
     try {
         const controller = new AbortController();
@@ -202,6 +202,7 @@ const renderProblemsTable = (problems) => {
     problemsListTitle.style.display = 'block';
 
     const problemCounts = problems.reduce((acc, p) => {
+        // Usa 'nivel 2' como la clave para agrupar
         const n2 = p['nivel 2'] && p['nivel 2'].trim() !== '' ? p['nivel 2'].trim().toUpperCase() : 'SIN CLASIFICAR (N2)';
         acc[n2] = (acc[n2] || 0) + 1;
         return acc;
@@ -241,6 +242,7 @@ const handleSearch = async () => {
             return;
         }
 
+        // Obtiene los problemas de la BBDD PM 4
         const problems = getProblemsBySerie(serie);
         
         renderEquipoDetails(equipo, problems.length);
@@ -260,7 +262,8 @@ const handleSearch = async () => {
  */
 const loadAllData = async () => {
     showLoading(true);
-    displayMessage('Cargando la base de datos de equipos e historial. Por favor, espere...');
+    // Cambiamos el mensaje para que refleje la carga completa
+    displayMessage('Cargando la base de datos de equipos e historial. Esto puede tardar unos segundos...');
 
     try {
         // 1. Carga Hoja 1 (Equipos Base)
@@ -268,20 +271,18 @@ const loadAllData = async () => {
         const data1 = loadSheetData(csv1, 'Hoja 1');
         equiposMap = data1.data;
 
-        // --- BBDD PM 4 COMENTADA TEMPORALMENTE ---
-        /*
+        // 2. Carga BBDD PM 4 (Historial de Problemas) - ESTE BLOQUE FUE REINTEGRADO
         const csv2 = await fetchSheet(sheetURLs['BBDD PM 4'], 'BBDD PM 4');
         const data2 = loadSheetData(csv2, 'BBDD PM 4');
         problemsMap = data2.data;
-        */
         
-        // Éxito PARCIAL
+        // Verificación de éxito
         if (equiposMap.size === 0) {
-             throw new Error('Hoja 1: Se descargó, pero no se pudo procesar ningún registro válido. Revisa encabezado "serie".');
+             throw new Error('Hoja 1: No se pudo procesar ningún registro válido. Revisa encabezado "serie".');
         }
 
-        displayMessage(`✅ Datos de Equipos (Hoja 1) cargados con éxito (${equiposMap.size} series). BBDD PM 4 omitida. Ingrese un número de serie.`);
-        console.log(`[ÉXITO PARCIAL] Solo Hoja 1 cargada. Series: ${equiposMap.size}`);
+        displayMessage(`✅ Datos cargados con éxito. Bases cargadas: Equipos (${equiposMap.size} series), Problemas (${problemsMap.size} series). Ingrese un número de serie y presione "Buscar Equipo".`);
+        console.log(`[ÉXITO] Datos cargados - Series de equipo: ${equiposMap.size}, Series con problemas: ${problemsMap.size}`);
         
     } catch (error) {
         // Fallo crítico
@@ -317,6 +318,4 @@ const initialize = () => {
 };
 
 window.onload = initialize;
-window.onload = initialize;
-
 
