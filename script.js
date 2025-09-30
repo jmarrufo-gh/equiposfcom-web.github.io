@@ -1,4 +1,4 @@
-// script.js (VERSIÓN FINAL CON PAPAPARSE)
+// script.js (VERSIÓN FINAL DE AISLAMIENTO CON PAPAPARSE)
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
@@ -70,12 +70,11 @@ const getEquipoBySerie = (serie) => {
     return equiposMap.get(key) || null;
 };
 const getProblemsBySerie = (serie) => {
-    const key = sanitizeKey(serie);
-    return problemsMap.get(key) || [];
+    // Siempre devuelve vacío en esta versión de aislamiento
+    return []; 
 };
 
 const renderEquipoDetails = (equipo, problemCount) => {
-    // Se asume que PapaParse hace los encabezados minúsculas/sin espacios
     const tipo = equipo['tipo'] || equipo['Tipo'] || 'N/A';
     const modelo = equipo['modelo'] || equipo['Modelo'] || 'N/A';
     const proyecto = equipo['proyecto'] || equipo['Proyecto'] || 'N/A';
@@ -93,40 +92,16 @@ const renderEquipoDetails = (equipo, problemCount) => {
         <div class="result-item"><strong>Usuario Asignado:</strong> <span>${usuarioactual}</span></div>
         <div class="result-item total-incidents">
             <strong>REGISTROS DE PROBLEMAS (BBDD PM 4):</strong>
-            <span>${problemCount}</span>
+            <span style="color: red; font-weight: bold;">OMITIDOS (Error de carga)</span>
         </div>
     `;
     resultDiv.innerHTML = html;
 };
+
+// La tabla de problemas siempre estará vacía en esta versión
 const renderProblemsTable = (problems) => {
-    if (problems.length === 0) {
-        problemsContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-medium); padding: 30px;">No se encontró historial de problemas para este equipo.</div>';
-        problemsListTitle.style.display = 'none';
-        return;
-    }
-    
-    problemsListTitle.style.display = 'block';
-
-    const problemCounts = problems.reduce((acc, p) => {
-        // Asumimos que los encabezados son 'nivel 2' o 'Nivel 2'
-        const n2 = p['nivel 2'] || p['Nivel 2'] || 'SIN CLASIFICAR (N2)';
-        const n2Clean = n2.trim().toUpperCase();
-        acc[n2Clean] = (acc[n2Clean] || 0) + 1;
-        return acc;
-    }, {});
-
-    let tableHtml = '<table class="count-table">';
-    tableHtml += '<thead><tr><th>Tipo de Problema (Nivel 2)</th><th>Conteo</th></tr></thead>';
-    tableHtml += '<tbody>';
-
-    const sortedCounts = Object.entries(problemCounts).sort(([, a], [, b]) => b - a);
-    
-    sortedCounts.forEach(([n2, count]) => {
-        tableHtml += `<tr><td>${n2}</td><td>${count}</td></tr>`;
-    });
-
-    tableHtml += '</tbody></table>';
-    problemsContainer.innerHTML = tableHtml;
+    problemsContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-medium); padding: 30px;">Historial de problemas omitido en esta prueba de carga.</div>';
+    problemsListTitle.style.display = 'none';
 };
 
 // --- Lógica Principal de Carga y Búsqueda ---
@@ -147,7 +122,8 @@ const handleSearch = async () => {
             return;
         }
 
-        const problems = getProblemsBySerie(serie);
+        // problems ahora es siempre []
+        const problems = getProblemsBySerie(serie); 
         renderEquipoDetails(equipo, problems.length);
         renderProblemsTable(problems);
 
@@ -160,47 +136,40 @@ const handleSearch = async () => {
 };
 
 /**
- * Carga y Parsea todas las bases de datos con PapaParse.
+ * Carga y Parsea solo la Hoja 1 con PapaParse.
  */
 const loadAllData = async () => {
-    displayMessage('Cargando y analizando la base de datos de equipos e historial. Esto puede tardar unos segundos...');
+    displayMessage('Cargando y analizando Hoja 1 (Base de Equipos).');
     showLoading(true);
 
     try {
-        // 1. DESCARGA SIMULTÁNEA
-        const [csv1, csv2] = await Promise.all([
+        // 1. DESCARGA - SOLO HOJA 1
+        const [csv1] = await Promise.all([
             fetchSheet(sheetURLs['Hoja 1'], 'Hoja 1'),
-            fetchSheet(sheetURLs['BBDD PM 4'], 'BBDD PM 4')
         ]);
         
-        // 2. PARSING con PapaParse
+        // 2. PARSING de Hoja 1 con PapaParse
         const result1 = PapaParse.parse(csv1, { header: true, skipEmptyLines: true });
-        const result2 = PapaParse.parse(csv2, { header: true, skipEmptyLines: true });
-
-        // --- CONVERSIÓN DE DATOS (PapaParse suele mantener mayúsculas/minúsculas) ---
         
-        // Hoja 1 (Buscamos 'serie' o 'Serie')
+        // 3. OMITIMOS BBDD PM 4
+        
+        // --- CONVERSIÓN DE DATOS ---
+        
+        // Hoja 1
         equiposMap = new Map();
         result1.data.forEach(item => {
             const serieLimpia = sanitizeKey(item['serie'] || item['Serie']); 
             if (serieLimpia.length > 0) equiposMap.set(serieLimpia, item);
         });
 
-        // BBDD PM 4 (Buscamos 'serie reportada' o 'Serie Reportada')
-        problemsMap = new Map();
-        result2.data.forEach(item => {
-            const serieLimpia = sanitizeKey(item['serie reportada'] || item['Serie Reportada']);
-            if (serieLimpia.length > 0) {
-                if (!problemsMap.has(serieLimpia)) problemsMap.set(serieLimpia, []);
-                problemsMap.get(serieLimpia).push(item);
-            }
-        });
-        
+        // BBDD PM 4 (Inicializada vacía)
+        problemsMap = new Map(); 
+
         if (equiposMap.size === 0) {
             throw new Error('Hoja 1: No se pudo procesar ningún registro válido.');
         }
 
-        displayMessage(`✅ ÉXITO con PapaParse. Equipos (${equiposMap.size} series), Problemas (${problemsMap.size} series). Ingrese un número de serie.`);
+        displayMessage(`✅ ÉXITO. Datos de EQUIPOS cargados (${equiposMap.size} series). Historial de Problemas OMITIDO. Ingresa una serie para probar.`);
         
     } catch (error) {
         console.error('[ERROR CRÍTICO] Fallo al cargar los datos:', error);
@@ -208,7 +177,6 @@ const loadAllData = async () => {
         validateButton.textContent = 'Error de Carga';
         validateButton.disabled = true; 
     } finally {
-        // Permitir búsqueda si Hoja 1 cargó
         if (equiposMap.size > 0) {
             validateButton.disabled = false;
             validateButton.textContent = 'Buscar Equipo';
@@ -219,7 +187,7 @@ const loadAllData = async () => {
 // --- Inicialización ---
 
 const initialize = () => {
-    // Fallo de carga de PapaParse es un error crítico.
+    // Verificar que PapaParse esté cargado
     if (typeof PapaParse === 'undefined') {
         displayMessage('Error Fatal: La librería PapaParse no se cargó. Verifica index.html.', true);
         return;
