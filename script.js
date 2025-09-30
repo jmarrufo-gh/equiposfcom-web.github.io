@@ -160,11 +160,18 @@ const loadAllData = async () => {
     displayMessage('Cargando la base de datos (Ejecución Asíncrona). Esto puede tardar...');
 
     try {
-        // Carga y procesamiento de Hoja 1 y BBDD PM 4 en paralelo
-        const [equiposData, problemsData] = await Promise.all([
+      // Carga y procesamiento de Hoja 1 y BBDD PM 4 en paralelo
+        const [equiposData] = await Promise.all([
             createWorkerPromise('Hoja 1'),
-            createWorkerPromise('BBDD PM 4')
+            // createWorkerPromise('BBDD PM 4') // <-- COMENTADA
         ]);
+        
+        // Asignamos los datos de Hoja 1 y dejamos BBDD PM 4 vacía
+        equiposMap = equiposData;
+        problemsMap = new Map(); 
+
+        // PAUSA: Simula el tiempo que tardaría la BBDD PM 4
+        await new Promise(resolve => setTimeout(resolve, 5000));
 
         equiposMap = equiposData;
         problemsMap = problemsData;
@@ -218,4 +225,5 @@ const initialize = () => {
 };
 
 window.onload = initialize;
+
 
