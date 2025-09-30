@@ -2,6 +2,7 @@
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
+    // ASEGÚRATE DE QUE ESTAS URLs SON CORRECTAS
     'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
     'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
 };
@@ -17,7 +18,7 @@ const resultDiv = document.getElementById('result');
 const problemsContainer = document.getElementById('problems-container');
 const problemsListTitle = document.getElementById('problems-list-title');
 
-// --- Funciones de Utilidad y Carga ---
+// --- Funciones de Utilidad de UI y Descarga ---
 
 const sanitizeKey = (key) => {
     if (typeof key !== 'string') return '';
@@ -36,7 +37,7 @@ const showLoading = (show) => {
 };
 
 const fetchSheet = async (url, sheetName) => {
-    const TIMEOUT_MS = 60000; // Aumentado a 60s por seguridad
+    const TIMEOUT_MS = 60000; // 60 segundos
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS); 
@@ -45,12 +46,12 @@ const fetchSheet = async (url, sheetName) => {
         clearTimeout(timeoutId);
         
         if (!response.ok) {
-            throw new Error(`Error HTTP ${response.status}: La hoja "${sheetName}" falló al cargar.`);
+            throw new Error(`Error HTTP ${response.status}.`);
         }
         
         const text = await response.text();
         if (!text || text.length < 10) {
-            throw new Error(`La hoja "${sheetName}" está vacía o no contiene datos válidos.`);
+            throw new Error(`La hoja está vacía o no contiene datos válidos.`);
         }
         return text;
     } catch (error) {
@@ -58,11 +59,11 @@ const fetchSheet = async (url, sheetName) => {
         if (error.name === 'AbortError') {
              errorMessage = `Tiempo de espera agotado (${TIMEOUT_MS/1000}s).`;
         }
-        throw new Error(`Fallo en descarga de ${sheetName}: ${errorMessage}`); 
+        throw new Error(`Error de conexión (CORS o URL mal formada) al intentar cargar "${sheetName}". Error: ${errorMessage}`); 
     }
 };
 
-// --- Funciones de Búsqueda y Renderizado (Se mantienen iguales) ---
+// --- Funciones de Búsqueda y Renderizado ---
 
 const getEquipoBySerie = (serie) => {
     const key = sanitizeKey(serie);
@@ -72,12 +73,14 @@ const getProblemsBySerie = (serie) => {
     const key = sanitizeKey(serie);
     return problemsMap.get(key) || [];
 };
+
 const renderEquipoDetails = (equipo, problemCount) => {
-    const tipo = equipo['tipo'] || 'N/A';
-    const modelo = equipo['modelo'] || 'N/A';
-    const proyecto = equipo['proyecto'] || 'N/A';
-    const usuarioactual = equipo['usuario actual'] || 'N/A';
-    const serie = equipo['serie'] || 'N/A'; 
+    // Se asume que PapaParse hace los encabezados minúsculas/sin espacios
+    const tipo = equipo['tipo'] || equipo['Tipo'] || 'N/A';
+    const modelo = equipo['modelo'] || equipo['Modelo'] || 'N/A';
+    const proyecto = equipo['proyecto'] || equipo['Proyecto'] || 'N/A';
+    const usuarioactual = equipo['usuario actual'] || equipo['Usuario Actual'] || 'N/A';
+    const serie = equipo['serie'] || equipo['Serie'] || 'N/A'; 
 
     const html = `
         <div class="result-item main-serie">
@@ -105,8 +108,10 @@ const renderProblemsTable = (problems) => {
     problemsListTitle.style.display = 'block';
 
     const problemCounts = problems.reduce((acc, p) => {
-        const n2 = p['nivel 2'] && p['nivel 2'].trim() !== '' ? p['nivel 2'].trim().toUpperCase() : 'SIN CLASIFICAR (N2)';
-        acc[n2] = (acc[n2] || 0) + 1;
+        // Asumimos que los encabezados son 'nivel 2' o 'Nivel 2'
+        const n2 = p['nivel 2'] || p['Nivel 2'] || 'SIN CLASIFICAR (N2)';
+        const n2Clean = n2.trim().toUpperCase();
+        acc[n2Clean] = (acc[n2Clean] || 0) + 1;
         return acc;
     }, {});
 
@@ -124,7 +129,7 @@ const renderProblemsTable = (problems) => {
     problemsContainer.innerHTML = tableHtml;
 };
 
-// --- Lógica Principal de Búsqueda ---
+// --- Lógica Principal de Carga y Búsqueda ---
 
 const handleSearch = async () => {
     const serie = serieInput.value.trim();
@@ -155,11 +160,10 @@ const handleSearch = async () => {
 };
 
 /**
- * Carga todas las bases de datos al iniciar. (Síncrona con PapaParse)
+ * Carga y Parsea todas las bases de datos con PapaParse.
  */
 const loadAllData = async () => {
-    // La descarga es rápida, la congelación se da en el parsing.
-    displayMessage('Cargando la base de datos de equipos e historial. El navegador se congelará brevemente durante el análisis de datos...');
+    displayMessage('Cargando y analizando la base de datos de equipos e historial. Esto puede tardar unos segundos...');
     showLoading(true);
 
     try {
@@ -169,22 +173,20 @@ const loadAllData = async () => {
             fetchSheet(sheetURLs['BBDD PM 4'], 'BBDD PM 4')
         ]);
         
-        // 2. PARSING DE HOJA 1 con PapaParse
+        // 2. PARSING con PapaParse
         const result1 = PapaParse.parse(csv1, { header: true, skipEmptyLines: true });
-        
-        // 3. PARSING DE BBDD PM 4 con PapaParse
         const result2 = PapaParse.parse(csv2, { header: true, skipEmptyLines: true });
 
-        // --- CONVERSIÓN DE DATOS Y VERIFICACIÓN ---
+        // --- CONVERSIÓN DE DATOS (PapaParse suele mantener mayúsculas/minúsculas) ---
         
-        // Hoja 1
+        // Hoja 1 (Buscamos 'serie' o 'Serie')
         equiposMap = new Map();
         result1.data.forEach(item => {
             const serieLimpia = sanitizeKey(item['serie'] || item['Serie']); 
             if (serieLimpia.length > 0) equiposMap.set(serieLimpia, item);
         });
 
-        // BBDD PM 4
+        // BBDD PM 4 (Buscamos 'serie reportada' o 'Serie Reportada')
         problemsMap = new Map();
         result2.data.forEach(item => {
             const serieLimpia = sanitizeKey(item['serie reportada'] || item['Serie Reportada']);
@@ -195,17 +197,18 @@ const loadAllData = async () => {
         });
         
         if (equiposMap.size === 0) {
-            throw new Error('Hoja 1: No se pudo procesar ningún registro válido. PapaParse falló o la hoja está vacía.');
+            throw new Error('Hoja 1: No se pudo procesar ningún registro válido.');
         }
 
-        displayMessage(`✅ ÉXITO con PapaParse. Equipos (${equiposMap.size} series), Problemas (${problemsMap.size} registros). Ingrese un número de serie.`);
+        displayMessage(`✅ ÉXITO con PapaParse. Equipos (${equiposMap.size} series), Problemas (${problemsMap.size} series). Ingrese un número de serie.`);
         
     } catch (error) {
         console.error('[ERROR CRÍTICO] Fallo al cargar los datos:', error);
-        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}. PapaParse falló.`, true);
+        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}. Verifica la Consola (F12) para más detalles.`, true);
         validateButton.textContent = 'Error de Carga';
         validateButton.disabled = true; 
     } finally {
+        // Permitir búsqueda si Hoja 1 cargó
         if (equiposMap.size > 0) {
             validateButton.disabled = false;
             validateButton.textContent = 'Buscar Equipo';
@@ -216,9 +219,9 @@ const loadAllData = async () => {
 // --- Inicialización ---
 
 const initialize = () => {
-    // Verificar si PapaParse está cargado
+    // Fallo de carga de PapaParse es un error crítico.
     if (typeof PapaParse === 'undefined') {
-        displayMessage('Error Fatal: La librería PapaParse no se cargó. Asegúrate de que el script en index.html está correcto.', true);
+        displayMessage('Error Fatal: La librería PapaParse no se cargó. Verifica index.html.', true);
         return;
     }
 
@@ -236,6 +239,5 @@ const initialize = () => {
 };
 
 window.onload = initialize;
-
 
 
