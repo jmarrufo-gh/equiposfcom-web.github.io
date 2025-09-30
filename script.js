@@ -1,6 +1,5 @@
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
-// **IMPORTANTE:** Estas son las URLs de publicación que has proporcionado.
-// Verifica que ambas URLs estén publicadas correctamente como CSV y sean accesibles públicamente.
+// Estas son las URLs de publicación que has proporcionado.
 const sheetURLs = {
     // URL de Hoja 1
     'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
@@ -24,19 +23,14 @@ const problemsListTitle = document.getElementById('problems-list-title');
 
 /**
  * Limpieza agresiva de la clave de búsqueda.
- * @param {string} key - Clave de entrada (Serie).
- * @returns {string} - Clave limpia y en mayúsculas.
  */
 const sanitizeKey = (key) => {
     if (typeof key !== 'string') return '';
-    // Elimina caracteres no alfanuméricos y convierte a mayúsculas.
     return key.trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
 };
 
 /**
  * Muestra mensajes en el área de resultados.
- * @param {string} message - Mensaje HTML o texto.
- * @param {boolean} isError - Aplica estilo de error si es true.
  */
 const displayMessage = (message, isError = false) => {
     resultDiv.innerHTML = `<div class="result-item ${isError ? 'error-message' : ''}">${message}</div>`;
@@ -46,12 +40,9 @@ const displayMessage = (message, isError = false) => {
 
 /**
  * Obtiene el contenido CSV de una URL con tiempo de espera.
- * @param {string} url - La URL de publicación de Google Sheets (CSV).
- * @param {string} sheetName - Nombre de la hoja para diagnósticos.
- * @returns {Promise<string>} - Contenido del CSV como texto.
  */
 const fetchSheet = async (url, sheetName) => {
-    const TIMEOUT_MS = 10000; // 10 segundos
+    const TIMEOUT_MS = 10000;
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS); 
@@ -73,90 +64,95 @@ const fetchSheet = async (url, sheetName) => {
         let errorMessage = error.message;
         if (error.name === 'AbortError') {
             errorMessage = `Tiempo de espera agotado al cargar "${sheetName}". Error de red o URL lenta.`;
-        } else if (error instanceof TypeError) {
+        } else if (error instanceof TypeError || error.name === 'TypeError') {
              errorMessage = `Error de conexión (CORS o URL mal formada) al intentar cargar "${sheetName}". Si usas file://, usa un servidor local.`;
         }
         console.error(`[ERROR FATAL DE CARGA] No se pudo obtener la hoja "${sheetName}":`, error);
-        // El error se lanza para ser capturado en loadAllData y mostrar el mensaje de fallo crítico
         throw new Error(errorMessage); 
     }
 };
 
 /**
- * Analiza el contenido CSV y lo indexa en mapas.
+ * Analiza el contenido CSV y lo indexa en mapas, probando múltiples separadores.
  */
 const loadSheetData = (csvText, sheetName) => {
-    const data = new Map();
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) return { data: new Map(), headers: [] };
 
-    // Detectar separador (la mayoría de las publicaciones de GS usan coma o punto y coma)
-    const separator = lines[0].includes(';') && !lines[0].includes(',') ? ';' : ',';
-
-    // Función simple para parsear la línea (mejorada para manejo básico de comillas)
-    const parseLine = (line) => {
-        const regex = new RegExp(`(?:[^"${separator}\\n]*|"(?:[^"]|"")*")*?(${separator}|$)`, 'g');
+    // Intentaremos con coma (,) y luego punto y coma (;)
+    const possibleSeparators = [',', ';'];
+    let finalData = { data: new Map(), headers: [] };
+    
+    const parseLine = (line, sep) => {
+        const regex = new RegExp(`(?:[^"${sep}\\n]*|"(?:[^"]|"")*")*?(${sep}|$)`, 'g');
         const matches = line.match(regex);
         if (!matches) return [];
         return matches.map(match => {
-            let field = match.endsWith(separator) ? match.slice(0, -separator.length) : match;
+            let field = match.endsWith(sep) ? match.slice(0, -sep.length) : match;
             return field.replace(/^"|"$/g, '').replace(/""/g, '"').trim();
         }).filter(field => field.length > 0 || line.includes(`""`));
     };
-    
-    // Procesar encabezados
-    let headers = parseLine(lines[0]).map(h => h.toLowerCase().trim());
-    
-    let serieIndex = -1;
-    let n2Index = -1;
 
-    // --- CÓDIGO CORREGIDO PARA EL ENCABEZADO 'SERIE' EN HOJA 1 ---
-    if (sheetName === 'Hoja 1') {
-        // Ahora busca el encabezado 'serie'
-        serieIndex = headers.indexOf('serie'); 
-    } else if (sheetName === 'BBDD PM 4') {
-        // Mantiene la búsqueda de 'serie reportada' para BBDD PM 4
-        serieIndex = headers.indexOf('serie reportada');
-        n2Index = headers.indexOf('nivel 2');
-    }
-    // --- FIN DEL CÓDIGO CORREGIDO ---
-
-    if (serieIndex === -1) {
-        const expectedHeader = (sheetName === 'Hoja 1' ? "'serie'" : "'serie reportada'");
-        console.error(`[ERROR CRÍTICO] Columna clave (${expectedHeader}) no encontrada en "${sheetName}".`);
-        // Lanza un error personalizado para el diagnóstico final
-        throw new Error(`Columna clave (${expectedHeader}) no encontrada en la hoja "${sheetName}". Verifica que el encabezado de la primera fila sea correcto.`);
-    }
-
-    // Procesar datos
-    let usefulRecords = 0;
-    for (let i = 1; i < lines.length; i++) {
-        const fields = parseLine(lines[i]);
-        if (fields.length !== headers.length) {
-            continue; 
+    const attemptParse = (separator) => {
+        const data = new Map();
+        const headers = parseLine(lines[0], separator).map(h => h.toLowerCase().trim());
+        
+        let serieIndex = -1;
+        let n2Index = -1;
+        
+        // --- LÓGICA DE BÚSQUEDA DE ENCABEZADOS DE DATOS CLAVE ---
+        if (sheetName === 'Hoja 1') {
+            // Hoja 1: Buscamos el encabezado 'serie'
+            serieIndex = headers.indexOf('serie'); 
+        } else if (sheetName === 'BBDD PM 4') {
+            // BBDD PM 4: Buscamos 'serie reportada' y 'nivel 2'
+            serieIndex = headers.indexOf('serie reportada');
+            n2Index = headers.indexOf('nivel 2');
         }
 
-        const serieOriginal = fields[serieIndex];
-        const serieLimpia = sanitizeKey(serieOriginal);
+        if (serieIndex === -1) return { valid: false }; // Falla si no encuentra el encabezado clave de serie
+        if (sheetName === 'BBDD PM 4' && n2Index === -1) return { valid: false }; // Falla si no encuentra nivel 2 en BBDD PM 4
 
-        if (serieLimpia.length > 0) {
-            const record = {};
-            headers.forEach((header, colIndex) => {
-                record[header] = fields[colIndex];
-            });
+        let usefulRecords = 0;
+        for (let i = 1; i < lines.length; i++) {
+            const fields = parseLine(lines[i], separator);
+            if (fields.length !== headers.length || fields.length === 0) continue; 
 
-            if (sheetName === 'Hoja 1') {
-                data.set(serieLimpia, record);
-            } else if (sheetName === 'BBDD PM 4') {
-                if (!data.has(serieLimpia)) data.set(serieLimpia, []);
-                data.get(serieLimpia).push(record);
+            const serieLimpia = sanitizeKey(fields[serieIndex]);
+
+            if (serieLimpia.length > 0) {
+                const record = {};
+                headers.forEach((header, colIndex) => {
+                    record[header] = fields[colIndex];
+                });
+
+                if (sheetName === 'Hoja 1') {
+                    data.set(serieLimpia, record);
+                } else if (sheetName === 'BBDD PM 4') {
+                    if (!data.has(serieLimpia)) data.set(serieLimpia, []);
+                    data.get(serieLimpia).push(record);
+                }
+                usefulRecords++;
             }
-            usefulRecords++;
+        }
+        
+        // La validación final: debe tener al menos una serie para ser válido
+        return { valid: data.size > 0, data, headers, usefulRecords };
+    };
+
+    // Intentar con los separadores
+    for (const sep of possibleSeparators) {
+        const result = attemptParse(sep);
+        if (result.valid) {
+            finalData = { data: result.data, headers: result.headers };
+            console.log(`[DIAGNÓSTICO] Separador efectivo para "${sheetName}": "${sep}". Series únicas: ${finalData.data.size}.`);
+            return finalData; // Éxito
         }
     }
 
-    console.log(`[RESULTADOS] "${sheetName}" - Registros útiles: ${usefulRecords}, Series únicas: ${data.size}`);
-    return { data, headers };
+    // Si ambos fallaron, lanzamos el error crítico
+    const expectedHeader = (sheetName === 'Hoja 1' ? "'serie'" : "'serie reportada' y 'nivel 2'");
+    throw new Error(`No se encontraron datos válidos en la hoja "${sheetName}". Verifica que el encabezado ${expectedHeader} sea correcto.`);
 };
 
 // --- Funciones de Búsqueda y UI ---
@@ -180,12 +176,12 @@ const showLoading = (show) => {
  * Renderiza los detalles del equipo y el conteo de incidentes.
  */
 const renderEquipoDetails = (equipo, problemCount) => {
-    // Las claves deben coincidir con los encabezados de tu Hoja 1, en minúsculas.
+    // Las claves deben coincidir con los encabezados de tu Hoja 1.
     const tipo = equipo['tipo'] || 'N/A';
     const modelo = equipo['modelo'] || 'N/A';
     const proyecto = equipo['proyecto'] || 'N/A';
     const usuarioactual = equipo['usuario actual'] || 'N/A';
-    // --- CLAVE CORREGIDA AQUÍ: usando 'serie' ---
+    // Usando 'serie' para Hoja 1
     const serie = equipo['serie'] || 'N/A'; 
 
     const html = `
@@ -218,7 +214,7 @@ const renderProblemsTable = (problems) => {
     problemsListTitle.style.display = 'block';
 
     const problemCounts = problems.reduce((acc, p) => {
-        // La clave para agrupar sigue siendo 'nivel 2'.
+        // La clave para agrupar es 'nivel 2'.
         const n2 = p['nivel 2'] && p['nivel 2'].trim() !== '' ? p['nivel 2'].trim().toUpperCase() : 'SIN CLASIFICAR (N2)';
         acc[n2] = (acc[n2] || 0) + 1;
         return acc;
@@ -294,11 +290,6 @@ const loadAllData = async () => {
         const data2 = loadSheetData(csv2, 'BBDD PM 4');
         problemsMap = data2.data;
 
-        if (equiposMap.size === 0) {
-            // Este error ya no debería ocurrir si el encabezado es correcto.
-            throw new Error('No se encontraron datos válidos en Hoja 1. Esto puede ser por un error en el archivo CSV.');
-        }
-
         // Éxito
         displayMessage(`✅ Datos cargados con éxito. Bases cargadas: Equipos (${equiposMap.size} series), Problemas (${problemsMap.size} series). Ingrese un número de serie y presione "Buscar Equipo".`);
         console.log(`[ÉXITO] Datos cargados - Series de equipo: ${equiposMap.size}, Series con problemas: ${problemsMap.size}`);
@@ -306,7 +297,7 @@ const loadAllData = async () => {
     } catch (error) {
         // Fallo crítico
         console.error('[ERROR CRÍTICO] Fallo al cargar los datos:', error);
-        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}. **VERIFICA:** Servidor Local (CORS), URL de Google Sheets y encabezados.`, true);
+        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}.`, true);
         validateButton.textContent = 'Error de Carga';
         validateButton.disabled = true; 
         return; 
