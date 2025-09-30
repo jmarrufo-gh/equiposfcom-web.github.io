@@ -148,54 +148,80 @@
             border-radius: 0.5rem;
         }
 
-        /* NUEVO: Estilo para el contenedor del gráfico de incidentes */
-        .total-incidents {
+        /* Proyecto con más protagonismo */
+        .project-item {
             grid-column: 1 / -1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: linear-gradient(135deg, #6366f120, #8b5cf620);
-            padding: 1.5rem;
+            background: linear-gradient(135deg, #6366f130, #8b5cf630);
+            padding: 1.2rem;
             border-radius: 0.75rem;
-            margin-top: 1rem;
-            position: relative;
-            overflow: hidden;
+            border-left: 4px solid var(--primary-color);
+            margin: 0.5rem 0;
         }
 
-        .total-incidents::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 30% 50%, rgba(99, 102, 241, 0.1), transparent);
-            pointer-events: none;
+        .project-item strong {
+            font-size: 0.9rem;
+            color: var(--text-color-medium);
+        }
+
+        .project-item span {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            font-weight: 800;
+        }
+
+        /* Estilo simple para total de incidentes (sin gráfico) */
+        .total-incidents {
+            grid-column: 1 / -1;
+            text-align: center;
+            background-color: #6366f115;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
         }
 
         .total-incidents strong {
-            color: var(--text-color-light);
-            font-size: 0.85rem;
+            color: var(--text-color-medium);
+            font-size: 0.8rem;
+            display: block;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 1rem;
-            z-index: 1;
         }
 
-        /* NUEVO: Contenedor del gráfico circular */
-        .incidents-chart {
-            position: relative;
-            width: 140px;
-            height: 140px;
+        .total-incidents span {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        /* NUEVO: Contenedor del gráfico circular para cada problema */
+        .problem-chart-item {
             display: flex;
             align-items: center;
-            justify-content: center;
-            z-index: 1;
+            gap: 1rem;
+            padding: 0.75rem;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-        .chart-ring {
-            width: 140px;
-            height: 140px;
+        .problem-chart-item:hover {
+            background-color: #3f3f6d;
+            transform: translateX(5px);
+        }
+
+        .problem-chart-item:last-child {
+            border-bottom: none;
+        }
+
+        .mini-chart {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
+        }
+
+        .mini-chart-ring {
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: conic-gradient(
                 var(--primary-color) 0deg,
@@ -203,67 +229,63 @@
                 #3f3f6d var(--angle, 0deg),
                 #3f3f6d 360deg
             );
-            position: absolute;
+            position: relative;
             transition: transform 0.3s ease;
-            animation: rotateIn 0.8s ease-out;
         }
 
-        @keyframes rotateIn {
-            from {
-                transform: rotate(-90deg) scale(0.8);
-                opacity: 0;
-            }
-            to {
-                transform: rotate(0deg) scale(1);
-                opacity: 1;
-            }
+        .problem-chart-item:hover .mini-chart-ring {
+            transform: scale(1.1) rotate(5deg);
         }
 
-        .incidents-chart:hover .chart-ring {
-            transform: scale(1.05);
-        }
-
-        .chart-inner {
-            width: 100px;
-            height: 100px;
+        .mini-chart-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             background-color: var(--card-bg);
-            position: absolute;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
         }
 
-        .chart-value {
-            font-size: 2rem;
+        .mini-chart-value {
+            font-size: 1.1rem;
             font-weight: 900;
             color: var(--primary-color);
-            line-height: 1;
-            transition: transform 0.3s ease;
         }
 
-        .incidents-chart:hover .chart-value {
-            transform: scale(1.1);
+        .problem-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
 
-        .chart-label {
-            font-size: 0.7rem;
-            color: var(--text-color-medium);
-            text-transform: uppercase;
-            margin-top: 0.3rem;
-        }
-
-        /* Tooltip que aparece al hacer hover */
-        .chart-tooltip {
-            position: absolute;
-            top: -40px;
-            background-color: rgba(0, 0, 0, 0.9);
+        .problem-name {
+            font-weight: 600;
             color: var(--text-color-light);
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.85rem;
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .problem-percentage {
+            font-size: 0.8rem;
+            color: var(--text-color-medium);
+        }
+
+        .problem-tooltip {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.95);
+            color: var(--text-color-light);
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.4rem;
+            font-size: 0.75rem;
             white-space: nowrap;
             opacity: 0;
             pointer-events: none;
@@ -271,7 +293,7 @@
             z-index: 10;
         }
 
-        .incidents-chart:hover .chart-tooltip {
+        .mini-chart:hover .problem-tooltip {
             opacity: 1;
         }
 
@@ -290,52 +312,17 @@
             font-weight: 600;
             color: var(--text-color-light);
             margin-bottom: 1rem;
+            margin-top: 2rem;
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 0.5rem;
             display: none;
         }
 
-        .count-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            border-radius: 0.5rem;
+        #problems-container {
+            background-color: #1a1a2e;
+            border-radius: 0.75rem;
             overflow: hidden;
-        }
-
-        .count-table thead th {
-            background-color: var(--primary-color);
-            color: var(--text-color-light);
-            padding: 1rem;
-            text-align: left;
-            font-weight: 700;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-        }
-
-        .count-table tbody tr {
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.3s ease;
-        }
-
-        .count-table tbody tr:hover {
-            background-color: #3f3f6d;
-        }
-
-        .count-table tbody td {
-            padding: 1rem;
-            vertical-align: middle;
-            color: var(--text-color-light);
-            font-size: 0.95rem;
-        }
-
-        .count-table tbody td:last-child {
-            text-align: center;
-            font-weight: 800;
-            color: var(--primary-color);
-            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
         @media (max-width: 600px) {
@@ -354,17 +341,20 @@
             #validate-button {
                 width: 100%;
             }
-            .incidents-chart {
-                width: 120px;
-                height: 120px;
+            .mini-chart {
+                width: 50px;
+                height: 50px;
             }
-            .chart-ring {
-                width: 120px;
-                height: 120px;
+            .mini-chart-ring {
+                width: 50px;
+                height: 50px;
             }
-            .chart-inner {
-                width: 85px;
-                height: 85px;
+            .mini-chart-inner {
+                width: 35px;
+                height: 35px;
+            }
+            .mini-chart-value {
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -488,13 +478,7 @@
             const tipo = equipo['Tipo'] || equipo['tipo'] || 'N/A';
             const modelo = equipo['Modelo'] || equipo['modelo'] || 'N/A';
             const proyecto = equipo['Proyecto'] || equipo['proyecto'] || 'N/A';
-            const usuarioactual = equipo['Usuario Actual'] || equipo['usuario actual'] || 'N/A';
             const serie = equipo['Serie'] || equipo['serie'] || 'N/A';
-
-            // Calcular el ángulo para el gráfico circular (máximo 360 grados)
-            const maxProblems = 50; // Ajusta según tus necesidades
-            const percentage = Math.min((totalProblems / maxProblems) * 100, 100);
-            const angle = (percentage / 100) * 360;
 
             const html = `
                 <div class="result-item main-serie">
@@ -503,18 +487,13 @@
                 </div>
                 <div class="result-item highlight"><strong>Tipo:</strong> <span>${tipo}</span></div>
                 <div class="result-item highlight"><strong>Modelo:</strong> <span>${modelo}</span></div>
-                <div class="result-item"><strong>Proyecto:</strong> <span>${proyecto}</span></div>
-                <div class="result-item"><strong>Usuario Asignado:</strong> <span>${usuarioactual}</span></div>
+                <div class="result-item project-item">
+                    <strong>Proyecto:</strong> 
+                    <span>${proyecto}</span>
+                </div>
                 <div class="total-incidents">
-                    <strong>REGISTROS DE PROBLEMAS (BBDD PM 4)</strong>
-                    <div class="incidents-chart">
-                        <div class="chart-tooltip">Total: ${totalProblems} registro(s)</div>
-                        <div class="chart-ring" style="--angle: ${angle}deg;"></div>
-                        <div class="chart-inner">
-                            <div class="chart-value">${totalProblems}</div>
-                            <div class="chart-label">Problemas</div>
-                        </div>
-                    </div>
+                    <strong>Total Registros de Problemas:</strong>
+                    <span>${totalProblems}</span>
                 </div>
             `;
             resultDiv.innerHTML = html;
@@ -526,20 +505,37 @@
                 problemsContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-medium); padding: 15px;">No se encontraron registros de problemas para esta serie.</div>';
                 return;
             }
-            let tableHtml = `<table class="count-table">
-                                <thead>
-                                    <tr>
-                                        <th>NIVEL 2 (Tipo de Problema)</th>
-                                        <th>Recuento</th>
-                                    </tr>
-                                </thead>
-                                <tbody>`;
+
+            // Ordenar por cantidad (mayor a menor)
             const sortedCounts = [...problemCounts.entries()].sort((a, b) => b[1] - a[1]);
+            
+            // Encontrar el máximo para calcular porcentajes
+            const maxCount = sortedCounts[0][1];
+
+            let html = '';
             for (const [nivel, count] of sortedCounts) {
-                tableHtml += `<tr><td>${nivel}</td><td>${count}</td></tr>`;
+                const percentage = (count / totalProblems * 100).toFixed(1);
+                const angle = (count / maxCount) * 360;
+
+                html += `
+                    <div class="problem-chart-item">
+                        <div class="mini-chart">
+                            <div class="problem-tooltip">${count} registro(s)</div>
+                            <div class="mini-chart-ring" style="--angle: ${angle}deg;">
+                                <div class="mini-chart-inner">
+                                    <div class="mini-chart-value">${count}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="problem-info">
+                            <div class="problem-name">${nivel}</div>
+                            <div class="problem-percentage">${percentage}% del total</div>
+                        </div>
+                    </div>
+                `;
             }
-            tableHtml += `</tbody></table>`;
-            problemsContainer.innerHTML = tableHtml;
+
+            problemsContainer.innerHTML = html;
         };
 
         const loadInitialData = async () => {
