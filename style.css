@@ -17,7 +17,7 @@ body {
     color: var(--text-color-light);
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Alineado arriba para mejor visualización en pantallas grandes */
+    align-items: flex-start;
     min-height: 100vh;
     padding: 2rem;
     margin: 0;
@@ -54,7 +54,7 @@ h1 {
     flex-grow: 1;
     padding: 0.75rem 1.25rem;
     border: 1px solid var(--border-color);
-    border-radius: 9999px; /* Fully rounded */
+    border-radius: 9999px;
     background-color: #3f3f6d;
     color: var(--text-color-light);
     font-size: 1rem;
@@ -84,7 +84,7 @@ h1 {
 }
 
 #validate-button:disabled {
-    background-color: #4f46e580; /* Primary color semi-transparente */
+    background-color: #4f46e580;
     cursor: not-allowed;
 }
 
@@ -95,7 +95,7 @@ h1 {
     gap: 1rem;
     padding: 1.5rem;
     margin-bottom: 2rem;
-    background-color: #1a1a2e; /* Fondo oscuro para el panel de detalles */
+    background-color: #1a1a2e;
     border-radius: 0.75rem;
 }
 
@@ -121,7 +121,7 @@ h1 {
 }
 
 .main-serie {
-    grid-column: 1 / -1; /* Ocupa todo el ancho */
+    grid-column: 1 / -1;
     text-align: center;
     border-bottom: 2px solid var(--primary-color);
     padding-bottom: 1rem;
@@ -189,7 +189,7 @@ h1 {
     margin-top: 1rem;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     border-radius: 0.5rem;
-    overflow: hidden; /* Para contener el border-radius en el header/footer */
+    overflow: hidden;
 }
 
 .count-table thead th {
@@ -209,7 +209,7 @@ h1 {
 }
 
 .count-table tbody tr:hover {
-    background-color: #3f3f6d; /* Ligeramente más claro al pasar el ratón */
+    background-color: #3f3f6d;
 }
 
 .count-table tbody td {
@@ -219,7 +219,6 @@ h1 {
     font-size: 0.95rem;
 }
 
-/* Alineación específica para la columna Conteo (el último td) */
 .count-table tbody td:last-child {
     text-align: center;
     font-weight: 800;
