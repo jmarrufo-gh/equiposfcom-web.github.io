@@ -1,11 +1,11 @@
-// script.js (VERSIÓN FINAL Y COMPLETA - SIN PAPAPARSE - PARSER EXTREMADAMENTE ROBUSTO)
+// script.js (VERSIÓN FINAL CON PAPAPARSE DINÁMICO)
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
-    // URL DE HOJA 1 (CORRECTA CSV)
+    // URL DE HOJA 1 (CARGA INICIAL, CON MÉTODO MANUAL)
     'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
     
-    // URL DE BBDD PM 4 (CORREGIDA CSV)
+    // URL DE BBDD PM 4 (CARGA DINÁMICA CON PAPAPARSE)
     'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
 };
 
@@ -19,7 +19,7 @@ const resultDiv = document.getElementById('result');
 const problemsContainer = document.getElementById('problems-container');
 const problemsListTitle = document.getElementById('problems-list-title');
 
-// --- Funciones de Utilidad de UI y Descarga ---
+// --- Funciones de Utilidad de UI y Descarga (Solo para Hoja 1) ---
 
 const sanitizeKey = (key) => {
     if (typeof key !== 'string') return '';
@@ -38,100 +38,43 @@ const showLoading = (show, message = 'Cargando Datos...') => {
 };
 
 const fetchSheet = async (url, sheetName) => {
-    const TIMEOUT_MS = 60000; 
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS); 
-        
-        const response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Error HTTP ${response.status}.`);
         }
-        
-        let text = await response.text();
-        
-        if (!text || text.length < 10) {
-            throw new Error(`La hoja está vacía o no contiene datos válidos.`);
-        }
-        
-        // *** PASO DE LIMPIEZA EXTREMA PARA ASEGURAR LA LECTURA COMPLETA ***
-        if (sheetName === 'BBDD PM 4') {
-            // 1. Elimina retornos de carro (\r), que pueden causar problemas de consistencia en el salto de línea.
-            text = text.replace(/\r/g, ''); 
-            
-            // 2. Reemplaza saltos de línea (\n) dentro de las celdas entre comillas por espacios.
-            // Esto evita que una celda de texto con Enter (alt+enter) sea leída como dos filas.
-            text = text.replace(/"([^"]*)"/g, (match, p1) => {
-                 return `"${p1.replace(/\n/g, ' ').replace(/\t/g, ' ')}"`;
-            });
-
-            // 3. Elimina caracteres no imprimibles o de control (como el tabulador \t), excepto saltos de línea (\n)
-            // Esto asegura que caracteres invisibles que rompen el JSON/CSV no existan.
-            text = text.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
-        }
-        // ******************************************************************
-        
-        return text;
+        return await response.text();
     } catch (error) {
-        let errorMessage = error.message || 'Error desconocido.';
-        if (error.name === 'AbortError') {
-             errorMessage = `Tiempo de espera agotado (${TIMEOUT_MS/1000}s).`;
-        }
-        throw new Error(`Error de conexión (CORS o URL mal formada) al intentar cargar "${sheetName}". ${errorMessage}.`); 
+        throw new Error(`Error de conexión al intentar cargar "${sheetName}". ${error.message}.`); 
     }
 };
 
 /**
- * Función robusta para parsear CSV (Sin PapaParse, usando Regex).
+ * Función manual para parsear CSV (Solo para Hoja 1).
  */
 const parseCSV = (csvText) => {
-    // Dividir el texto en líneas limpias
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) return { data: [], headers: [] };
-
-    // Regex para dividir una línea CSV, manejando comas dentro de comillas
-    const CSV_SPLIT_REGEX = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
-
-    // Obtener y limpiar encabezados (remueve comillas si las hay)
-    const headers = lines[0].split(CSV_SPLIT_REGEX).map(h => h.trim().replace(/"/g, ''));
+    const headers = lines[0].split(',').map(h => h.trim());
     const data = [];
-
     for (let i = 1; i < lines.length; i++) {
-        // Dividir la línea usando la regex
-        const values = lines[i].split(CSV_SPLIT_REGEX);
-        
+        const values = lines[i].split(',');
         if (values.length !== headers.length) continue; 
-
         const obj = {};
-        
         headers.forEach((header, index) => {
-            let value = values[index] ? values[index].trim() : '';
-            
-            // Eliminar comillas dobles que rodean el valor (si existen)
-            if (value.startsWith('"') && value.endsWith('"')) {
-                value = value.slice(1, -1);
-            }
-            // Reparar comillas dobles escapadas dentro de las celdas ("" -> ")
-            value = value.replace(/""/g, '"');
-            
-            obj[header] = value;
+            obj[header] = values[index].trim(); 
         });
-        
         data.push(obj);
     }
     return { data, headers };
 };
-
-
-// --- Lógica de Procesamiento y Cruce (Sin cambios) ---
 
 const getEquipoBySerie = (serie) => {
     const key = sanitizeKey(serie);
     return equiposMap.get(key) || null;
 };
 
+// --- Lógica de Cruce (Sin cambios) ---
 
 const getProblemsBySerieAndCount = (serie, problemsData, serieHeader, nivelHeader) => {
     const problemCounts = new Map();
@@ -143,7 +86,8 @@ const getProblemsBySerieAndCount = (serie, problemsData, serieHeader, nivelHeade
 
         if (reportedSerie === serie) {
             totalProblems++;
-            const nivel2 = item[nivelHeader] ? item[nivelHeader].trim() : 'SIN NIVEL 2';
+            // El mapeo de PapaParse garantiza que las claves son correctas
+            const nivel2 = item[nivelHeader] ? item[nivelHeader].trim() : 'SIN NIVEL 2'; 
 
             if (problemCounts.has(nivel2)) {
                 problemCounts.set(nivel2, problemCounts.get(nivel2) + 1);
@@ -159,7 +103,6 @@ const getProblemsBySerieAndCount = (serie, problemsData, serieHeader, nivelHeade
 // --- Funciones de Renderizado (Sin cambios) ---
 
 const renderEquipoDetails = (equipo, totalProblems) => {
-    // Usamos nombres de columna flexibles para CSV
     const tipo = equipo['Tipo'] || equipo['tipo'] || 'N/A';
     const modelo = equipo['Modelo'] || equipo['modelo'] || 'N/A';
     const proyecto = equipo['Proyecto'] || equipo['proyecto'] || 'N/A';
@@ -200,7 +143,6 @@ const renderProblemsTable = (problemCounts, totalProblems) => {
                         </thead>
                         <tbody>`;
 
-    // Ordenar los problemas por recuento (descendente)
     const sortedCounts = [...problemCounts.entries()].sort((a, b) => b[1] - a[1]);
 
     for (const [nivel, count] of sortedCounts) {
@@ -212,8 +154,11 @@ const renderProblemsTable = (problemCounts, totalProblems) => {
 };
 
 
-// --- Lógica Principal de Carga y Búsqueda (Sin cambios) ---
+// --- Lógica Principal de Carga y Búsqueda ---
 
+/**
+ * Carga solo la Hoja 1 al inicio usando el parser manual.
+ */
 const loadInitialData = async () => {
     displayMessage('Cargando y analizando Hoja 1 (Base de Equipos).');
     showLoading(true, 'Cargando Estructura...');
@@ -228,7 +173,7 @@ const loadInitialData = async () => {
         const serieHeader = headers.find(h => h.toLowerCase().includes('serie') || h.toLowerCase().includes('serial'));
 
         if (!serieHeader) {
-            throw new Error('Hoja 1: No se encontró la columna de serie. Revisa que el encabezado contenga "serie" o "serial".');
+            throw new Error('Hoja 1: No se encontró la columna de serie.');
         }
 
         result1.data.forEach(item => {
@@ -256,6 +201,9 @@ const loadInitialData = async () => {
 };
 
 
+/**
+ * Maneja la búsqueda, usando PapaParse para la BBDD PM 4 dinámicamente.
+ */
 const handleSearch = async () => {
     const serie = serieInput.value.trim();
     if (serie.length < 5) {
@@ -263,48 +211,76 @@ const handleSearch = async () => {
         return;
     }
     
+    // 1. Obtener datos de Hoja 1 (Ya cargados)
     const equipo = getEquipoBySerie(serie);
     if (!equipo) {
         displayMessage(`⚠️ Serie "${serie}" no encontrada en la Base de Equipos (Hoja 1). Verifica la serie.`, true);
         return;
     }
     
+    // 2. Iniciar búsqueda de BBDD PM 4 (PapaParse)
     showLoading(true, 'Cargando BBDD de Problemas... (Puede tardar/congelarse)');
     
     try {
-        const csv2 = await fetchSheet(sheetURLs['BBDD PM 4'], 'BBDD PM 4');
-        const result2 = parseCSV(csv2); 
-        
-        const headers2 = result2.headers || [];
-        const pmSerieHeader = headers2.find(h => h.toLowerCase().includes('serie reportada')); 
-        const pmNivel2Header = headers2.find(h => h.toLowerCase().includes('nivel 2')); 
-
-        if (!pmSerieHeader || !pmNivel2Header) {
-             throw new Error('BBDD PM 4: Faltan las columnas "SERIE REPORTADA" o "NIVEL 2".');
+        if (typeof Papa === 'undefined') {
+            throw new Error('PapaParse no está cargado. Revisa que el tag <script> esté en index.html');
         }
 
+        const pm4Data = await new Promise((resolve, reject) => {
+            Papa.parse(sheetURLs['BBDD PM 4'], {
+                download: true,       // Le dice a PapaParse que descargue el archivo
+                header: true,         // Usa la primera fila como encabezado de objeto
+                skipEmptyLines: true, // Evita problemas con filas vacías
+                complete: (results) => {
+                    if (results.errors.length) {
+                        // PapaParse detectó errores de formato irrecuperables
+                        const errorMsg = results.errors.map(e => `${e.code}: ${e.message}`).join('; ');
+                        reject(new Error(`Errores de formato CSV en BBDD PM 4: ${errorMsg}`));
+                        return;
+                    }
+                    resolve(results.data);
+                },
+                error: (err) => {
+                    reject(new Error(`Error de descarga de PapaParse: ${err.message}`));
+                }
+            });
+        });
+
+        // 3. Procesar datos de PapaParse
+        const problemsData = pm4Data;
+        
+        // PapaParse automáticamente usa los encabezados. Buscamos las claves:
+        const pmSerieHeader = Object.keys(problemsData[0]).find(h => h.toLowerCase().includes('serie reportada')); 
+        const pmNivel2Header = Object.keys(problemsData[0]).find(h => h.toLowerCase().includes('nivel 2')); 
+
+        if (!pmSerieHeader || !pmNivel2Header) {
+             throw new Error('BBDD PM 4: PapaParse no encontró las columnas "SERIE REPORTADA" o "NIVEL 2".');
+        }
+
+        // 4. Cruce y Conteo
         const saneadoSerie = sanitizeKey(serie);
         const { problemCounts, totalProblems } = getProblemsBySerieAndCount(
             saneadoSerie, 
-            result2.data, 
+            problemsData, 
             pmSerieHeader, 
             pmNivel2Header
         );
 
+        // 5. Renderizar Resultados
         renderEquipoDetails(equipo, totalProblems);
         renderProblemsTable(problemCounts, totalProblems);
 
     } catch (error) {
         console.error("Error al buscar en BBDD PM 4:", error);
         renderEquipoDetails(equipo, 0); 
-        problemsContainer.innerHTML = `<div class="error-message">⚠️ Error al cargar la BBDD PM 4: ${error.message}. La Hoja 1 se cargó correctamente.</div>`;
+        problemsContainer.innerHTML = `<div class="error-message">⚠️ Error al procesar BBDD PM 4: ${error.message}. La Hoja 1 se cargó correctamente.</div>`;
         problemsListTitle.style.display = 'block';
     } finally {
         showLoading(false);
     }
 };
 
-// --- Inicialización (Sin cambios) ---
+// --- Inicialización ---
 
 const initialize = () => {
     validateButton.textContent = 'Inicializando...';
@@ -317,7 +293,7 @@ const initialize = () => {
         }
     });
 
-    loadInitialData(); 
+    loadInitialData();
 };
 
 window.onload = initialize;
