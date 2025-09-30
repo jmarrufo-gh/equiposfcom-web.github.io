@@ -677,21 +677,30 @@
             if (filteredRecords.length === 0) {
                 detailHTML += '<div class="no-records-message">No se encontraron registros detallados.</div>';
             } else {
+                // Campos específicos que queremos mostrar
+                const fieldsToShow = ['TICKET', 'ESTADO', 'GRUPO RESOLUTOR', 'OBSERVACIÓN'];
+                
                 filteredRecords.forEach((record, index) => {
                     detailHTML += `<div class="record-item">`;
                     detailHTML += `<div style="font-weight: 700; color: var(--primary-color); margin-bottom: 0.5rem;">Registro #${index + 1}</div>`;
                     
-                    // Mostrar todos los campos relevantes (excepto los ya mostrados)
-                    for (const [key, value] of Object.entries(record)) {
-                        if (value && value.trim() !== '' && key.toLowerCase() !== 'serie reportada') {
+                    // Buscar y mostrar solo los campos especificados
+                    fieldsToShow.forEach(fieldName => {
+                        // Buscar el campo en el registro (case-insensitive)
+                        const foundKey = Object.keys(record).find(key => 
+                            key.trim().toUpperCase() === fieldName.toUpperCase()
+                        );
+                        
+                        if (foundKey) {
+                            const value = record[foundKey] || 'N/A';
                             detailHTML += `
                                 <div class="record-field">
-                                    <div class="record-field-label">${key}:</div>
+                                    <div class="record-field-label">${fieldName}:</div>
                                     <div class="record-field-value">${value}</div>
                                 </div>
                             `;
                         }
-                    }
+                    });
                     
                     detailHTML += `</div>`;
                 });
