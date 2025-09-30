@@ -1,4 +1,4 @@
-// script.js (VERSIÓN FINAL Y COMPLETA - SIN PAPAPARSE - PARSER REGEX ROBUSTO)
+// script.js (VERSIÓN FINAL Y COMPLETA - SIN PAPAPARSE - PARSER REGEX ROBUSTO CON LIMPIEZA)
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
@@ -50,10 +50,25 @@ const fetchSheet = async (url, sheetName) => {
             throw new Error(`Error HTTP ${response.status}.`);
         }
         
-        const text = await response.text();
+        let text = await response.text();
+        
         if (!text || text.length < 10) {
             throw new Error(`La hoja está vacía o no contiene datos válidos.`);
         }
+        
+        // *** PASO DE LIMPIEZA CRÍTICA AÑADIDO AQUÍ ***
+        // Elimina caracteres que rompen el CSV (como retornos de carro '\r' y tabuladores)
+        // Y elimina cualquier salto de línea ('\n') DENTRO de las celdas entre comillas.
+        
+        if (sheetName === 'BBDD PM 4') {
+            // Reemplaza saltos de línea ('\n') y retornos de carro ('\r') solo si están dentro de comillas
+            text = text.replace(/"([^"]*)"/g, (match, p1) => {
+                 // p1 es el contenido dentro de las comillas. Reemplazamos todos los saltos de línea y tabuladores.
+                 return `"${p1.replace(/\n/g, ' ').replace(/\r/g, '').replace(/\t/g, ' ')}"`;
+            });
+        }
+        // **********************************************
+        
         return text;
     } catch (error) {
         let errorMessage = error.message || 'Error desconocido.';
@@ -265,11 +280,11 @@ const handleSearch = async () => {
     try {
         // --- PROCESO DINÁMICO DE BBDD PM 4 ---
         
-        // a) Descarga (Punto de posible CORS/Red)
+        // a) Descarga (Punto de posible CORS/Red. Incluye ahora la limpieza de texto.)
         const csv2 = await fetchSheet(sheetURLs['BBDD PM 4'], 'BBDD PM 4');
         
-        // b) Parseo (Punto de posible Congelamiento/Stack Overflow si es muy grande)
-        const result2 = parseCSV(csv2); // <-- Usa el nuevo parser Regex
+        // b) Parseo 
+        const result2 = parseCSV(csv2); 
         
         // c) Definición de encabezados de BBDD PM 4
         const headers2 = result2.headers || [];
