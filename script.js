@@ -1,4 +1,4 @@
-// script.js (VERSIÓN FINAL Y COMPLETA - SIN PAPAPARSE - PARSER REGEX ROBUSTO CON LIMPIEZA)
+// script.js (VERSIÓN FINAL Y COMPLETA - SIN PAPAPARSE - PARSER EXTREMADAMENTE ROBUSTO)
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
@@ -56,18 +56,22 @@ const fetchSheet = async (url, sheetName) => {
             throw new Error(`La hoja está vacía o no contiene datos válidos.`);
         }
         
-        // *** PASO DE LIMPIEZA CRÍTICA AÑADIDO AQUÍ ***
-        // Elimina caracteres que rompen el CSV (como retornos de carro '\r' y tabuladores)
-        // Y elimina cualquier salto de línea ('\n') DENTRO de las celdas entre comillas.
-        
+        // *** PASO DE LIMPIEZA EXTREMA PARA ASEGURAR LA LECTURA COMPLETA ***
         if (sheetName === 'BBDD PM 4') {
-            // Reemplaza saltos de línea ('\n') y retornos de carro ('\r') solo si están dentro de comillas
+            // 1. Elimina retornos de carro (\r), que pueden causar problemas de consistencia en el salto de línea.
+            text = text.replace(/\r/g, ''); 
+            
+            // 2. Reemplaza saltos de línea (\n) dentro de las celdas entre comillas por espacios.
+            // Esto evita que una celda de texto con Enter (alt+enter) sea leída como dos filas.
             text = text.replace(/"([^"]*)"/g, (match, p1) => {
-                 // p1 es el contenido dentro de las comillas. Reemplazamos todos los saltos de línea y tabuladores.
-                 return `"${p1.replace(/\n/g, ' ').replace(/\r/g, '').replace(/\t/g, ' ')}"`;
+                 return `"${p1.replace(/\n/g, ' ').replace(/\t/g, ' ')}"`;
             });
+
+            // 3. Elimina caracteres no imprimibles o de control (como el tabulador \t), excepto saltos de línea (\n)
+            // Esto asegura que caracteres invisibles que rompen el JSON/CSV no existan.
+            text = text.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
         }
-        // **********************************************
+        // ******************************************************************
         
         return text;
     } catch (error) {
@@ -81,16 +85,16 @@ const fetchSheet = async (url, sheetName) => {
 
 /**
  * Función robusta para parsear CSV (Sin PapaParse, usando Regex).
- * Maneja celdas con comas internas si están encerradas entre comillas.
  */
 const parseCSV = (csvText) => {
+    // Dividir el texto en líneas limpias
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) return { data: [], headers: [] };
 
     // Regex para dividir una línea CSV, manejando comas dentro de comillas
     const CSV_SPLIT_REGEX = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
 
-    // Obtener y limpiar encabezados
+    // Obtener y limpiar encabezados (remueve comillas si las hay)
     const headers = lines[0].split(CSV_SPLIT_REGEX).map(h => h.trim().replace(/"/g, ''));
     const data = [];
 
@@ -101,7 +105,6 @@ const parseCSV = (csvText) => {
         if (values.length !== headers.length) continue; 
 
         const obj = {};
-        let isValid = true;
         
         headers.forEach((header, index) => {
             let value = values[index] ? values[index].trim() : '';
@@ -122,7 +125,7 @@ const parseCSV = (csvText) => {
 };
 
 
-// --- Lógica de Procesamiento y Cruce ---
+// --- Lógica de Procesamiento y Cruce (Sin cambios) ---
 
 const getEquipoBySerie = (serie) => {
     const key = sanitizeKey(serie);
@@ -153,7 +156,7 @@ const getProblemsBySerieAndCount = (serie, problemsData, serieHeader, nivelHeade
 };
 
 
-// --- Funciones de Renderizado ---
+// --- Funciones de Renderizado (Sin cambios) ---
 
 const renderEquipoDetails = (equipo, totalProblems) => {
     // Usamos nombres de columna flexibles para CSV
@@ -209,11 +212,8 @@ const renderProblemsTable = (problemCounts, totalProblems) => {
 };
 
 
-// --- Lógica Principal de Carga y Búsqueda ---
+// --- Lógica Principal de Carga y Búsqueda (Sin cambios) ---
 
-/**
- * Carga solo la Hoja 1 al inicio para inicializar equiposMap.
- */
 const loadInitialData = async () => {
     displayMessage('Cargando y analizando Hoja 1 (Base de Equipos).');
     showLoading(true, 'Cargando Estructura...');
@@ -224,7 +224,6 @@ const loadInitialData = async () => {
         
         equiposMap = new Map();
         
-        // Lógica Súper-Flexible para encontrar el encabezado de serie en Hoja 1
         const headers = result1.headers || [];
         const serieHeader = headers.find(h => h.toLowerCase().includes('serie') || h.toLowerCase().includes('serial'));
 
@@ -257,9 +256,6 @@ const loadInitialData = async () => {
 };
 
 
-/**
- * Maneja la búsqueda, descargando y procesando la BBDD PM 4 dinámicamente.
- */
 const handleSearch = async () => {
     const serie = serieInput.value.trim();
     if (serie.length < 5) {
@@ -267,37 +263,26 @@ const handleSearch = async () => {
         return;
     }
     
-    // 1. Obtener datos de Hoja 1 (Ya cargados)
     const equipo = getEquipoBySerie(serie);
     if (!equipo) {
         displayMessage(`⚠️ Serie "${serie}" no encontrada en la Base de Equipos (Hoja 1). Verifica la serie.`, true);
         return;
     }
     
-    // 2. Iniciar búsqueda de BBDD PM 4
     showLoading(true, 'Cargando BBDD de Problemas... (Puede tardar/congelarse)');
     
     try {
-        // --- PROCESO DINÁMICO DE BBDD PM 4 ---
-        
-        // a) Descarga (Punto de posible CORS/Red. Incluye ahora la limpieza de texto.)
         const csv2 = await fetchSheet(sheetURLs['BBDD PM 4'], 'BBDD PM 4');
-        
-        // b) Parseo 
         const result2 = parseCSV(csv2); 
         
-        // c) Definición de encabezados de BBDD PM 4
         const headers2 = result2.headers || [];
-        // CRUCE: Hoja 1 -> BBDD PM 4 ("SERIE REPORTADA")
         const pmSerieHeader = headers2.find(h => h.toLowerCase().includes('serie reportada')); 
-        // GRÁFICO: BBDD PM 4 ("NIVEL 2")
         const pmNivel2Header = headers2.find(h => h.toLowerCase().includes('nivel 2')); 
 
         if (!pmSerieHeader || !pmNivel2Header) {
              throw new Error('BBDD PM 4: Faltan las columnas "SERIE REPORTADA" o "NIVEL 2".');
         }
 
-        // d) Cruce y Conteo
         const saneadoSerie = sanitizeKey(serie);
         const { problemCounts, totalProblems } = getProblemsBySerieAndCount(
             saneadoSerie, 
@@ -306,13 +291,11 @@ const handleSearch = async () => {
             pmNivel2Header
         );
 
-        // 3. Renderizar Resultados
         renderEquipoDetails(equipo, totalProblems);
         renderProblemsTable(problemCounts, totalProblems);
 
     } catch (error) {
         console.error("Error al buscar en BBDD PM 4:", error);
-        // Mostrar Hoja 1, pero reportar fallo de BBDD PM 4
         renderEquipoDetails(equipo, 0); 
         problemsContainer.innerHTML = `<div class="error-message">⚠️ Error al cargar la BBDD PM 4: ${error.message}. La Hoja 1 se cargó correctamente.</div>`;
         problemsListTitle.style.display = 'block';
@@ -321,7 +304,7 @@ const handleSearch = async () => {
     }
 };
 
-// --- Inicialización ---
+// --- Inicialización (Sin cambios) ---
 
 const initialize = () => {
     validateButton.textContent = 'Inicializando...';
@@ -334,7 +317,8 @@ const initialize = () => {
         }
     });
 
-    loadInitialData(); // Solo carga Hoja 1 al inicio
+    loadInitialData(); 
 };
 
 window.onload = initialize;
+
