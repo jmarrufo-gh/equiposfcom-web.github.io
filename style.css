@@ -8,7 +8,6 @@
     --text-color-medium: #b3b3e0;
     --error-color: #f87171;
     --border-color: #3f3f6d;
-    --warning-color: #f59e0b; /* Amarillo/Naranja para problemas */
 }
 
 /* Estilos Globales y Tipografía */
@@ -44,15 +43,8 @@ h1 {
     margin-bottom: 2rem;
 }
 
-/* Párrafo */
-p {
-    color: var(--text-color-medium);
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
-
 /* Sección de Búsqueda */
-.input-group {
+.search-section {
     display: flex;
     gap: 1rem;
     margin-bottom: 2rem;
@@ -147,86 +139,27 @@ p {
     border-radius: 0.5rem;
 }
 
-/* --- ESTILOS PARA EL GRÁFICO DE TOTAL (SECCIÓN SUPERIOR) --- */
-.incidents-graph-container {
+.total-incidents {
     grid-column: 1 / -1;
+    text-align: center;
+    background-color: #6366f120;
+    color: var(--primary-color);
     padding: 1rem;
     border-radius: 0.75rem;
     margin-top: 1rem;
-    background-color: #6366f120;
-    position: relative;
-    cursor: default;
+    font-size: 1.1rem;
 }
 
-.incidents-graph-container strong {
+.total-incidents strong {
     color: var(--text-color-light);
     font-size: 1rem;
     display: block;
-    margin-bottom: 0.5rem;
-    text-align: center;
 }
 
-.progress-bar-bg {
-    height: 25px;
-    background-color: var(--border-color);
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
-}
-
-.progress-bar-fill {
-    height: 100%;
-    width: 0%;
-    background-color: var(--warning-color);
-    transition: width 0.6s ease-out, background-color 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    color: var(--bg-color);
-}
-
-.progress-bar-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.1rem;
+.total-incidents span {
+    font-size: 1.8rem;
     font-weight: 900;
-    color: var(--text-color-light);
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
-    z-index: 2;
-}
-
-.no-incidents .progress-bar-fill {
-    background-color: var(--primary-color); /* Azul/Morado para 0 */
-}
-
-/* Tooltip (Total al pasar el mouse - Sección Superior) */
-.tooltip {
-    visibility: hidden;
-    background-color: var(--text-color-light);
-    color: var(--card-bg);
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 10px;
-    position: absolute;
-    z-index: 10;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    transition: opacity 0.3s;
-    white-space: nowrap;
-    font-size: 0.9rem;
-    font-weight: 600;
-    pointer-events: none;
-}
-
-.incidents-graph-container:hover .tooltip {
-    visibility: visible;
-    opacity: 1;
-    bottom: calc(100% + 10px);
+    color: var(--primary-color);
 }
 
 /* Mensajes de Error */
@@ -240,8 +173,7 @@ p {
     text-align: center;
 }
 
-/* --- ESTILOS DE TABLA DE HISTORIAL (Nivel 2) --- */
-
+/* Tabla de Historial (Nivel 2) */
 #problems-list-title {
     font-size: 1.3rem;
     font-weight: 600;
@@ -287,55 +219,11 @@ p {
     font-size: 0.95rem;
 }
 
-/* --- ESTILOS CRÍTICOS PARA EL GRÁFICO DENTRO DE LA TABLA --- */
-.count-table thead th:last-child {
-    text-align: left;
-    width: 25%; 
-}
-
 .count-table tbody td:last-child {
-    text-align: left !important; 
-    font-weight: normal;
-    color: var(--text-color-light);
-    font-size: 0.95rem;
-}
-
-.count-table .graph-cell {
-    position: relative;
-}
-
-.problem-graph-wrapper {
-    /* Fondo de la barra */
-    height: 20px;
-    background-color: var(--border-color);
-    border-radius: 3px;
-    overflow: hidden;
-    position: relative;
-    width: 100%;
-}
-
-.problem-graph-bar {
-    /* Barra que se llena (color y transición) */
-    height: 100%;
-    background-color: var(--warning-color);
-    transition: width 0.5s ease-out;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
-.problem-count-text {
-    /* Texto con el número (visible) y el tooltip (con title) */
-    position: absolute;
-    top: 50%;
-    right: 5px;
-    transform: translateY(-50%);
-    font-weight: 700;
-    font-size: 0.9em;
-    color: var(--text-color-light);
-    text-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
-    z-index: 5;
-    cursor: help; /* Indica que tiene tooltip */
+    text-align: center;
+    font-weight: 800;
+    color: var(--primary-color);
+    font-size: 1.1rem;
 }
 
 /* Responsive adjustments */
@@ -350,18 +238,18 @@ p {
         font-size: 1.5rem;
         margin-bottom: 1.5rem;
     }
-    .input-group {
+    .search-section {
         flex-direction: column;
         gap: 0.5rem;
     }
     #validate-button {
         width: 100%;
     }
-    .progress-bar-text {
-        font-size: 1rem;
+    .total-incidents span {
+        font-size: 1.5rem;
     }
     .count-table thead th, .count-table tbody td {
         padding: 0.75rem;
         font-size: 0.9rem;
     }
-}
+} 
