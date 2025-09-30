@@ -42,7 +42,8 @@ const displayMessage = (message, isError = false) => {
  * Obtiene el contenido CSV de una URL con tiempo de espera.
  */
 const fetchSheet = async (url, sheetName) => {
-    const TIMEOUT_MS = 10000;
+    // --- TIMEOUT AUMENTADO ---
+    const TIMEOUT_MS = 20000; // 20 segundos para archivos grandes
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS); 
@@ -63,7 +64,7 @@ const fetchSheet = async (url, sheetName) => {
     } catch (error) {
         let errorMessage = error.message;
         if (error.name === 'AbortError') {
-            errorMessage = `Tiempo de espera agotado al cargar "${sheetName}". Error de red o URL lenta.`;
+            errorMessage = `Tiempo de espera agotado (${TIMEOUT_MS/1000}s) al cargar "${sheetName}". Error de red o URL muy lenta.`;
         } else if (error instanceof TypeError || error.name === 'TypeError') {
              errorMessage = `Error de conexión (CORS o URL mal formada) al intentar cargar "${sheetName}". Si usas file://, usa un servidor local.`;
         }
@@ -77,13 +78,13 @@ const fetchSheet = async (url, sheetName) => {
  */
 const loadSheetData = (csvText, sheetName) => {
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
-    if (lines.length === 0) return { data: new Map(), headers: [] };
+    if (lines.length < 2) return { data: new Map(), headers: [] }; // Necesitamos encabezado y al menos 1 línea de datos
 
-    // Intentaremos con coma (,) y luego punto y coma (;)
     const possibleSeparators = [',', ';'];
     let finalData = { data: new Map(), headers: [] };
     
     const parseLine = (line, sep) => {
+        // Expresión regular robusta para CSV que maneja comillas y separadores
         const regex = new RegExp(`(?:[^"${sep}\\n]*|"(?:[^"]|"")*")*?(${sep}|$)`, 'g');
         const matches = line.match(regex);
         if (!matches) return [];
@@ -100,18 +101,17 @@ const loadSheetData = (csvText, sheetName) => {
         let serieIndex = -1;
         let n2Index = -1;
         
-        // --- LÓGICA DE BÚSQUEDA DE ENCABEZADOS DE DATOS CLAVE ---
+        // --- LÓGICA DE BÚSQUEDA DE ENCABEZADOS CLAVE ---
         if (sheetName === 'Hoja 1') {
-            // Hoja 1: Buscamos el encabezado 'serie'
             serieIndex = headers.indexOf('serie'); 
         } else if (sheetName === 'BBDD PM 4') {
-            // BBDD PM 4: Buscamos 'serie reportada' y 'nivel 2'
             serieIndex = headers.indexOf('serie reportada');
             n2Index = headers.indexOf('nivel 2');
         }
 
-        if (serieIndex === -1) return { valid: false }; // Falla si no encuentra el encabezado clave de serie
-        if (sheetName === 'BBDD PM 4' && n2Index === -1) return { valid: false }; // Falla si no encuentra nivel 2 en BBDD PM 4
+        // Validación crítica de encabezados
+        if (serieIndex === -1) return { valid: false, reason: `No se encontró el encabezado clave de serie.` }; 
+        if (sheetName === 'BBDD PM 4' && n2Index === -1) return { valid: false, reason: `No se encontró el encabezado 'nivel 2'.` };
 
         let usefulRecords = 0;
         for (let i = 1; i < lines.length; i++) {
@@ -137,7 +137,7 @@ const loadSheetData = (csvText, sheetName) => {
         }
         
         // La validación final: debe tener al menos una serie para ser válido
-        return { valid: data.size > 0, data, headers, usefulRecords };
+        return { valid: data.size > 0, data, headers, usefulRecords, separator };
     };
 
     // Intentar con los separadores
@@ -150,9 +150,9 @@ const loadSheetData = (csvText, sheetName) => {
         }
     }
 
-    // Si ambos fallaron, lanzamos el error crítico
+    // Si ambos fallaron
     const expectedHeader = (sheetName === 'Hoja 1' ? "'serie'" : "'serie reportada' y 'nivel 2'");
-    throw new Error(`No se encontraron datos válidos en la hoja "${sheetName}". Verifica que el encabezado ${expectedHeader} sea correcto.`);
+    throw new Error(`No se pudo interpretar el CSV de "${sheetName}". Error: Verifica que el encabezado ${expectedHeader} sea correcto.`);
 };
 
 // --- Funciones de Búsqueda y UI ---
@@ -176,12 +176,10 @@ const showLoading = (show) => {
  * Renderiza los detalles del equipo y el conteo de incidentes.
  */
 const renderEquipoDetails = (equipo, problemCount) => {
-    // Las claves deben coincidir con los encabezados de tu Hoja 1.
     const tipo = equipo['tipo'] || 'N/A';
     const modelo = equipo['modelo'] || 'N/A';
     const proyecto = equipo['proyecto'] || 'N/A';
     const usuarioactual = equipo['usuario actual'] || 'N/A';
-    // Usando 'serie' para Hoja 1
     const serie = equipo['serie'] || 'N/A'; 
 
     const html = `
@@ -214,7 +212,6 @@ const renderProblemsTable = (problems) => {
     problemsListTitle.style.display = 'block';
 
     const problemCounts = problems.reduce((acc, p) => {
-        // La clave para agrupar es 'nivel 2'.
         const n2 = p['nivel 2'] && p['nivel 2'].trim() !== '' ? p['nivel 2'].trim().toUpperCase() : 'SIN CLASIFICAR (N2)';
         acc[n2] = (acc[n2] || 0) + 1;
         return acc;
@@ -224,7 +221,6 @@ const renderProblemsTable = (problems) => {
     tableHtml += '<thead><tr><th>Tipo de Problema (Nivel 2)</th><th>Conteo</th></tr></thead>';
     tableHtml += '<tbody>';
 
-    // Ordenar por conteo de forma descendente
     const sortedCounts = Object.entries(problemCounts).sort(([, a], [, b]) => b - a);
     
     sortedCounts.forEach(([n2, count]) => {
@@ -257,10 +253,7 @@ const handleSearch = async () => {
 
         const problems = getProblemsBySerie(serie);
         
-        // Renderiza el detalle del equipo (Hoja 1) y el conteo de problemas (BBDD PM 4)
         renderEquipoDetails(equipo, problems.length);
-        
-        // Renderiza la tabla de problemas (BBDD PM 4)
         renderProblemsTable(problems);
 
         console.log(`[BÚSQUEDA EXITOSA] Serie "${serie}" - Registros en Historial: ${problems.length}`);
