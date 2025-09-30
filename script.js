@@ -155,7 +155,7 @@ const getProblemsBySerieAndCount = (serie, problemsData, serieHeader, nivelHeade
 };
 
 
-// --- Funciones de Renderizado (MODIFICADA para usar el Gráfico Total) ---
+// --- Funciones de Renderizado (Renderiza la barra de progreso total superior) ---
 
 const renderEquipoDetails = (equipo, totalProblems) => {
     const tipo = equipo['Tipo'] || equipo['tipo'] || 'N/A';
@@ -164,7 +164,7 @@ const renderEquipoDetails = (equipo, totalProblems) => {
     const usuarioactual = equipo['Usuario Actual'] || equipo['usuario actual'] || 'N/A';
     const serie = equipo['Serie'] || equipo['serie'] || 'N/A'; 
    
-    // --- Lógica para el Gráfico Total de Problemas ---
+    // Lógica para el Gráfico Total de Problemas
     const MAX_PROBLEMS_FOR_BAR = 10; // 10 problemas llenan el 100% de la barra visual
     const percentage = Math.min(100, (totalProblems / MAX_PROBLEMS_FOR_BAR) * 100);
     const isNoIncidents = totalProblems === 0 ? 'no-incidents' : '';
@@ -196,7 +196,7 @@ const renderEquipoDetails = (equipo, totalProblems) => {
 };
 
 
-// --- Funciones de Renderizado (MODIFICADA para usar Gráficos en la Tabla) ---
+// --- Funciones de Renderizado (Renderiza la tabla con las barras de progreso) ---
 
 const renderProblemsTable = (problemCounts, totalProblems) => {
     problemsListTitle.style.display = 'block';
@@ -224,7 +224,7 @@ const renderProblemsTable = (problemCounts, totalProblems) => {
         // Calcular el ancho de la barra (porcentaje basado en el recuento máximo)
         const percentage = (count / maxCount) * 100;
         
-        // Crear la celda con el gráfico de barra y el tooltip (usando 'title')
+        // Crear la celda con el gráfico de barra. El tooltip se gestiona con el atributo 'title'
         const graphCell = `
             <td class="graph-cell">
                 <div class="problem-graph-wrapper">
