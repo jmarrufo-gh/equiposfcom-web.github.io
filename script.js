@@ -1,4 +1,4 @@
-// script.js (VERSIÓN FINAL Y COMPLETA - ESTANDARIZACIÓN DE FILAS CON MODIFICACIÓN PARA GRÁFICO)
+// script.js (VERSIÓN FINAL CON GRÁFICOS EN LA TABLA Y EN EL TOTAL)
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
@@ -155,7 +155,7 @@ const getProblemsBySerieAndCount = (serie, problemsData, serieHeader, nivelHeade
 };
 
 
-// --- Funciones de Renderizado (MODIFICADA: Implementa el Gráfico de Problemas) ---
+// --- Funciones de Renderizado (MODIFICADA para usar el Gráfico Total) ---
 
 const renderEquipoDetails = (equipo, totalProblems) => {
     const tipo = equipo['Tipo'] || equipo['tipo'] || 'N/A';
@@ -164,7 +164,7 @@ const renderEquipoDetails = (equipo, totalProblems) => {
     const usuarioactual = equipo['Usuario Actual'] || equipo['usuario actual'] || 'N/A';
     const serie = equipo['Serie'] || equipo['serie'] || 'N/A'; 
    
-    // --- Lógica para el Gráfico de Problemas ---
+    // --- Lógica para el Gráfico Total de Problemas ---
     const MAX_PROBLEMS_FOR_BAR = 10; // 10 problemas llenan el 100% de la barra visual
     const percentage = Math.min(100, (totalProblems / MAX_PROBLEMS_FOR_BAR) * 100);
     const isNoIncidents = totalProblems === 0 ? 'no-incidents' : '';
@@ -195,6 +195,9 @@ const renderEquipoDetails = (equipo, totalProblems) => {
     resultDiv.innerHTML = html;
 };
 
+
+// --- Funciones de Renderizado (MODIFICADA para usar Gráficos en la Tabla) ---
+
 const renderProblemsTable = (problemCounts, totalProblems) => {
     problemsListTitle.style.display = 'block';
 
@@ -203,11 +206,14 @@ const renderProblemsTable = (problemCounts, totalProblems) => {
         return;
     }
 
+    // Calcular el recuento máximo para establecer la escala visual
+    const maxCount = Math.max(...[...problemCounts.values()]);
+
     let tableHtml = `<table class="count-table">
                         <thead>
                             <tr>
                                 <th>NIVEL 2 (Tipo de Problema)</th>
-                                <th>Recuento</th>
+                                <th>Recuento (Gráfico)</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -215,7 +221,20 @@ const renderProblemsTable = (problemCounts, totalProblems) => {
     const sortedCounts = [...problemCounts.entries()].sort((a, b) => b[1] - a[1]);
 
     for (const [nivel, count] of sortedCounts) {
-        tableHtml += `<tr><td>${nivel}</td><td>${count}</td></tr>`;
+        // Calcular el ancho de la barra (porcentaje basado en el recuento máximo)
+        const percentage = (count / maxCount) * 100;
+        
+        // Crear la celda con el gráfico de barra y el tooltip (usando 'title')
+        const graphCell = `
+            <td class="graph-cell">
+                <div class="problem-graph-wrapper">
+                    <div class="problem-graph-bar" style="width: ${percentage}%;"></div>
+                    <span class="problem-count-text" title="Total de incidentes: ${count}">${count}</span>
+                </div>
+            </td>
+        `;
+
+        tableHtml += `<tr><td>${nivel}</td>${graphCell}</tr>`;
     }
 
     tableHtml += `</tbody></table>`;
