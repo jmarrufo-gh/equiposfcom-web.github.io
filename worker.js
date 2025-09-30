@@ -1,13 +1,12 @@
-// worker.js (VERSION COMPLETA Y AUTÓNOMA)
+// worker.js (VERSION FINAL Y AUTÓNOMA)
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
-    // Estas URLs deben ser exactamente las mismas que en script.js
     'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
     'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
 };
 
-// --- Funciones de Utilidad y Carga (El Worker DEBE tener estas copias) ---
+// --- Funciones de Utilidad y Carga (Debe contener todas las dependencias) ---
 
 const sanitizeKey = (key) => {
     if (typeof key !== 'string') return '';
@@ -15,7 +14,6 @@ const sanitizeKey = (key) => {
 };
 
 const fetchSheet = async (url, sheetName) => {
-    // La lógica de fetch va aquí, NO depende de script.js
     const TIMEOUT_MS = 30000; 
     try {
         const controller = new AbortController();
@@ -38,13 +36,11 @@ const fetchSheet = async (url, sheetName) => {
         if (error.name === 'AbortError') {
              errorMessage = `Tiempo de espera agotado (${TIMEOUT_MS/1000}s).`;
         }
-        // Usamos un nombre de error genérico para no exponer toda la lógica HTTP en la consola
         throw new Error(`Fallo en ${sheetName}: ${errorMessage}`); 
     }
 };
 
 const loadSheetData = (csvText, sheetName) => {
-    // La lógica de parsing va aquí, NO depende de script.js
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
     if (lines.length < 2) throw new Error('No hay suficientes datos para procesar.');
 
@@ -121,10 +117,8 @@ self.onmessage = async (e) => {
         const csvText = await fetchSheet(sheetURLs[sheetName], sheetName);
         const dataMap = loadSheetData(csvText, sheetName);
         
-        // Éxito: Envía el mapa de datos al script principal
         self.postMessage({ status: 'success', sheetName, data: dataMap });
     } catch (error) {
-        // Error: Envía el mensaje de error al script principal
         self.postMessage({ status: 'error', sheetName, message: error.message });
     }
 };
