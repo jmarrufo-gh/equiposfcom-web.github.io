@@ -1,79 +1,69 @@
-// script.js (SOLO LAS SECCIONES MODIFICADAS)
+// script.js
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
-const sheetURLs = {
-    // Hoja 1 sigue aquí para la carga directa en el hilo principal
-    'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
-    // La BBDD PM 4 no es necesaria aquí, pero se deja para referencia
-    'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
+// Las URLs solo se necesitan para la inicialización del Worker, pero las mantenemos aquí para claridad.
+const sheetURLs = { 
+    'Hoja 1': '...', 
+    'BBDD PM 4': '...', 
 };
 
-// Mapas de datos globales
-let equiposMap = new Map();
-let problemsMap = new Map(); 
+// ... (Mapas, elementos DOM, y utilidades) ...
 
-// Inicializa el Web Worker
-const problemWorker = new Worker('worker.js'); // <-- Nuevo
-let workerLoadPromise = null; // Para manejar la promesa de carga del worker
+// Inicializa el Web Worker UNA SOLA VEZ
+const dataWorker = new Worker('worker.js'); // Renombrado a dataWorker
 
-// --- Funciones de Utilidad (MANTENEMOS SOLO displayMessage y showLoading) ---
-// *************************************************************
-// * ELIMINA LAS FUNCIONES sanitizeKey, fetchSheet, loadSheetData *
-// * MÁNTENLAS EN worker.js, PERO QUÍTALAS DE AQUÍ.             *
-// *************************************************************
+// --- Funciones auxiliares para el Worker ---
+const createWorkerPromise = (sheetName) => {
+    return new Promise((resolve, reject) => {
+        // Listener temporal para la respuesta específica de esta hoja
+        const listener = (e) => {
+            if (e.data.sheetName !== sheetName) return; // Ignora respuestas de otras hojas
+            
+            dataWorker.removeEventListener('message', listener); // Elimina el listener después de usarlo
 
+            if (e.data.status === 'success') {
+                resolve(e.data.data);
+            } else {
+                reject(new Error(`Fallo en ${sheetName}: ${e.data.message}`));
+            }
+        };
 
-// --- Función fetchSheet y loadSheetData simplificadas para Hoja 1 ---
-// Usaremos una versión simplificada de fetch y load SOLO para Hoja 1.
-const sanitizeKey = (key) => { /* ... */ }; // Copia la función de worker.js
-const fetchSheet = async (url, sheetName) => { /* ... */ }; // Copia la función de worker.js
-const loadSheetData = (csvText, sheetName) => { /* ... */ }; // Copia la función de worker.js
+        dataWorker.addEventListener('message', listener);
+        
+        // Envía la petición al Worker
+        dataWorker.postMessage({ sheetName });
+    });
+};
 
 
 /**
- * Carga todas las bases de datos al iniciar.
+ * Carga todas las bases de datos al iniciar. (Totalmente Asíncrona)
  */
 const loadAllData = async () => {
     showLoading(true);
-    displayMessage('Cargando la base de datos de equipos e historial. Esto puede tardar...');
+    displayMessage('Cargando la base de datos (Ejecución Asíncrona). Esto puede tardar...');
 
     try {
-        // 1. Carga Hoja 1 (Equipos Base) - Carga rápida
-        const csv1 = await fetchSheet(sheetURLs['Hoja 1'], 'Hoja 1');
-        const data1 = loadSheetData(csv1, 'Hoja 1');
-        equiposMap = data1.data;
-        
+        // Carga y procesamiento de Hoja 1 y BBDD PM 4 en paralelo en el Worker
+        const [equiposData, problemsData] = await Promise.all([
+            createWorkerPromise('Hoja 1'),
+            createWorkerPromise('BBDD PM 4')
+        ]);
+
+        equiposMap = equiposData;
+        problemsMap = problemsData;
+
         if (equiposMap.size === 0) {
-             throw new Error('Hoja 1: No se pudo procesar ningún registro válido.');
+            throw new Error('Hoja 1: Se descargó, pero no contiene registros válidos. Verifica encabezado "serie".');
         }
 
-        // 2. Carga BBDD PM 4 (Historial de Problemas) - USANDO WEB WORKER
-        const workerPromise = new Promise((resolve, reject) => {
-            problemWorker.onmessage = (e) => {
-                if (e.data.status === 'success') {
-                    problemsMap = e.data.data;
-                    resolve(e.data.data.size);
-                } else {
-                    reject(new Error(`Fallo de Worker: ${e.data.message}`));
-                }
-            };
-            problemWorker.onerror = (e) => {
-                reject(new Error(`Error de Worker no manejado: ${e.message}`));
-            };
-            
-            // Inicia la tarea en el Worker
-            problemWorker.postMessage({ sheetName: 'BBDD PM 4' });
-        });
-        
-        const problemsCount = await workerPromise;
-
         // Éxito total
-        displayMessage(`✅ Datos cargados con éxito. Equipos (${equiposMap.size} series), Problemas (${problemsCount} series).`);
+        displayMessage(`✅ Datos cargados con éxito. Equipos (${equiposMap.size} series), Problemas (${problemsMap.size} series).`);
         
     } catch (error) {
-        // Maneja cualquier fallo (Hoja 1 o Worker)
+        // Fallo crítico
         console.error('[ERROR CRÍTICO] Fallo al cargar los datos:', error);
-        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}. **Intenta nuevamente.**`, true);
+        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}.`, true);
         validateButton.textContent = 'Error de Carga';
         validateButton.disabled = true; 
     } finally {
@@ -84,4 +74,4 @@ const loadAllData = async () => {
     }
 };
 
-// ... (El resto del código de inicialización: initialize, window.onload, etc. es el mismo) ...
+// ... (El resto del código es el mismo) ...
