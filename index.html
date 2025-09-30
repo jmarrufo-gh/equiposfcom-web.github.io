@@ -3,26 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta de Equipos - [FCOM]</title>
+    <title>Consulta de Equipos - FCOM</title>
+    <!-- Enlace al archivo de estilos CSS -->
     <link rel="stylesheet" href="style.css">
+    <!-- Importar fuente moderna -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Consulta de Información de Equipos</h1>
-            <p>Ingrese el número de serie para obtener los detalles.</p>
+            <h1>Consulta de Equipos y Historial de Problemas</h1>
+            <p>Ingrese el número de serie para obtener los datos base (Hoja 1) y el historial de problemas (BBDD PM 4).</p>
         </div>
 
         <div class="input-group">
-            <input type="text" id="serie-input" placeholder="Ej. MXL1234AB1" aria-label="Número de serie del equipo">
-            <button id="validate-button">Consultar</button>
+            <input type="text" id="serie-input" placeholder="Ej. 5CG9426Q2D (o TESTPROBLEMS para ver historial)" aria-label="Número de serie del equipo">
+            <!-- El botón comienza deshabilitado y se habilita con el JS -->
+            <button id="validate-button" disabled>Inicializando...</button>
         </div>
 
+        <!-- RESULTADO DE HOJA 1 (DETALLES Y TOTAL INCIDENTES) -->
         <div id="result" class="result-card">
+        </div>
+
+        <!-- TÍTULO Y CONTENEDOR DE LA TABLA DE CONTEOS -->
+        <div id="problems-list-title" style="display: none;">
+            Resumen Acumulativo de Problemas (NIVEL 2)
+        </div>
+        <div id="problems-container">
+            <div id="initial-message" style="text-align: center; color: var(--text-color-medium); padding: 40px;">
+                Cargando componentes. Por favor, espere.
             </div>
+        </div>
+
     </div>
 
+    <!-- Enlace al archivo de lógica JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
-
