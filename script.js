@@ -1,9 +1,9 @@
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
-// **IMPORTANTE:** Reemplaza 'YOUR_SHEET_ID_1' y 'YOUR_SHEET_ID_2' con los GID de tus hojas publicadas.
+// **IMPORTANTE:** Reemplaza los valores de las URLs de publicación con los enlaces CSV de TUS Google Sheets.
 const sheetURLs = {
-    // Hoja 1: Base de Equipos (Reemplaza con tu GID para la Hoja 1)
+    // Hoja 1: Base de Equipos (Debe ser el enlace CSV de tu hoja principal)
     'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?output=csv&gid=0',
-    // BBDD PM 4: Historial de Problemas (Reemplaza con tu GID para BBDD PM 4)
+    // BBDD PM 4: Historial de Problemas (Debe ser el enlace CSV de tu hoja de historial de problemas)
     'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?output=csv&gid=1086366835',
 };
 
@@ -34,7 +34,8 @@ const fetchSheet = async (url, sheetName) => {
     try {
         const response = await fetch(url);
         if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
+            // Error si el servidor responde pero el recurso no existe (ej: 404)
+            throw new Error(`Error HTTP: ${response.status} - Verifica si la hoja está PUBLICADA correctamente como CSV.`);
         }
         return await response.text();
     } catch (error) {
@@ -82,8 +83,10 @@ const loadSheetData = (csvText, sheetName) => {
         
         // Determinar el índice de la serie según el nombre de la hoja
         if (sheetName === 'Hoja 1') {
-            serieIndex = headers.indexOf('serie del equipo');
+            // Nombre de columna esperado en la Hoja 1
+            serieIndex = headers.indexOf('serie del equipo'); 
         } else if (sheetName === 'BBDD PM 4') {
+            // Nombre de columna esperado en la BBDD PM 4
             serieIndex = headers.indexOf('serie reportada');
             n2Index = headers.indexOf('nivel 2');
         }
@@ -97,7 +100,7 @@ const loadSheetData = (csvText, sheetName) => {
     }
 
     if (serieIndex === -1) {
-        console.error(`[ERROR CRÍTICO] Columna de Serie no encontrada en ${sheetName}.`);
+        console.error(`[ERROR CRÍTICO] Columna de Serie no encontrada en ${sheetName}. Verifica los encabezados.`);
         return { data: new Map(), headers: [] };
     }
     
@@ -198,7 +201,7 @@ const validateButton = document.getElementById('validate-button');
 const resultDiv = document.getElementById('result');
 const problemsContainer = document.getElementById('problems-container');
 const problemsListTitle = document.getElementById('problems-list-title');
-const initialMessage = document.getElementById('initial-message');
+const initialMessage = document.getElementById('initial-message'); // Este elemento no se usa, pero lo mantengo por si lo tienes en el HTML
 const loadingOverlay = document.getElementById('loading-overlay');
 
 
@@ -206,7 +209,9 @@ const loadingOverlay = document.getElementById('loading-overlay');
 
 const showLoading = (show) => {
     if (loadingOverlay) {
-        loadingOverlay.style.display = show ? 'flex' : 'none';
+        // Asegúrate de tener un div con id="loading-overlay" en tu HTML si quieres usar esto
+        // Por ahora, solo controlamos el botón y un mensaje inicial.
+        // loadingOverlay.style.display = show ? 'flex' : 'none'; 
         validateButton.disabled = show;
         validateButton.textContent = show ? 'Cargando Datos...' : 'Buscar Equipo';
     }
@@ -233,7 +238,8 @@ const renderEquipoDetails = (equipo, problemCount) => {
     const tipo = equipo['tipo'] || 'N/A';
     const modelo = equipo['modelo'] || 'N/A';
     const proyecto = equipo['proyecto'] || 'N/A';
-    const usuarioactual = equipo['usuario actual'] || 'N/A';
+    // Columna 'usuario actual' de Hoja 1
+    const usuarioactual = equipo['usuario actual'] || 'N/A'; 
     const serie = equipo['serie del equipo'] || 'N/A';
 
     const html = `
@@ -362,15 +368,21 @@ const loadAllData = async () => {
         problemsMap = data2.data;
 
         displayMessage('<div style="text-align: center; color: var(--text-color-medium); padding: 20px;">Datos cargados con éxito. Ingrese un número de serie y presione "Buscar Equipo".</div>');
-        console.log('[ÉXITO] Todas las bases de datos cargadas y listas para la consulta.');
+        console.log(`[ÉXITO] Todas las bases de datos cargadas y listas para la consulta. Series de equipo cargadas: ${equiposMap.size}`);
 
     } catch (e) {
         // El error ya se muestra en fetchSheet, solo detenemos el proceso
         console.error("Fallo la carga de datos inicial. La aplicación no puede funcionar.", e);
+        // Mensaje de error más específico para el usuario
+        displayMessage('⚠️ **FALLO CRÍTICO DE CONEXIÓN**. La aplicación no pudo cargar los datos. Por favor, verifica que tus hojas de Google estén **PUBLICADAS como CSV** y que las URLs en el `script.js` sean correctas.', true);
         validateButton.textContent = 'Error de Carga';
     } finally {
         showLoading(false);
-        validateButton.disabled = false;
+        // Si la carga falla, el botón de búsqueda sigue deshabilitado por el mensaje de error.
+        if (equiposMap.size > 0) {
+             validateButton.disabled = false;
+             validateButton.textContent = 'Buscar Equipo';
+        }
     }
 }
 
@@ -380,13 +392,14 @@ const loadAllData = async () => {
 const initialize = () => {
     // Configurar el botón de búsqueda
     validateButton.textContent = 'Buscar Equipo';
+    validateButton.disabled = true; // Deshabilitado hasta que se carguen los datos
 
     // Listener para el botón de búsqueda
     validateButton.addEventListener('click', handleSearch);
 
     // Listener para la tecla Enter en el input
     serieInput.addEventListener('keyup', (e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !validateButton.disabled) {
             handleSearch();
         }
     });
