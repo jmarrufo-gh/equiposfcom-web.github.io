@@ -1,25 +1,49 @@
-// script.js
+// script.js (FINAL)
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
-// Las URLs solo se necesitan para la inicialización del Worker, pero las mantenemos aquí para claridad.
 const sheetURLs = { 
-    'Hoja 1': '...', 
-    'BBDD PM 4': '...', 
+    'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
+    'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv', 
 };
 
-// ... (Mapas, elementos DOM, y utilidades) ...
+// Mapas de datos globales
+let equiposMap = new Map();
+let problemsMap = new Map(); 
 
-// Inicializa el Web Worker UNA SOLA VEZ
-const dataWorker = new Worker('worker.js'); // Renombrado a dataWorker
+// Elementos del DOM
+const serieInput = document.getElementById('serie-input');
+const validateButton = document.getElementById('validate-button');
+const resultDiv = document.getElementById('result');
+const problemsContainer = document.getElementById('problems-container');
+const problemsListTitle = document.getElementById('problems-list-title');
 
-// --- Funciones auxiliares para el Worker ---
+// Inicializa el Web Worker
+let dataWorker = null; // Se inicializará en window.onload
+
+// --- Funciones de Utilidad ---
+
+// Estas utilidades son solo para la interfaz, el worker tiene sus propias copias
+const sanitizeKey = (key) => { if (typeof key !== 'string') return ''; return key.trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase(); };
+const displayMessage = (message, isError = false) => {
+    resultDiv.innerHTML = `<div class="result-item ${isError ? 'error-message' : ''}">${message}</div>`;
+    problemsContainer.innerHTML = '';
+    problemsListTitle.style.display = 'none';
+};
+const showLoading = (show) => {
+    validateButton.disabled = show;
+    validateButton.textContent = show ? 'Cargando Datos...' : 'Buscar Equipo';
+};
+
+// --- Lógica del Worker (Comunicación) ---
+
 const createWorkerPromise = (sheetName) => {
     return new Promise((resolve, reject) => {
-        // Listener temporal para la respuesta específica de esta hoja
+        // Listener que se ejecuta cuando el Worker responde
         const listener = (e) => {
-            if (e.data.sheetName !== sheetName) return; // Ignora respuestas de otras hojas
+            if (e.data.sheetName !== sheetName) return; 
             
-            dataWorker.removeEventListener('message', listener); // Elimina el listener después de usarlo
+            // MUY IMPORTANTE: Desconecta el listener para evitar conflictos
+            dataWorker.removeEventListener('message', listener); 
 
             if (e.data.status === 'success') {
                 resolve(e.data.data);
@@ -30,10 +54,18 @@ const createWorkerPromise = (sheetName) => {
 
         dataWorker.addEventListener('message', listener);
         
-        // Envía la petición al Worker
+        // Inicia la tarea en el Worker
         dataWorker.postMessage({ sheetName });
     });
 };
+
+// --- Lógica Principal ---
+
+const getEquipoBySerie = (serie) => { /* ... */ }; // (El resto de funciones de búsqueda son las mismas)
+const getProblemsBySerie = (serie) => { /* ... */ };
+const renderEquipoDetails = (equipo, problemCount) => { /* ... */ };
+const renderProblemsTable = (problems) => { /* ... */ };
+const handleSearch = async () => { /* ... */ };
 
 
 /**
@@ -44,7 +76,7 @@ const loadAllData = async () => {
     displayMessage('Cargando la base de datos (Ejecución Asíncrona). Esto puede tardar...');
 
     try {
-        // Carga y procesamiento de Hoja 1 y BBDD PM 4 en paralelo en el Worker
+        // Carga y procesamiento de Hoja 1 y BBDD PM 4 en paralelo
         const [equiposData, problemsData] = await Promise.all([
             createWorkerPromise('Hoja 1'),
             createWorkerPromise('BBDD PM 4')
@@ -63,7 +95,7 @@ const loadAllData = async () => {
     } catch (error) {
         // Fallo crítico
         console.error('[ERROR CRÍTICO] Fallo al cargar los datos:', error);
-        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}.`, true);
+        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}. Verifica la Consola (F12) para detalles.`, true);
         validateButton.textContent = 'Error de Carga';
         validateButton.disabled = true; 
     } finally {
@@ -74,4 +106,33 @@ const loadAllData = async () => {
     }
 };
 
-// ... (El resto del código es el mismo) ...
+// --- Inicialización ---
+
+const initialize = () => {
+    // 1. Inicializa el Worker AHORA
+    try {
+        dataWorker = new Worker('worker.js');
+    } catch(e) {
+        displayMessage(`FATAL: No se pudo crear el Worker. Asegúrate que 'worker.js' existe y que estás usando Live Server.`, true);
+        validateButton.textContent = 'Error FATAL';
+        validateButton.disabled = true;
+        console.error(e);
+        return;
+    }
+    
+    validateButton.textContent = 'Inicializando...';
+    validateButton.disabled = true;
+
+    validateButton.addEventListener('click', handleSearch);
+    serieInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter' && !validateButton.disabled) {
+            handleSearch();
+        }
+    });
+
+    console.log('[DIAGNÓSTICO] Iniciando la aplicación...');
+    loadAllData();
+};
+
+window.onload = initialize;
+
