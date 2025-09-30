@@ -81,6 +81,10 @@ const loadSheetData = (csvText, sheetName) => {
     if (lines.length > 0) {
         headers = parseLine(lines[0], separator).map(h => h.toLowerCase().trim());
         
+        // === NUEVA LÍNEA DE DIAGNÓSTICO CLAVE ===
+        console.log(`[DIAGNÓSTICO DE HEADERS LEÍDOS] ${sheetName} (Separador: '${separator}'):`, headers); 
+        // =======================================
+
         // Determinar el índice de la serie según el nombre de la hoja
         if (sheetName === 'Hoja 1') {
             // Nombre de columna esperado en la Hoja 1
@@ -93,14 +97,14 @@ const loadSheetData = (csvText, sheetName) => {
 
         // Diagnóstico crítico
         console.log(`--- DIAGNÓSTICO DE COLUMNAS: ${sheetName} ---`);
-        console.log(`[DIAGNÓSTICO CRÍTICO - COLUMNA SERIE] Nombre detectado: '${headers[serieIndex]}' (Índice: ${serieIndex}).`);
+        console.log(`[DIAGNÓSTICO CRÍTICO - COLUMNA SERIE] Nombre esperado: 'serie del equipo' o 'serie reportada'. Nombre detectado: '${headers[serieIndex]}' (Índice: ${serieIndex}).`);
         if (sheetName === 'BBDD PM 4') {
-            console.log(`[DIAGNÓSTICO CRÍTICO - COLUMNA NIVEL 2] Nombre detectado: '${headers[n2Index]}' (Índice: ${n2Index}).`);
+            console.log(`[DIAGNÓSTICO CRÍTICO - COLUMNA NIVEL 2] Nombre esperado: 'nivel 2'. Nombre detectado: '${headers[n2Index]}' (Índice: ${n2Index}).`);
         }
     }
 
     if (serieIndex === -1) {
-        console.error(`[ERROR CRÍTICO] Columna de Serie no encontrada en ${sheetName}. Verifica los encabezados.`);
+        console.error(`[ERROR CRÍTICO] Columna de Serie no encontrada en ${sheetName}. Revise que el encabezado sea exactamente 'serie del equipo' o 'serie reportada' (en minúsculas y sin tildes).`);
         return { data: new Map(), headers: [] };
     }
     
@@ -131,7 +135,7 @@ const loadSheetData = (csvText, sheetName) => {
             if (serieLimpia.length > 0) {
                 // Diagnóstico para las primeras 5 filas
                 if (usefulRecords < 5) {
-                    console.log(`[DIAGNÓSTICO CRÍTICO - SERIE CARGADA] Fila ${usefulRecords + 1}: Original='${serieOriginal}' -> Limpia='${serieLimpia}'`);
+                    // console.log(`[DIAGNÓSTICO CRÍTICO - SERIE CARGADA] Fila ${usefulRecords + 1}: Original='${serieOriginal}' -> Limpia='${serieLimpia}'`);
                 }
 
                 const record = {};
@@ -151,11 +155,11 @@ const loadSheetData = (csvText, sheetName) => {
                 }
                 usefulRecords++;
             } else {
-                console.warn(`[DIAGNÓSTICO BBDD PM 4] Fila omitida. Columna de serie vacía o nula después de la limpieza.`, fields);
+                // console.warn(`[DIAGNÓSTICO BBDD PM 4] Fila omitida. Columna de serie vacía o nula después de la limpieza.`, fields);
             }
         } else if (i < linesToProcess.length) {
              // Esto ocurre si la última línea no pudo coserse completamente o si el CSV está muy mal.
-             console.warn(`[ADVERTENCIA] Fila omitida debido a formato incorrecto o incompleto (Campos: ${fields.length} vs Esperado: ${expectedCols}).`, currentLine);
+             // console.warn(`[ADVERTENCIA] Fila omitida debido a formato incorrecto o incompleto (Campos: ${fields.length} vs Esperado: ${expectedCols}).`, currentLine);
         }
         i++; // Pasar a la siguiente línea
     }
@@ -326,7 +330,7 @@ const handleSearch = async () => {
         const equipo = getEquipoBySerie(serie);
 
         if (!equipo) {
-            displayMessage(`Serie "${serie}" no encontrada en la Base de Equipos (Hoja 1).`, true);
+            displayMessage(`Serie **"${serie}"** no encontrada en la **Base de Equipos (Hoja 1)**. Verifica que la serie exista y que la Hoja 1 esté cargada (revisa la consola).`, true);
             return;
         }
 
