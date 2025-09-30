@@ -1,17 +1,16 @@
-// script.js (VERSIÓN SIN PAPAPARSE - SOLO HOJA 1)
+// script.js (VERSIÓN FINAL CON CRUCE DE DATOS Y REPORTE DE PROBLEMAS)
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
     // URL DE HOJA 1 (CORRECTA CSV)
     'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
     
-    // URL DE BBDD PM 4 (CORREGIDA CSV, PERO IGNORADA EN LA CARGA)
+    // URL DE BBDD PM 4 (CORREGIDA CSV)
     'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
 };
 
-// Mapas de datos globales
+// Mapas de datos globales (Solo Hoja 1 se carga al inicio)
 let equiposMap = new Map();
-let problemsMap = new Map(); 
 
 // Elementos del DOM
 const serieInput = document.getElementById('serie-input');
@@ -33,9 +32,9 @@ const displayMessage = (message, isError = false) => {
     problemsListTitle.style.display = 'none';
 };
 
-const showLoading = (show) => {
+const showLoading = (show, message = 'Cargando Datos...') => {
     validateButton.disabled = show;
-    validateButton.textContent = show ? 'Cargando Datos...' : 'Buscar Equipo';
+    validateButton.textContent = show ? message : 'Buscar Equipo';
 };
 
 const fetchSheet = async (url, sheetName) => {
@@ -67,19 +66,17 @@ const fetchSheet = async (url, sheetName) => {
 
 /**
  * Función manual para parsear CSV (Sin PapaParse)
- * Asume que los datos están limpios y usa ',' como separador (típico de Google Sheets).
  */
 const parseCSV = (csvText) => {
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) return { data: [], headers: [] };
 
-    // Usa la primera línea para los encabezados
     const headers = lines[0].split(',').map(h => h.trim());
     const data = [];
 
     for (let i = 1; i < lines.length; i++) {
         const values = lines[i].split(',');
-        if (values.length !== headers.length) continue; // Ignorar líneas con formato incorrecto
+        if (values.length !== headers.length) continue; 
 
         const obj = {};
         headers.forEach((header, index) => {
@@ -91,121 +88,107 @@ const parseCSV = (csvText) => {
     return { data, headers };
 };
 
-// --- Funciones de Búsqueda y Renderizado (SIN CAMBIOS) ---
 
-const getEquipoBySerie = (serie) => {
-    const key = sanitizeKey(serie);
-    return equiposMap.get(key) || null;
-};
-const getProblemsBySerie = (serie) => {
-    // Siempre devuelve vacío en esta versión de aislamiento
-    return []; 
-};
+// --- Lógica de Procesamiento y Cruce ---
 
-const renderEquipoDetails = (equipo, problemCount) => {
-    // Usamos nombres de columna flexibles para CSV/PapaParse
-    const tipo = equipo['Tipo'] || equipo['tipo'] || 'N/A';
-    const modelo = equipo['Modelo'] || equipo['modelo'] || 'N/A';
-    const proyecto = equipo['Proyecto'] || equipo['proyecto'] || 'N/A';
-    const usuarioactual = equipo['Usuario Actual'] || equipo['usuario actual'] || 'N/A';
-    const serie = equipo['Serie'] || equipo['serie'] || 'N/A'; 
+/**
+ * Filtra los problemas de la BBDD PM 4 por la serie consultada y los agrupa por "NIVEL 2".
+ * @param {string} serie La serie a buscar (ya saneada).
+ * @param {Array<Object>} problemsData Datos completos de la BBDD PM 4.
+ * @param {string} serieHeader Nombre de la columna de serie en la BBDD PM 4 (Ej: 'SERIE REPORTADA').
+ * @param {string} nivelHeader Nombre de la columna de nivel de problema (Ej: 'NIVEL 2').
+ * @returns {Map<string, number>} Mapa con el recuento de problemas por NIVEL 2.
+ */
+const getProblemsBySerieAndCount = (serie, problemsData, serieHeader, nivelHeader) => {
+    const problemCounts = new Map();
+    let totalProblems = 0;
 
-    const html = `
-        <div class="result-item main-serie">
-            <strong>NÚMERO DE SERIE CONSULTADO</strong>
-            <span>${serie}</span>
-        </div>
-        <div class="result-item highlight"><strong>Tipo:</strong> <span>${tipo}</span></div>
-        <div class="result-item highlight"><strong>Modelo:</strong> <span>${modelo}</span></div>
-        <div class="result-item"><strong>Proyecto:</strong> <span>${proyecto}</span></div>
-        <div class="result-item"><strong>Usuario Asignado:</strong> <span>${usuarioactual}</span></div>
-        <div class="result-item total-incidents">
-            <strong>REGISTROS DE PROBLEMAS (BBDD PM 4):</strong>
-            <span style="color: red; font-weight: bold;">OMITIDOS (Prueba de carga)</span>
-        </div>
-    `;
-    resultDiv.innerHTML = html;
+    for (const item of problemsData) {
+        // Cruce: Hoja 1 (serie saneada) vs BBDD PM 4 (columna SERIE REPORTADA)
+        const reportedSerie = sanitizeKey(item[serieHeader]);
+
+        if (reportedSerie === serie) {
+            totalProblems++;
+            const nivel2 = item[nivelHeader] ? item[nivelHeader].trim() : 'SIN NIVEL 2';
+
+            if (problemCounts.has(nivel2)) {
+                problemCounts.set(nivel2, problemCounts.get(nivel2) + 1);
+            } else {
+                problemCounts.set(nivel2, 1);
+            }
+        }
+    }
+    return { problemCounts, totalProblems };
 };
 
-const renderProblemsTable = (problems) => {
-    problemsContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-medium); padding: 30px;">Historial de problemas omitido en esta prueba de carga.</div>';
-    problemsListTitle.style.display = 'none';
+
+// --- Funciones de Renderizado ---
+
+const renderProblemsTable = (problemCounts, totalProblems) => {
+    problemsListTitle.style.display = 'block';
+
+    if (totalProblems === 0) {
+        problemsContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-medium); padding: 15px;">No se encontraron registros de problemas para esta serie.</div>';
+        return;
+    }
+
+    let tableHtml = `<table class="count-table">
+                        <thead>
+                            <tr>
+                                <th>NIVEL 2 (Tipo de Problema)</th>
+                                <th>Recuento</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+    // Ordenar los problemas por recuento (descendente)
+    const sortedCounts = [...problemCounts.entries()].sort((a, b) => b[1] - a[1]);
+
+    for (const [nivel, count] of sortedCounts) {
+        tableHtml += `<tr><td>${nivel}</td><td>${count}</td></tr>`;
+    }
+
+    tableHtml += `</tbody></table>`;
+    problemsContainer.innerHTML = tableHtml;
 };
+
 
 // --- Lógica Principal de Carga y Búsqueda ---
 
-const handleSearch = async () => {
-    const serie = serieInput.value.trim();
-    if (serie.length < 5) {
-        displayMessage('Por favor, ingresa un número de serie válido (mínimo 5 caracteres).', true);
-        return;
-    }
-    showLoading(true);
-    displayMessage('<div style="text-align:center;">Realizando búsqueda en bases de datos...</div>');
-
-    try {
-        const equipo = getEquipoBySerie(serie);
-        if (!equipo) {
-            displayMessage(`⚠️ Serie "${serie}" no encontrada en la Base de Equipos (Hoja 1). Verifica que la serie exista.`, true);
-            return;
-        }
-
-        const problems = getProblemsBySerie(serie); 
-        renderEquipoDetails(equipo, problems.length);
-        renderProblemsTable(problems);
-
-    } catch (error) {
-        console.error("Error al realizar la consulta:", error);
-        displayMessage(`Error al realizar la consulta: ${error.message}. Revisa la consola para más detalles.`, true);
-    } finally {
-        showLoading(false);
-    }
-};
-
 /**
- * Carga y Parsea solo la Hoja 1 (Sin PapaParse, con parser manual).
+ * Carga solo la Hoja 1 al inicio para inicializar equiposMap.
  */
-const loadAllData = async () => {
+const loadInitialData = async () => {
     displayMessage('Cargando y analizando Hoja 1 (Base de Equipos).');
-    showLoading(true);
+    showLoading(true, 'Cargando Estructura...');
 
     try {
-        // 1. DESCARGA - SOLO HOJA 1
-        const [csv1] = await Promise.all([
-            fetchSheet(sheetURLs['Hoja 1'], 'Hoja 1'),
-        ]);
-        
-        // 2. PARSING de Hoja 1 con parser manual
+        const csv1 = await fetchSheet(sheetURLs['Hoja 1'], 'Hoja 1');
         const result1 = parseCSV(csv1); 
-        
-        // --- CONVERSIÓN DE DATOS (LÓGICA SÚPER-FLEXIBLE) ---
         
         equiposMap = new Map();
         
-        // 1. Encuentra el nombre real del encabezado de serie (ignora mayús/minús y espacios)
+        // Lógica Súper-Flexible para encontrar el encabezado de serie en Hoja 1
         const headers = result1.headers || [];
-        // Busca el encabezado que contenga 'Serie' o 'SERIAL' (comprueba minúsculas)
         const serieHeader = headers.find(h => h.toLowerCase().includes('serie') || h.toLowerCase().includes('serial'));
 
         if (!serieHeader) {
-            console.error('No se encontró la columna de serie en la Hoja 1. Encabezados detectados:', headers);
             throw new Error('Hoja 1: No se encontró la columna de serie. Revisa que el encabezado contenga "serie" o "serial".');
         }
 
-        // 2. Mapea usando el nombre de encabezado encontrado
         result1.data.forEach(item => {
             const serieLimpia = sanitizeKey(item[serieHeader]); 
             if (serieLimpia.length > 0) equiposMap.set(serieLimpia, item);
         });
         
         if (equiposMap.size === 0) {
-            throw new Error('Hoja 1: No se pudo procesar ningún registro válido. Verifica el contenido de la hoja (que no esté vacía).');
+            throw new Error('Hoja 1: No se pudo procesar ningún registro válido.');
         }
 
-        displayMessage(`✅ ÉXITO. Datos de EQUIPOS cargados (${equiposMap.size} series). Historial de Problemas OMITIDO. Inicia la búsqueda.`);
+        displayMessage(`✅ ÉXITO. Datos de EQUIPOS cargados (${equiposMap.size} series). Ingresa una serie para buscar.`);
         
     } catch (error) {
-        console.error('[ERROR CRÍTICO] Fallo al cargar los datos:', error);
+        console.error('[ERROR CRÍTICO] Fallo al cargar los datos iniciales:', error);
         displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}.`, true);
         validateButton.textContent = 'Error de Carga';
         validateButton.disabled = true; 
@@ -214,6 +197,72 @@ const loadAllData = async () => {
             validateButton.disabled = false;
             validateButton.textContent = 'Buscar Equipo';
         }
+    }
+};
+
+
+/**
+ * Maneja la búsqueda, descargando y procesando la BBDD PM 4 dinámicamente.
+ */
+const handleSearch = async () => {
+    const serie = serieInput.value.trim();
+    if (serie.length < 5) {
+        displayMessage('Por favor, ingresa un número de serie válido (mínimo 5 caracteres).', true);
+        return;
+    }
+    
+    // 1. Obtener datos de Hoja 1 (Ya cargados)
+    const equipo = getEquipoBySerie(serie);
+    if (!equipo) {
+        displayMessage(`⚠️ Serie "${serie}" no encontrada en la Base de Equipos (Hoja 1). Verifica la serie.`, true);
+        return;
+    }
+    
+    // 2. Iniciar búsqueda
+    // Muestra un mensaje de advertencia por la posible congelación.
+    showLoading(true, 'Cargando BBDD de Problemas... (Puede tardar/congelarse)');
+    
+    try {
+        // --- PROCESO DINÁMICO DE BBDD PM 4 ---
+        
+        // a) Descarga (Punto de posible CORS/Red)
+        const csv2 = await fetchSheet(sheetURLs['BBDD PM 4'], 'BBDD PM 4');
+        
+        // b) Parseo (Punto de posible Congelamiento/Stack Overflow si es muy grande)
+        const result2 = parseCSV(csv2);
+        
+        // c) Definición de encabezados de BBDD PM 4
+        const headers2 = result2.headers || [];
+        // CRUCE: Hoja 1 -> BBDD PM 4 ("SERIE REPORTADA")
+        const pmSerieHeader = headers2.find(h => h.toLowerCase().includes('serie reportada')); 
+        // GRÁFICO: BBDD PM 4 ("NIVEL 2")
+        const pmNivel2Header = headers2.find(h => h.toLowerCase().includes('nivel 2')); 
+
+        if (!pmSerieHeader || !pmNivel2Header) {
+             throw new Error('BBDD PM 4: Faltan las columnas "SERIE REPORTADA" o "NIVEL 2".');
+        }
+
+        // d) Cruce y Conteo
+        const saneadoSerie = sanitizeKey(serie);
+        const { problemCounts, totalProblems } = getProblemsBySerieAndCount(
+            saneadoSerie, 
+            result2.data, 
+            pmSerieHeader, 
+            pmNivel2Header
+        );
+
+        // 3. Renderizar Resultados
+        renderEquipoDetails(equipo, totalProblems);
+        renderProblemsTable(problemCounts, totalProblems);
+
+    } catch (error) {
+        console.error("Error al buscar en BBDD PM 4:", error);
+        // Mostrar Hoja 1, pero reportar fallo de BBDD PM 4
+        renderEquipoDetails(equipo, 0); 
+        problemsContainer.innerHTML = `<div class="error-message">⚠️ Error al cargar la BBDD PM 4: ${error.message}.</div>`;
+        problemsListTitle.style.display = 'block';
+    } finally {
+        showLoading(false);
     }
 };
 
@@ -230,7 +279,7 @@ const initialize = () => {
         }
     });
 
-    loadAllData();
+    loadInitialData(); // Solo carga Hoja 1 al inicio
 };
 
 window.onload = initialize;
