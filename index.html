@@ -5,184 +5,367 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consulta de Equipos e Historial</title>
     <style>
-        /* Estilos CSS (Usa tu CSS original aquí) */
         :root {
             --bg-color: #1a1a2e;
-            --card-color: #162447;
-            --primary-color: #e43f5a;
-            --secondary-color: #ff9a76;
-            --text-color-light: #f0f0f0;
-            --text-color-medium: #b4b4b4;
+            --card-bg: #2c2c4d;
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-color-light: #ffffff;
+            --text-color-medium: #b3b3e0;
+            --error-color: #f87171;
+            --border-color: #3f3f6d;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color-light);
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
+            padding: 2rem;
             margin: 0;
-            padding: 20px;
         }
 
         .container {
             width: 100%;
-            max-width: 700px;
-            padding: 30px;
-            background-color: var(--card-color);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
         }
 
         h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
             color: var(--primary-color);
             text-align: center;
-            margin-bottom: 5px;
-            font-size: 1.8em;
+            margin-bottom: 0.5rem;
         }
 
         p {
             text-align: center;
             color: var(--text-color-medium);
-            margin-bottom: 25px;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
         }
 
-        .input-group {
+        .search-section {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
 
         #serie-input {
             flex-grow: 1;
-            padding: 12px 15px;
-            border: 2px solid var(--primary-color);
-            border-radius: 8px;
-            font-size: 1em;
-            background-color: var(--card-color);
+            padding: 0.75rem 1.25rem;
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            background-color: #3f3f6d;
             color: var(--text-color-light);
-            transition: border-color 0.3s;
+            font-size: 1rem;
+            transition: box-shadow 0.3s, border-color 0.3s;
         }
 
         #serie-input:focus {
-            border-color: var(--secondary-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4);
             outline: none;
         }
 
         #validate-button {
-            padding: 12px 20px;
+            padding: 0.75rem 1.5rem;
             background-color: var(--primary-color);
             color: var(--text-color-light);
             border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: bold;
+            border-radius: 9999px;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
+            transition: background-color 0.2s ease, transform 0.1s ease;
         }
 
         #validate-button:hover:not(:disabled) {
-            background-color: #c9344f;
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
         }
 
         #validate-button:disabled {
-            background-color: #555;
+            background-color: #4f46e580;
             cursor: not-allowed;
         }
-        
-        /* Resultados y Mensajes */
-        #result, #problems-container {
-            border-top: 1px solid #2d3b5b;
-            padding-top: 20px;
-            margin-top: 20px;
-        }
-        
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px dashed #3a4768;
-            font-size: 0.95em;
+
+        #result {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            background-color: #1a1a2e;
+            border-radius: 0.75rem;
         }
 
-        .result-item:last-child {
-            border-bottom: none;
+        .result-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            display: flex;
+            flex-direction: column;
         }
 
         .result-item strong {
-            color: var(--text-color-light);
-            font-weight: 600;
+            color: var(--text-color-medium);
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 0.2rem;
         }
 
         .result-item span {
-            color: var(--text-color-medium);
-            text-align: right;
-        }
-
-        .highlight strong, .highlight span {
-            color: var(--secondary-color);
-            font-weight: bold;
+            font-weight: 700;
+            color: var(--text-color-light);
         }
 
         .main-serie {
-            font-size: 1.1em;
-            padding: 12px 0;
-            border-bottom: 2px solid var(--primary-color) !important;
-            margin-bottom: 15px;
+            grid-column: 1 / -1;
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
-        
+
         .main-serie span {
+            font-size: 1.5rem;
             color: var(--primary-color);
-            font-size: 1.1em;
-            font-weight: bold;
         }
-        
+
+        .highlight {
+            background-color: #3f3f6d80;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+        }
+
+        /* NUEVO: Estilo para el contenedor del gráfico de incidentes */
+        .total-incidents {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #6366f120, #8b5cf620);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .total-incidents::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(99, 102, 241, 0.1), transparent);
+            pointer-events: none;
+        }
+
         .total-incidents strong {
-             color: var(--primary-color);
-        }
-        
-        .error-message {
-            background-color: #4a2830;
-            border: 1px solid var(--primary-color);
-            padding: 15px;
-            border-radius: 8px;
             color: var(--text-color-light);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            z-index: 1;
+        }
+
+        /* NUEVO: Contenedor del gráfico circular */
+        .incidents-chart {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .chart-ring {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--primary-color) 0deg,
+                var(--primary-color) var(--angle, 0deg),
+                #3f3f6d var(--angle, 0deg),
+                #3f3f6d 360deg
+            );
+            position: absolute;
+            transition: transform 0.3s ease;
+            animation: rotateIn 0.8s ease-out;
+        }
+
+        @keyframes rotateIn {
+            from {
+                transform: rotate(-90deg) scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: rotate(0deg) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .incidents-chart:hover .chart-ring {
+            transform: scale(1.05);
+        }
+
+        .chart-inner {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--card-bg);
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .chart-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            line-height: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .incidents-chart:hover .chart-value {
+            transform: scale(1.1);
+        }
+
+        .chart-label {
+            font-size: 0.7rem;
+            color: var(--text-color-medium);
+            text-transform: uppercase;
+            margin-top: 0.3rem;
+        }
+
+        /* Tooltip que aparece al hacer hover */
+        .chart-tooltip {
+            position: absolute;
+            top: -40px;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: var(--text-color-light);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+
+        .incidents-chart:hover .chart-tooltip {
+            opacity: 1;
+        }
+
+        .error-message {
+            grid-column: 1 / -1;
+            background-color: #f8717120;
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+            padding: 1rem;
+            border-radius: 0.5rem;
             text-align: center;
         }
 
-        /* Problemas (Tabla) */
         #problems-list-title {
-            text-align: center;
-            color: var(--secondary-color);
-            margin: 25px 0 15px 0;
-            font-size: 1.2em;
-            font-weight: bold;
-            display: none; /* Oculto por defecto */
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-color-light);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            display: none;
         }
-        
+
         .count-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            border-radius: 0.5rem;
+            overflow: hidden;
         }
-        
-        .count-table th, .count-table td {
-            padding: 10px;
+
+        .count-table thead th {
+            background-color: var(--primary-color);
+            color: var(--text-color-light);
+            padding: 1rem;
             text-align: left;
-            border-bottom: 1px solid #3a4768;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
         }
-        
-        .count-table th {
-            background-color: #2d3b5b;
-            color: var(--secondary-color);
-            font-weight: 600;
+
+        .count-table tbody tr {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s ease;
         }
-        
-        .count-table td:last-child {
-            text-align: right;
-            font-weight: bold;
+
+        .count-table tbody tr:hover {
+            background-color: #3f3f6d;
+        }
+
+        .count-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            color: var(--text-color-light);
+            font-size: 0.95rem;
+        }
+
+        .count-table tbody td:last-child {
+            text-align: center;
+            font-weight: 800;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+            .container {
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .search-section {
+                flex-direction: column;
+            }
+            #validate-button {
+                width: 100%;
+            }
+            .incidents-chart {
+                width: 120px;
+                height: 120px;
+            }
+            .chart-ring {
+                width: 120px;
+                height: 120px;
+            }
+            .chart-inner {
+                width: 85px;
+                height: 85px;
+            }
         }
     </style>
 </head>
@@ -191,24 +374,256 @@
         <h1>Consulta de Equipos y Historial de Problemas</h1>
         <p>Ingrese el número de serie para obtener los datos base (Hoja 1) y el historial de problemas (BBDD PM 4).</p>
 
-        <div class="input-group">
+        <div class="search-section">
             <input type="text" id="serie-input" placeholder="Ej: 5CG9426Q2D (o TESTPROBLEMS para ver historial)">
             <button id="validate-button">Inicializando...</button>
         </div>
 
-        <div id="result">
-            </div>
+        <div id="result"></div>
 
         <h2 id="problems-list-title">Historial de Registros de Problemas (Nivel 2)</h2>
-        <div id="problems-container">
-            </div>
+        <div id="problems-container"></div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Tu código JavaScript original aquí
+        const sheetURLs = {
+            'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
+            'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
+        };
+
+        let equiposMap = new Map();
+        const serieInput = document.getElementById('serie-input');
+        const validateButton = document.getElementById('validate-button');
+        const resultDiv = document.getElementById('result');
+        const problemsContainer = document.getElementById('problems-container');
+        const problemsListTitle = document.getElementById('problems-list-title');
+
+        const sanitizeKey = (key) => {
+            if (typeof key !== 'string') return '';
+            return key.trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        };
+
+        const displayMessage = (message, isError = false) => {
+            resultDiv.innerHTML = `<div class="result-item ${isError ? 'error-message' : ''}">${message}</div>`;
+            problemsContainer.innerHTML = '';
+            problemsListTitle.style.display = 'none';
+        };
+
+        const showLoading = (show, message = 'Cargando Datos...') => {
+            validateButton.disabled = show;
+            validateButton.textContent = show ? message : 'Buscar Equipo';
+        };
+
+        const fetchSheet = async (url, sheetName) => {
+            const TIMEOUT_MS = 60000;
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                let text = await response.text();
+                if (!text || text.length < 10) throw new Error(`La hoja está vacía o no contiene datos válidos.`);
+                text = text.replace(/\r\n|\r/g, '\n');
+                if (sheetName === 'BBDD PM 4') {
+                    text = text.replace(/"([^"]*)"/g, (match, p1) => {
+                        return `"${p1.replace(/\n/g, ' ').replace(/\t/g, ' ')}"`;
+                    });
+                    text = text.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
+                }
+                return text;
+            } catch (error) {
+                let errorMessage = error.message || 'Error desconocido.';
+                if (error.name === 'AbortError') errorMessage = `Tiempo de espera agotado (${TIMEOUT_MS/1000}s).`;
+                throw new Error(`Error de conexión al intentar cargar "${sheetName}". ${errorMessage}.`);
+            }
+        };
+
+        const parseCSV = (csvText) => {
+            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            if (lines.length === 0) return { data: [], headers: [] };
+            const CSV_SPLIT_REGEX = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+            const headers = lines[0].split(CSV_SPLIT_REGEX).map(h => h.trim().replace(/"/g, ''));
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(CSV_SPLIT_REGEX);
+                if (values.length !== headers.length) continue;
+                const obj = {};
+                headers.forEach((header, index) => {
+                    let value = values[index] ? values[index].trim() : '';
+                    if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+                    value = value.replace(/""/g, '"');
+                    obj[header] = value;
+                });
+                data.push(obj);
+            }
+            return { data, headers };
+        };
+
+        const getEquipoBySerie = (serie) => {
+            const key = sanitizeKey(serie);
+            return equiposMap.get(key) || null;
+        };
+
+        const getProblemsBySerieAndCount = (serie, problemsData, serieHeader, nivelHeader) => {
+            const problemCounts = new Map();
+            let totalProblems = 0;
+            for (const item of problemsData) {
+                const reportedSerie = sanitizeKey(item[serieHeader]);
+                if (reportedSerie === serie) {
+                    totalProblems++;
+                    const nivel2 = item[nivelHeader] ? item[nivelHeader].trim() : 'SIN NIVEL 2';
+                    if (problemCounts.has(nivel2)) {
+                        problemCounts.set(nivel2, problemCounts.get(nivel2) + 1);
+                    } else {
+                        problemCounts.set(nivel2, 1);
+                    }
+                }
+            }
+            return { problemCounts, totalProblems };
+        };
+
+        const renderEquipoDetails = (equipo, totalProblems) => {
+            const tipo = equipo['Tipo'] || equipo['tipo'] || 'N/A';
+            const modelo = equipo['Modelo'] || equipo['modelo'] || 'N/A';
+            const proyecto = equipo['Proyecto'] || equipo['proyecto'] || 'N/A';
+            const usuarioactual = equipo['Usuario Actual'] || equipo['usuario actual'] || 'N/A';
+            const serie = equipo['Serie'] || equipo['serie'] || 'N/A';
+
+            // Calcular el ángulo para el gráfico circular (máximo 360 grados)
+            const maxProblems = 50; // Ajusta según tus necesidades
+            const percentage = Math.min((totalProblems / maxProblems) * 100, 100);
+            const angle = (percentage / 100) * 360;
+
+            const html = `
+                <div class="result-item main-serie">
+                    <strong>NÚMERO DE SERIE CONSULTADO</strong>
+                    <span>${serie}</span>
+                </div>
+                <div class="result-item highlight"><strong>Tipo:</strong> <span>${tipo}</span></div>
+                <div class="result-item highlight"><strong>Modelo:</strong> <span>${modelo}</span></div>
+                <div class="result-item"><strong>Proyecto:</strong> <span>${proyecto}</span></div>
+                <div class="result-item"><strong>Usuario Asignado:</strong> <span>${usuarioactual}</span></div>
+                <div class="total-incidents">
+                    <strong>REGISTROS DE PROBLEMAS (BBDD PM 4)</strong>
+                    <div class="incidents-chart">
+                        <div class="chart-tooltip">Total: ${totalProblems} registro(s)</div>
+                        <div class="chart-ring" style="--angle: ${angle}deg;"></div>
+                        <div class="chart-inner">
+                            <div class="chart-value">${totalProblems}</div>
+                            <div class="chart-label">Problemas</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            resultDiv.innerHTML = html;
+        };
+
+        const renderProblemsTable = (problemCounts, totalProblems) => {
+            problemsListTitle.style.display = 'block';
+            if (totalProblems === 0) {
+                problemsContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-medium); padding: 15px;">No se encontraron registros de problemas para esta serie.</div>';
+                return;
+            }
+            let tableHtml = `<table class="count-table">
+                                <thead>
+                                    <tr>
+                                        <th>NIVEL 2 (Tipo de Problema)</th>
+                                        <th>Recuento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+            const sortedCounts = [...problemCounts.entries()].sort((a, b) => b[1] - a[1]);
+            for (const [nivel, count] of sortedCounts) {
+                tableHtml += `<tr><td>${nivel}</td><td>${count}</td></tr>`;
+            }
+            tableHtml += `</tbody></table>`;
+            problemsContainer.innerHTML = tableHtml;
+        };
+
+        const loadInitialData = async () => {
+            displayMessage('Cargando y analizando Hoja 1 (Base de Equipos).');
+            showLoading(true, 'Cargando Estructura...');
+            try {
+                const csv1 = await fetchSheet(sheetURLs['Hoja 1'], 'Hoja 1');
+                const result1 = parseCSV(csv1);
+                equiposMap = new Map();
+                const headers = result1.headers || [];
+                const serieHeader = headers.find(h => h.toLowerCase().includes('serie') || h.toLowerCase().includes('serial'));
+                if (!serieHeader) throw new Error('Hoja 1: No se encontró la columna de serie.');
+                result1.data.forEach(item => {
+                    const serieLimpia = sanitizeKey(item[serieHeader]);
+                    if (serieLimpia.length > 0) equiposMap.set(serieLimpia, item);
+                });
+                if (equiposMap.size === 0) throw new Error('Hoja 1: No se pudo procesar ningún registro válido.');
+                displayMessage(`✅ ÉXITO. Datos de EQUIPOS cargados (${equiposMap.size} series). Ingresa una serie para buscar.`);
+            } catch (error) {
+                console.error('[ERROR CRÍTICO] Fallo al cargar los datos iniciales:', error);
+                displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}.`, true);
+                validateButton.textContent = 'Error de Carga';
+                validateButton.disabled = true;
+            } finally {
+                if (equiposMap.size > 0) {
+                    validateButton.disabled = false;
+                    validateButton.textContent = 'Buscar Equipo';
+                }
+            }
+        };
+
+        const handleSearch = async () => {
+            const serie = serieInput.value.trim();
+            if (serie.length < 5) {
+                displayMessage('Por favor, ingresa un número de serie válido (mínimo 5 caracteres).', true);
+                return;
+            }
+            const equipo = getEquipoBySerie(serie);
+            if (!equipo) {
+                displayMessage(`⚠️ Serie "${serie}" no encontrada en la Base de Equipos (Hoja 1). Verifica la serie.`, true);
+                return;
+            }
+            showLoading(true, 'Cargando BBDD de Problemas...');
+            try {
+                const csv2 = await fetchSheet(sheetURLs['BBDD PM 4'], 'BBDD PM 4');
+                const result2 = parseCSV(csv2);
+                const headers2 = result2.headers || [];
+                const pmSerieHeader = headers2.find(h => h.toLowerCase().includes('serie reportada'));
+                const pmNivel2Header = headers2.find(h => h.toLowerCase().includes('nivel 2'));
+                if (!pmSerieHeader || !pmNivel2Header) {
+                    throw new Error('BBDD PM 4: Faltan las columnas "SERIE REPORTADA" o "NIVEL 2".');
+                }
+                const saneadoSerie = sanitizeKey(serie);
+                const { problemCounts, totalProblems } = getProblemsBySerieAndCount(
+                    saneadoSerie,
+                    result2.data,
+                    pmSerieHeader,
+                    pmNivel2Header
+                );
+                renderEquipoDetails(equipo, totalProblems);
+                renderProblemsTable(problemCounts, totalProblems);
+            } catch (error) {
+                console.error("Error al buscar en BBDD PM 4:", error);
+                renderEquipoDetails(equipo, 0);
+                problemsContainer.innerHTML = `<div class="error-message">⚠️ Error al cargar BBDD PM 4: ${error.message}. La Hoja 1 se cargó correctamente.</div>`;
+                problemsListTitle.style.display = 'block';
+            } finally {
+                showLoading(false);
+            }
+        };
+
+        const initialize = () => {
+            validateButton.textContent = 'Inicializando...';
+            validateButton.disabled = true;
+            validateButton.addEventListener('click', handleSearch);
+            serieInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter' && !validateButton.disabled) {
+                    handleSearch();
+                }
+            });
+            loadInitialData();
+        };
+
+        window.onload = initialize;
+    </script>
 </body>
 </html>
-
-
-
-
-
