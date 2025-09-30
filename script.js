@@ -1,11 +1,11 @@
-// script.js (VERSIÓN FINAL Y COMPLETA CON SÚPER-FLEXIBILIDAD DE ENCABEZADOS)
+// script.js (VERSIÓN SIN PAPAPARSE - SOLO HOJA 1)
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
-    // URL DE HOJA 1 (CORRECTA)
+    // URL DE HOJA 1 (CORRECTA CSV)
     'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
     
-    // URL DE BBDD PM 4 (CORREGIDA A CSV, PERO IGNORADA EN LA CARGA)
+    // URL DE BBDD PM 4 (CORREGIDA CSV, PERO IGNORADA EN LA CARGA)
     'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
 };
 
@@ -65,7 +65,33 @@ const fetchSheet = async (url, sheetName) => {
     }
 };
 
-// --- Funciones de Búsqueda y Renderizado ---
+/**
+ * Función manual para parsear CSV (Sin PapaParse)
+ * Asume que los datos están limpios y usa ',' como separador (típico de Google Sheets).
+ */
+const parseCSV = (csvText) => {
+    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+    if (lines.length === 0) return { data: [], headers: [] };
+
+    // Usa la primera línea para los encabezados
+    const headers = lines[0].split(',').map(h => h.trim());
+    const data = [];
+
+    for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',');
+        if (values.length !== headers.length) continue; // Ignorar líneas con formato incorrecto
+
+        const obj = {};
+        headers.forEach((header, index) => {
+            // Asignación simple de valores a encabezados
+            obj[header] = values[index].trim(); 
+        });
+        data.push(obj);
+    }
+    return { data, headers };
+};
+
+// --- Funciones de Búsqueda y Renderizado (SIN CAMBIOS) ---
 
 const getEquipoBySerie = (serie) => {
     const key = sanitizeKey(serie);
@@ -77,11 +103,12 @@ const getProblemsBySerie = (serie) => {
 };
 
 const renderEquipoDetails = (equipo, problemCount) => {
-    const tipo = equipo['tipo'] || equipo['Tipo'] || 'N/A';
-    const modelo = equipo['modelo'] || equipo['Modelo'] || 'N/A';
-    const proyecto = equipo['proyecto'] || equipo['Proyecto'] || 'N/A';
-    const usuarioactual = equipo['usuario actual'] || equipo['Usuario Actual'] || 'N/A';
-    const serie = equipo['serie'] || equipo['Serie'] || 'N/A'; 
+    // Usamos nombres de columna flexibles para CSV/PapaParse
+    const tipo = equipo['Tipo'] || equipo['tipo'] || 'N/A';
+    const modelo = equipo['Modelo'] || equipo['modelo'] || 'N/A';
+    const proyecto = equipo['Proyecto'] || equipo['proyecto'] || 'N/A';
+    const usuarioactual = equipo['Usuario Actual'] || equipo['usuario actual'] || 'N/A';
+    const serie = equipo['Serie'] || equipo['serie'] || 'N/A'; 
 
     const html = `
         <div class="result-item main-serie">
@@ -136,7 +163,7 @@ const handleSearch = async () => {
 };
 
 /**
- * Carga y Parsea solo la Hoja 1 con PapaParse. (Incluye lógica flexible de encabezados)
+ * Carga y Parsea solo la Hoja 1 (Sin PapaParse, con parser manual).
  */
 const loadAllData = async () => {
     displayMessage('Cargando y analizando Hoja 1 (Base de Equipos).');
@@ -148,15 +175,16 @@ const loadAllData = async () => {
             fetchSheet(sheetURLs['Hoja 1'], 'Hoja 1'),
         ]);
         
-        // 2. PARSING de Hoja 1 con PapaParse
-        const result1 = PapaParse.parse(csv1, { header: true, skipEmptyLines: true });
+        // 2. PARSING de Hoja 1 con parser manual
+        const result1 = parseCSV(csv1); 
         
         // --- CONVERSIÓN DE DATOS (LÓGICA SÚPER-FLEXIBLE) ---
         
         equiposMap = new Map();
         
         // 1. Encuentra el nombre real del encabezado de serie (ignora mayús/minús y espacios)
-        const headers = result1.meta.fields || [];
+        const headers = result1.headers || [];
+        // Busca el encabezado que contenga 'Serie' o 'SERIAL' (comprueba minúsculas)
         const serieHeader = headers.find(h => h.toLowerCase().includes('serie') || h.toLowerCase().includes('serial'));
 
         if (!serieHeader) {
@@ -192,12 +220,6 @@ const loadAllData = async () => {
 // --- Inicialización ---
 
 const initialize = () => {
-    // Verificar que PapaParse esté cargado
-    if (typeof PapaParse === 'undefined') {
-        displayMessage('Error Fatal: La librería PapaParse no se cargó. Verifica index.html (carga local).', true);
-        return;
-    }
-
     validateButton.textContent = 'Inicializando...';
     validateButton.disabled = true;
 
