@@ -1,4 +1,4 @@
-// script.js (VERSIÓN FINAL Y COMPLETA - SIN PAPAPARSE - CRUCE DE DATOS EN BUSCAR)
+// script.js (VERSIÓN FINAL Y COMPLETA - SIN PAPAPARSE - PARSER REGEX ROBUSTO)
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
@@ -65,30 +65,42 @@ const fetchSheet = async (url, sheetName) => {
 };
 
 /**
- * Función manual para parsear CSV (Sin PapaParse).
- * Asume el delimitador por defecto (coma) si no se especifica.
+ * Función robusta para parsear CSV (Sin PapaParse, usando Regex).
+ * Maneja celdas con comas internas si están encerradas entre comillas.
  */
 const parseCSV = (csvText) => {
-    // *** CLAVE DE CORRECCIÓN: USAR EL DELIMITADOR DE COMA POR DEFECTO ***
-    // Si la hoja contiene comas en las celdas, este es el punto de error.
-    const DELIMITER = ','; 
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) return { data: [], headers: [] };
 
-    const headers = lines[0].split(DELIMITER).map(h => h.trim());
+    // Regex para dividir una línea CSV, manejando comas dentro de comillas
+    const CSV_SPLIT_REGEX = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+
+    // Obtener y limpiar encabezados
+    const headers = lines[0].split(CSV_SPLIT_REGEX).map(h => h.trim().replace(/"/g, ''));
     const data = [];
 
     for (let i = 1; i < lines.length; i++) {
-        // Intentamos un split simple, lo que puede fallar con celdas que contienen comas.
-        const values = lines[i].split(DELIMITER); 
+        // Dividir la línea usando la regex
+        const values = lines[i].split(CSV_SPLIT_REGEX);
         
-        // La validación simple de longitud puede descartar filas rotas por comas internas
         if (values.length !== headers.length) continue; 
 
         const obj = {};
+        let isValid = true;
+        
         headers.forEach((header, index) => {
-            obj[header] = values[index].trim(); 
+            let value = values[index] ? values[index].trim() : '';
+            
+            // Eliminar comillas dobles que rodean el valor (si existen)
+            if (value.startsWith('"') && value.endsWith('"')) {
+                value = value.slice(1, -1);
+            }
+            // Reparar comillas dobles escapadas dentro de las celdas ("" -> ")
+            value = value.replace(/""/g, '"');
+            
+            obj[header] = value;
         });
+        
         data.push(obj);
     }
     return { data, headers };
@@ -257,7 +269,7 @@ const handleSearch = async () => {
         const csv2 = await fetchSheet(sheetURLs['BBDD PM 4'], 'BBDD PM 4');
         
         // b) Parseo (Punto de posible Congelamiento/Stack Overflow si es muy grande)
-        const result2 = parseCSV(csv2);
+        const result2 = parseCSV(csv2); // <-- Usa el nuevo parser Regex
         
         // c) Definición de encabezados de BBDD PM 4
         const headers2 = result2.headers || [];
