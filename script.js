@@ -1,4 +1,4 @@
-// script.js (VERSIÓN FINAL CON CRUCE DE DATOS Y REPORTE DE PROBLEMAS)
+// script.js (VERSIÓN FINAL Y COMPLETA - SIN PAPAPARSE - CRUCE DE DATOS EN BUSCAR)
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
@@ -91,14 +91,12 @@ const parseCSV = (csvText) => {
 
 // --- Lógica de Procesamiento y Cruce ---
 
-/**
- * Filtra los problemas de la BBDD PM 4 por la serie consultada y los agrupa por "NIVEL 2".
- * @param {string} serie La serie a buscar (ya saneada).
- * @param {Array<Object>} problemsData Datos completos de la BBDD PM 4.
- * @param {string} serieHeader Nombre de la columna de serie en la BBDD PM 4 (Ej: 'SERIE REPORTADA').
- * @param {string} nivelHeader Nombre de la columna de nivel de problema (Ej: 'NIVEL 2').
- * @returns {Map<string, number>} Mapa con el recuento de problemas por NIVEL 2.
- */
+const getEquipoBySerie = (serie) => {
+    const key = sanitizeKey(serie);
+    return equiposMap.get(key) || null;
+};
+
+
 const getProblemsBySerieAndCount = (serie, problemsData, serieHeader, nivelHeader) => {
     const problemCounts = new Map();
     let totalProblems = 0;
@@ -123,6 +121,31 @@ const getProblemsBySerieAndCount = (serie, problemsData, serieHeader, nivelHeade
 
 
 // --- Funciones de Renderizado ---
+
+const renderEquipoDetails = (equipo, totalProblems) => {
+    // Usamos nombres de columna flexibles para CSV
+    const tipo = equipo['Tipo'] || equipo['tipo'] || 'N/A';
+    const modelo = equipo['Modelo'] || equipo['modelo'] || 'N/A';
+    const proyecto = equipo['Proyecto'] || equipo['proyecto'] || 'N/A';
+    const usuarioactual = equipo['Usuario Actual'] || equipo['usuario actual'] || 'N/A';
+    const serie = equipo['Serie'] || equipo['serie'] || 'N/A'; 
+
+    const html = `
+        <div class="result-item main-serie">
+            <strong>NÚMERO DE SERIE CONSULTADO</strong>
+            <span>${serie}</span>
+        </div>
+        <div class="result-item highlight"><strong>Tipo:</strong> <span>${tipo}</span></div>
+        <div class="result-item highlight"><strong>Modelo:</strong> <span>${modelo}</span></div>
+        <div class="result-item"><strong>Proyecto:</strong> <span>${proyecto}</span></div>
+        <div class="result-item"><strong>Usuario Asignado:</strong> <span>${usuarioactual}</span></div>
+        <div class="result-item total-incidents">
+            <strong>REGISTROS DE PROBLEMAS (BBDD PM 4):</strong>
+            <span style="color: ${totalProblems > 0 ? 'var(--primary-color)' : 'var(--text-color-medium)'}; font-weight: bold;">${totalProblems} Registro(s)</span>
+        </div>
+    `;
+    resultDiv.innerHTML = html;
+};
 
 const renderProblemsTable = (problemCounts, totalProblems) => {
     problemsListTitle.style.display = 'block';
@@ -218,8 +241,8 @@ const handleSearch = async () => {
         return;
     }
     
-    // 2. Iniciar búsqueda
-    // Muestra un mensaje de advertencia por la posible congelación.
+    // 2. Iniciar búsqueda de BBDD PM 4
+    // Muestra una advertencia por la posible congelación
     showLoading(true, 'Cargando BBDD de Problemas... (Puede tardar/congelarse)');
     
     try {
@@ -259,7 +282,7 @@ const handleSearch = async () => {
         console.error("Error al buscar en BBDD PM 4:", error);
         // Mostrar Hoja 1, pero reportar fallo de BBDD PM 4
         renderEquipoDetails(equipo, 0); 
-        problemsContainer.innerHTML = `<div class="error-message">⚠️ Error al cargar la BBDD PM 4: ${error.message}.</div>`;
+        problemsContainer.innerHTML = `<div class="error-message">⚠️ Error al cargar la BBDD PM 4: ${error.message}. La Hoja 1 se cargó correctamente.</div>`;
         problemsListTitle.style.display = 'block';
     } finally {
         showLoading(false);
@@ -269,6 +292,7 @@ const handleSearch = async () => {
 // --- Inicialización ---
 
 const initialize = () => {
+    // Ya no es necesario el chequeo de PapaParse
     validateButton.textContent = 'Inicializando...';
     validateButton.disabled = true;
 
@@ -283,4 +307,5 @@ const initialize = () => {
 };
 
 window.onload = initialize;
+
 
