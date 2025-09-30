@@ -3,36 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta de Equipos - FCOM</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <title>Consulta de Equipos e Historial</title>
+    <style>
+        /* Estilos CSS (Usa tu CSS original aquí) */
+        :root {
+            --bg-color: #1a1a2e;
+            --card-color: #162447;
+            --primary-color: #e43f5a;
+            --secondary-color: #ff9a76;
+            --text-color-light: #f0f0f0;
+            --text-color-medium: #b4b4b4;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            background-color: var(--card-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 1.8em;
+        }
+
+        p {
+            text-align: center;
+            color: var(--text-color-medium);
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        #serie-input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            font-size: 1em;
+            background-color: var(--card-color);
+            color: var(--text-color-light);
+            transition: border-color 0.3s;
+        }
+
+        #serie-input:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+        }
+
+        #validate-button {
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: var(--text-color-light);
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        #validate-button:hover:not(:disabled) {
+            background-color: #c9344f;
+        }
+
+        #validate-button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        
+        /* Resultados y Mensajes */
+        #result, #problems-container {
+            border-top: 1px solid #2d3b5b;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #3a4768;
+            font-size: 0.95em;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-item strong {
+            color: var(--text-color-light);
+            font-weight: 600;
+        }
+
+        .result-item span {
+            color: var(--text-color-medium);
+            text-align: right;
+        }
+
+        .highlight strong, .highlight span {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        .main-serie {
+            font-size: 1.1em;
+            padding: 12px 0;
+            border-bottom: 2px solid var(--primary-color) !important;
+            margin-bottom: 15px;
+        }
+        
+        .main-serie span {
+            color: var(--primary-color);
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        
+        .total-incidents strong {
+             color: var(--primary-color);
+        }
+        
+        .error-message {
+            background-color: #4a2830;
+            border: 1px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 8px;
+            color: var(--text-color-light);
+            text-align: center;
+        }
+
+        /* Problemas (Tabla) */
+        #problems-list-title {
+            text-align: center;
+            color: var(--secondary-color);
+            margin: 25px 0 15px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+            display: none; /* Oculto por defecto */
+        }
+        
+        .count-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .count-table th, .count-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #3a4768;
+        }
+        
+        .count-table th {
+            background-color: #2d3b5b;
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+        
+        .count-table td:last-child {
+            text-align: right;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Consulta de Equipos y Historial de Problemas</h1>
-            <p>Ingrese el número de serie para obtener los datos base (Hoja 1) y el historial de problemas (BBDD PM 4).</p>
+        <h1>Consulta de Equipos y Historial de Problemas</h1>
+        <p>Ingrese el número de serie para obtener los datos base (Hoja 1) y el historial de problemas (BBDD PM 4).</p>
+
+        <div class="input-group">
+            <input type="text" id="serie-input" placeholder="Ej: 5CG9426Q2D (o TESTPROBLEMS para ver historial)">
+            <button id="validate-button">Inicializando...</button>
         </div>
 
-        <div class="search-section">
-            <input type="text" id="serie-input" placeholder="Ej. 5CG9426Q2D (o TESTPROBLEMS para ver historial)" aria-label="Número de serie del equipo">
-            <button id="validate-button" disabled>Inicializando...</button>
-        </div>
-        <div id="result" class="result-card">
-        </div>
-
-        <div id="problems-list-title" style="display: none;">
-            Resumen Acumulativo de Problemas (NIVEL 2)
-        </div>
-        <div id="problems-container">
-            <div id="initial-message" style="text-align: center; color: var(--text-color-medium); padding: 40px;">
-                Cargando componentes. Por favor, espere.
+        <div id="result">
             </div>
-        </div>
+
+        <h2 id="problems-list-title">Historial de Registros de Problemas (Nivel 2)</h2>
+        <div id="problems-container">
+            </div>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <script src="script.js"></script>
 </body>
 </html>
-
 
