@@ -1,9 +1,11 @@
-// script.js (VERSIÓN FINAL DE AISLAMIENTO CON PAPAPARSE)
+// script.js (VERSIÓN FINAL DE AISLAMIENTO: SÓLO CARGA HOJA 1)
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
-    // ASEGÚRATE DE QUE ESTAS URLs SON CORRECTAS
+    // URL DE HOJA 1 (CORREGIDA A CSV)
     'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
+    
+    // URL DE BBDD PM 4 (CORREGIDA A CSV, PERO IGNORADA EN LA CARGA INICIAL)
     'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
 };
 
@@ -37,7 +39,7 @@ const showLoading = (show) => {
 };
 
 const fetchSheet = async (url, sheetName) => {
-    const TIMEOUT_MS = 60000; // 60 segundos
+    const TIMEOUT_MS = 60000; 
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS); 
@@ -59,7 +61,8 @@ const fetchSheet = async (url, sheetName) => {
         if (error.name === 'AbortError') {
              errorMessage = `Tiempo de espera agotado (${TIMEOUT_MS/1000}s).`;
         }
-        throw new Error(`Error de conexión (CORS o URL mal formada) al intentar cargar "${sheetName}". Error: ${errorMessage}`); 
+        // Mensaje de error detallado para diagnosticar CORS/URL
+        throw new Error(`Error de conexión (CORS o URL mal formada) al intentar cargar "${sheetName}". ${errorMessage}. **VERIFICA:** URL de Google Sheets y que uses un servidor local (o GitHub Pages, si tienes CORS activado).`); 
     }
 };
 
@@ -75,6 +78,7 @@ const getProblemsBySerie = (serie) => {
 };
 
 const renderEquipoDetails = (equipo, problemCount) => {
+    // Usamos nombres de columna flexibles para PapaParse
     const tipo = equipo['tipo'] || equipo['Tipo'] || 'N/A';
     const modelo = equipo['modelo'] || equipo['Modelo'] || 'N/A';
     const proyecto = equipo['proyecto'] || equipo['Proyecto'] || 'N/A';
@@ -92,7 +96,7 @@ const renderEquipoDetails = (equipo, problemCount) => {
         <div class="result-item"><strong>Usuario Asignado:</strong> <span>${usuarioactual}</span></div>
         <div class="result-item total-incidents">
             <strong>REGISTROS DE PROBLEMAS (BBDD PM 4):</strong>
-            <span style="color: red; font-weight: bold;">OMITIDOS (Error de carga)</span>
+            <span style="color: red; font-weight: bold;">OMITIDOS (Prueba de carga)</span>
         </div>
     `;
     resultDiv.innerHTML = html;
@@ -122,7 +126,6 @@ const handleSearch = async () => {
             return;
         }
 
-        // problems ahora es siempre []
         const problems = getProblemsBySerie(serie); 
         renderEquipoDetails(equipo, problems.length);
         renderProblemsTable(problems);
@@ -146,12 +149,11 @@ const loadAllData = async () => {
         // 1. DESCARGA - SOLO HOJA 1
         const [csv1] = await Promise.all([
             fetchSheet(sheetURLs['Hoja 1'], 'Hoja 1'),
+            // **BBDD PM 4 OMITIDA PARA EVITAR CONGELAMIENTO**
         ]);
         
         // 2. PARSING de Hoja 1 con PapaParse
         const result1 = PapaParse.parse(csv1, { header: true, skipEmptyLines: true });
-        
-        // 3. OMITIMOS BBDD PM 4
         
         // --- CONVERSIÓN DE DATOS ---
         
@@ -166,14 +168,14 @@ const loadAllData = async () => {
         problemsMap = new Map(); 
 
         if (equiposMap.size === 0) {
-            throw new Error('Hoja 1: No se pudo procesar ningún registro válido.');
+            throw new Error('Hoja 1: No se pudo procesar ningún registro válido. Verifica encabezados (columna "serie").');
         }
 
-        displayMessage(`✅ ÉXITO. Datos de EQUIPOS cargados (${equiposMap.size} series). Historial de Problemas OMITIDO. Ingresa una serie para probar.`);
+        displayMessage(`✅ ÉXITO. Datos de EQUIPOS cargados (${equiposMap.size} series). Historial de Problemas OMITIDO. Inicia la búsqueda.`);
         
     } catch (error) {
         console.error('[ERROR CRÍTICO] Fallo al cargar los datos:', error);
-        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}. Verifica la Consola (F12) para más detalles.`, true);
+        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}.`, true);
         validateButton.textContent = 'Error de Carga';
         validateButton.disabled = true; 
     } finally {
@@ -189,7 +191,7 @@ const loadAllData = async () => {
 const initialize = () => {
     // Verificar que PapaParse esté cargado
     if (typeof PapaParse === 'undefined') {
-        displayMessage('Error Fatal: La librería PapaParse no se cargó. Verifica index.html.', true);
+        displayMessage('Error Fatal: La librería PapaParse no se cargó. Verifica index.html (carga local).', true);
         return;
     }
 
