@@ -1,10 +1,10 @@
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
-// **IMPORTANTE:** Se han actualizado estas URLs con las proporcionadas por el usuario.
+// **IMPORTANTE:** Estas son las URLs de publicación que has proporcionado.
 // Verifica que ambas URLs estén publicadas correctamente como CSV y sean accesibles públicamente.
 const sheetURLs = {
-    // URL de Hoja 1 actualizada
+    // URL de Hoja 1
     'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
-    // URL de BBDD PM 4 actualizada
+    // URL de BBDD PM 4
     'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
 };
 
@@ -77,8 +77,8 @@ const fetchSheet = async (url, sheetName) => {
              errorMessage = `Error de conexión (CORS o URL mal formada) al intentar cargar "${sheetName}". Si usas file://, usa un servidor local.`;
         }
         console.error(`[ERROR FATAL DE CARGA] No se pudo obtener la hoja "${sheetName}":`, error);
-        displayMessage(`Fallo al cargar "${sheetName}". Error: ${errorMessage}. Revisa la consola para más detalles.`, true);
-        throw new Error(errorMessage);
+        // El error se lanza para ser capturado en loadAllData y mostrar el mensaje de fallo crítico
+        throw new Error(errorMessage); 
     }
 };
 
@@ -95,14 +95,13 @@ const loadSheetData = (csvText, sheetName) => {
 
     // Función simple para parsear la línea (mejorada para manejo básico de comillas)
     const parseLine = (line) => {
-        // Uso de expresión regular para manejar comillas y el separador elegido
         const regex = new RegExp(`(?:[^"${separator}\\n]*|"(?:[^"]|"")*")*?(${separator}|$)`, 'g');
         const matches = line.match(regex);
         if (!matches) return [];
         return matches.map(match => {
             let field = match.endsWith(separator) ? match.slice(0, -separator.length) : match;
             return field.replace(/^"|"$/g, '').replace(/""/g, '"').trim();
-        }).filter(field => field.length > 0 || line.includes(`""`)); // Asegura que los campos vacíos rodeados por comas se incluyan si es necesario
+        }).filter(field => field.length > 0 || line.includes(`""`));
     };
     
     // Procesar encabezados
@@ -111,16 +110,22 @@ const loadSheetData = (csvText, sheetName) => {
     let serieIndex = -1;
     let n2Index = -1;
 
+    // --- CÓDIGO CORREGIDO PARA EL ENCABEZADO 'SERIE' EN HOJA 1 ---
     if (sheetName === 'Hoja 1') {
-        serieIndex = headers.indexOf('serie del equipo');
+        // Ahora busca el encabezado 'serie'
+        serieIndex = headers.indexOf('serie'); 
     } else if (sheetName === 'BBDD PM 4') {
+        // Mantiene la búsqueda de 'serie reportada' para BBDD PM 4
         serieIndex = headers.indexOf('serie reportada');
-        n2Index = headers.indexOf('nivel 2'); // Columna clave para agrupar problemas
+        n2Index = headers.indexOf('nivel 2');
     }
+    // --- FIN DEL CÓDIGO CORREGIDO ---
 
     if (serieIndex === -1) {
-        console.error(`[ERROR CRÍTICO] Columna de serie no encontrada en "${sheetName}".`);
-        return { data: new Map(), headers: [] };
+        const expectedHeader = (sheetName === 'Hoja 1' ? "'serie'" : "'serie reportada'");
+        console.error(`[ERROR CRÍTICO] Columna clave (${expectedHeader}) no encontrada en "${sheetName}".`);
+        // Lanza un error personalizado para el diagnóstico final
+        throw new Error(`Columna clave (${expectedHeader}) no encontrada en la hoja "${sheetName}". Verifica que el encabezado de la primera fila sea correcto.`);
     }
 
     // Procesar datos
@@ -128,7 +133,6 @@ const loadSheetData = (csvText, sheetName) => {
     for (let i = 1; i < lines.length; i++) {
         const fields = parseLine(lines[i]);
         if (fields.length !== headers.length) {
-            // Esto puede ser por una línea corrupta, se recomienda ignorarla o revisar el parser.
             continue; 
         }
 
@@ -142,10 +146,8 @@ const loadSheetData = (csvText, sheetName) => {
             });
 
             if (sheetName === 'Hoja 1') {
-                // Guarda el registro completo del equipo
                 data.set(serieLimpia, record);
             } else if (sheetName === 'BBDD PM 4') {
-                // Guarda el problema en un array asociado a la serie
                 if (!data.has(serieLimpia)) data.set(serieLimpia, []);
                 data.get(serieLimpia).push(record);
             }
@@ -178,12 +180,13 @@ const showLoading = (show) => {
  * Renderiza los detalles del equipo y el conteo de incidentes.
  */
 const renderEquipoDetails = (equipo, problemCount) => {
-    // Las claves deben coincidir con los encabezados de tu Hoja 1, en minúsculas y sin espacios.
+    // Las claves deben coincidir con los encabezados de tu Hoja 1, en minúsculas.
     const tipo = equipo['tipo'] || 'N/A';
     const modelo = equipo['modelo'] || 'N/A';
     const proyecto = equipo['proyecto'] || 'N/A';
     const usuarioactual = equipo['usuario actual'] || 'N/A';
-    const serie = equipo['serie del equipo'] || 'N/A';
+    // --- CLAVE CORREGIDA AQUÍ: usando 'serie' ---
+    const serie = equipo['serie'] || 'N/A'; 
 
     const html = `
         <div class="result-item main-serie">
@@ -215,7 +218,7 @@ const renderProblemsTable = (problems) => {
     problemsListTitle.style.display = 'block';
 
     const problemCounts = problems.reduce((acc, p) => {
-        // Asegúrate que la clave sea 'nivel 2' en minúsculas.
+        // La clave para agrupar sigue siendo 'nivel 2'.
         const n2 = p['nivel 2'] && p['nivel 2'].trim() !== '' ? p['nivel 2'].trim().toUpperCase() : 'SIN CLASIFICAR (N2)';
         acc[n2] = (acc[n2] || 0) + 1;
         return acc;
@@ -286,14 +289,15 @@ const loadAllData = async () => {
         const data1 = loadSheetData(csv1, 'Hoja 1');
         equiposMap = data1.data;
 
-        if (equiposMap.size === 0) {
-            throw new Error('No se encontraron datos válidos en Hoja 1. Verifica los encabezados y el contenido.');
-        }
-
         // 2. Carga BBDD PM 4 (Historial de Problemas)
         const csv2 = await fetchSheet(sheetURLs['BBDD PM 4'], 'BBDD PM 4');
         const data2 = loadSheetData(csv2, 'BBDD PM 4');
         problemsMap = data2.data;
+
+        if (equiposMap.size === 0) {
+            // Este error ya no debería ocurrir si el encabezado es correcto.
+            throw new Error('No se encontraron datos válidos en Hoja 1. Esto puede ser por un error en el archivo CSV.');
+        }
 
         // Éxito
         displayMessage(`✅ Datos cargados con éxito. Bases cargadas: Equipos (${equiposMap.size} series), Problemas (${problemsMap.size} series). Ingrese un número de serie y presione "Buscar Equipo".`);
@@ -302,10 +306,10 @@ const loadAllData = async () => {
     } catch (error) {
         // Fallo crítico
         console.error('[ERROR CRÍTICO] Fallo al cargar los datos:', error);
-        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}. **VERIFICA:** URLs de Google Sheets, encabezados y que estés usando un servidor local (no file://).`, true);
+        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}. **VERIFICA:** Servidor Local (CORS), URL de Google Sheets y encabezados.`, true);
         validateButton.textContent = 'Error de Carga';
-        validateButton.disabled = true; // El botón queda permanentemente deshabilitado ante un error de carga
-        return; // Detiene la ejecución
+        validateButton.disabled = true; 
+        return; 
     } finally {
         // Habilita el botón solo si la carga fue exitosa
         if (equiposMap.size > 0) {
