@@ -65,22 +65,28 @@ const fetchSheet = async (url, sheetName) => {
 };
 
 /**
- * Función manual para parsear CSV (Sin PapaParse)
+ * Función manual para parsear CSV (Sin PapaParse).
+ * Asume el delimitador por defecto (coma) si no se especifica.
  */
 const parseCSV = (csvText) => {
+    // *** CLAVE DE CORRECCIÓN: USAR EL DELIMITADOR DE COMA POR DEFECTO ***
+    // Si la hoja contiene comas en las celdas, este es el punto de error.
+    const DELIMITER = ','; 
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) return { data: [], headers: [] };
 
-    const headers = lines[0].split(',').map(h => h.trim());
+    const headers = lines[0].split(DELIMITER).map(h => h.trim());
     const data = [];
 
     for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',');
+        // Intentamos un split simple, lo que puede fallar con celdas que contienen comas.
+        const values = lines[i].split(DELIMITER); 
+        
+        // La validación simple de longitud puede descartar filas rotas por comas internas
         if (values.length !== headers.length) continue; 
 
         const obj = {};
         headers.forEach((header, index) => {
-            // Asignación simple de valores a encabezados
             obj[header] = values[index].trim(); 
         });
         data.push(obj);
@@ -242,7 +248,6 @@ const handleSearch = async () => {
     }
     
     // 2. Iniciar búsqueda de BBDD PM 4
-    // Muestra una advertencia por la posible congelación
     showLoading(true, 'Cargando BBDD de Problemas... (Puede tardar/congelarse)');
     
     try {
@@ -292,7 +297,6 @@ const handleSearch = async () => {
 // --- Inicialización ---
 
 const initialize = () => {
-    // Ya no es necesario el chequeo de PapaParse
     validateButton.textContent = 'Inicializando...';
     validateButton.disabled = true;
 
@@ -307,5 +311,3 @@ const initialize = () => {
 };
 
 window.onload = initialize;
-
-
