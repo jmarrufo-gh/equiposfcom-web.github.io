@@ -1,3 +1,4 @@
+<style>
 /* Variables CSS para consistencia de colores */
 :root {
     --bg-color: #1a1a2e;
@@ -8,7 +9,7 @@
     --text-color-medium: #b3b3e0;
     --error-color: #f87171;
     --border-color: #3f3f6d;
-    --warning-color: #f59e0b; /* Amarillo/Naranja para más de 0 problemas */
+    --warning-color: #f59e0b; /* Amarillo/Naranja para problemas (Ahora para ambos gráficos) */
 }
 
 /* Estilos Globales y Tipografía */
@@ -147,15 +148,15 @@ p {
     border-radius: 0.5rem;
 }
 
-/* ESTILOS DEL NUEVO COMPONENTE DE GRÁFICO (REEMPLAZO DE total-incidents) */
+/* --- ESTILOS PARA EL GRÁFICO DE TOTAL (SECCIÓN SUPERIOR) --- */
 .incidents-graph-container {
     grid-column: 1 / -1;
     padding: 1rem;
     border-radius: 0.75rem;
     margin-top: 1rem;
     background-color: #6366f120;
-    position: relative; /* Necesario para el Tooltip */
-    cursor: default; /* Indica que es interactivo */
+    position: relative;
+    cursor: default;
 }
 
 .incidents-graph-container strong {
@@ -168,7 +169,7 @@ p {
 
 .progress-bar-bg {
     height: 25px;
-    background-color: var(--border-color); /* Fondo gris oscuro */
+    background-color: var(--border-color);
     border-radius: 4px;
     overflow: hidden;
     position: relative;
@@ -176,8 +177,8 @@ p {
 
 .progress-bar-fill {
     height: 100%;
-    width: 0%; /* Inicialmente 0%, se llena con JS */
-    background-color: var(--warning-color); /* Color de alerta */
+    width: 0%;
+    background-color: var(--warning-color);
     transition: width 0.6s ease-out, background-color 0.3s;
     display: flex;
     align-items: center;
@@ -193,16 +194,16 @@ p {
     transform: translate(-50%, -50%);
     font-size: 1.1rem;
     font-weight: 900;
-    color: var(--text-color-light); /* Color del texto central */
+    color: var(--text-color-light);
     text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
-    z-index: 2; /* Sobre el fondo */
+    z-index: 2;
 }
 
 .no-incidents .progress-bar-fill {
-    background-color: var(--primary-color); /* Color azul/morado para 0 */
+    background-color: var(--primary-color); /* Azul/Morado para 0 */
 }
 
-/* Tooltip (Total al pasar el mouse) */
+/* Tooltip (Total al pasar el mouse - Sección Superior) */
 .tooltip {
     visibility: hidden;
     background-color: var(--text-color-light);
@@ -212,7 +213,7 @@ p {
     padding: 5px 10px;
     position: absolute;
     z-index: 10;
-    bottom: 100%; /* Arriba del contenedor */
+    bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
     opacity: 0;
@@ -220,13 +221,13 @@ p {
     white-space: nowrap;
     font-size: 0.9rem;
     font-weight: 600;
-    pointer-events: none; /* Asegura que no interfiera con el hover */
+    pointer-events: none;
 }
 
 .incidents-graph-container:hover .tooltip {
     visibility: visible;
     opacity: 1;
-    bottom: calc(100% + 10px); /* Un poco más arriba */
+    bottom: calc(100% + 10px);
 }
 
 /* Mensajes de Error */
@@ -240,7 +241,8 @@ p {
     text-align: center;
 }
 
-/* Tabla de Historial (Nivel 2) */
+/* --- ESTILOS DE TABLA DE HISTORIAL (Nivel 2) --- */
+
 #problems-list-title {
     font-size: 1.3rem;
     font-weight: 600;
@@ -286,11 +288,53 @@ p {
     font-size: 0.95rem;
 }
 
+/* --- ESTILOS ESPECÍFICOS PARA LOS GRÁFICOS DENTRO DE LA TABLA --- */
+.count-table thead th:last-child {
+    text-align: left;
+    width: 25%; /* Asegura que la columna tenga espacio para el gráfico */
+}
+
 .count-table tbody td:last-child {
-    text-align: center;
-    font-weight: 800;
-    color: var(--primary-color);
-    font-size: 1.1rem;
+    /* Resetear estilos de alineación y color de la columna anterior */
+    text-align: left !important; 
+    font-weight: normal;
+    color: var(--text-color-light);
+    font-size: 0.95rem;
+}
+
+.count-table .graph-cell {
+    position: relative;
+}
+
+.problem-graph-wrapper {
+    height: 20px;
+    background-color: var(--border-color);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.problem-graph-bar {
+    height: 100%;
+    background-color: var(--warning-color);
+    transition: width 0.5s ease-out;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.problem-count-text {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+    font-weight: 700;
+    font-size: 0.9em;
+    color: var(--text-color-light);
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
+    z-index: 5;
+    cursor: help; /* Indica que tiene tooltip */
 }
 
 /* Responsive adjustments */
@@ -320,3 +364,4 @@ p {
         font-size: 0.9rem;
     }
 }
+</style>
