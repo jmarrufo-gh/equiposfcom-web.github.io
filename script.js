@@ -3,13 +3,13 @@
 const sheetURLs = {
     // URL de Hoja 1
     'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
-    // URL de BBDD PM 4
+    // URL de BBDD PM 4 (Mantenemos la URL, pero la carga está comentada)
     'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
 };
 
 // Mapas de datos globales para almacenar la información de las hojas
 let equiposMap = new Map();
-let problemsMap = new Map();
+let problemsMap = new Map(); // Estará vacío temporalmente
 
 // --- Elementos del DOM ---
 const serieInput = document.getElementById('serie-input');
@@ -21,17 +21,11 @@ const problemsListTitle = document.getElementById('problems-list-title');
 
 // --- Funciones de Utilidad y Carga ---
 
-/**
- * Limpieza agresiva de la clave de búsqueda.
- */
 const sanitizeKey = (key) => {
     if (typeof key !== 'string') return '';
     return key.trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
 };
 
-/**
- * Muestra mensajes en el área de resultados.
- */
 const displayMessage = (message, isError = false) => {
     resultDiv.innerHTML = `<div class="result-item ${isError ? 'error-message' : ''}">${message}</div>`;
     problemsContainer.innerHTML = '';
@@ -42,8 +36,8 @@ const displayMessage = (message, isError = false) => {
  * Obtiene el contenido CSV de una URL con tiempo de espera.
  */
 const fetchSheet = async (url, sheetName) => {
-    // --- TIMEOUT AUMENTADO ---
-    const TIMEOUT_MS = 20000; // 20 segundos para archivos grandes
+    // --- TIMEOUT AUMENTADO A 30 SEGUNDOS ---
+    const TIMEOUT_MS = 30000; 
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS); 
@@ -64,7 +58,7 @@ const fetchSheet = async (url, sheetName) => {
     } catch (error) {
         let errorMessage = error.message;
         if (error.name === 'AbortError') {
-            errorMessage = `Tiempo de espera agotado (${TIMEOUT_MS/1000}s) al cargar "${sheetName}". Error de red o URL muy lenta.`;
+            errorMessage = `Tiempo de espera agotado (${TIMEOUT_MS/1000}s) al cargar "${sheetName}". La hoja es muy grande.`;
         } else if (error instanceof TypeError || error.name === 'TypeError') {
              errorMessage = `Error de conexión (CORS o URL mal formada) al intentar cargar "${sheetName}". Si usas file://, usa un servidor local.`;
         }
@@ -78,13 +72,12 @@ const fetchSheet = async (url, sheetName) => {
  */
 const loadSheetData = (csvText, sheetName) => {
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
-    if (lines.length < 2) return { data: new Map(), headers: [] }; // Necesitamos encabezado y al menos 1 línea de datos
+    if (lines.length < 2) return { data: new Map(), headers: [] }; 
 
     const possibleSeparators = [',', ';'];
     let finalData = { data: new Map(), headers: [] };
     
     const parseLine = (line, sep) => {
-        // Expresión regular robusta para CSV que maneja comillas y separadores
         const regex = new RegExp(`(?:[^"${sep}\\n]*|"(?:[^"]|"")*")*?(${sep}|$)`, 'g');
         const matches = line.match(regex);
         if (!matches) return [];
@@ -136,21 +129,18 @@ const loadSheetData = (csvText, sheetName) => {
             }
         }
         
-        // La validación final: debe tener al menos una serie para ser válido
         return { valid: data.size > 0, data, headers, usefulRecords, separator };
     };
 
-    // Intentar con los separadores
     for (const sep of possibleSeparators) {
         const result = attemptParse(sep);
         if (result.valid) {
             finalData = { data: result.data, headers: result.headers };
             console.log(`[DIAGNÓSTICO] Separador efectivo para "${sheetName}": "${sep}". Series únicas: ${finalData.data.size}.`);
-            return finalData; // Éxito
+            return finalData; 
         }
     }
 
-    // Si ambos fallaron
     const expectedHeader = (sheetName === 'Hoja 1' ? "'serie'" : "'serie reportada' y 'nivel 2'");
     throw new Error(`No se pudo interpretar el CSV de "${sheetName}". Error: Verifica que el encabezado ${expectedHeader} sea correcto.`);
 };
@@ -278,14 +268,20 @@ const loadAllData = async () => {
         const data1 = loadSheetData(csv1, 'Hoja 1');
         equiposMap = data1.data;
 
-        // 2. Carga BBDD PM 4 (Historial de Problemas)
+        // --- BBDD PM 4 COMENTADA TEMPORALMENTE ---
+        /*
         const csv2 = await fetchSheet(sheetURLs['BBDD PM 4'], 'BBDD PM 4');
         const data2 = loadSheetData(csv2, 'BBDD PM 4');
         problemsMap = data2.data;
+        */
+        
+        // Éxito PARCIAL
+        if (equiposMap.size === 0) {
+             throw new Error('Hoja 1: Se descargó, pero no se pudo procesar ningún registro válido. Revisa encabezado "serie".');
+        }
 
-        // Éxito
-        displayMessage(`✅ Datos cargados con éxito. Bases cargadas: Equipos (${equiposMap.size} series), Problemas (${problemsMap.size} series). Ingrese un número de serie y presione "Buscar Equipo".`);
-        console.log(`[ÉXITO] Datos cargados - Series de equipo: ${equiposMap.size}, Series con problemas: ${problemsMap.size}`);
+        displayMessage(`✅ Datos de Equipos (Hoja 1) cargados con éxito (${equiposMap.size} series). BBDD PM 4 omitida. Ingrese un número de serie.`);
+        console.log(`[ÉXITO PARCIAL] Solo Hoja 1 cargada. Series: ${equiposMap.size}`);
         
     } catch (error) {
         // Fallo crítico
@@ -295,7 +291,7 @@ const loadAllData = async () => {
         validateButton.disabled = true; 
         return; 
     } finally {
-        // Habilita el botón solo si la carga fue exitosa
+        // Habilita el botón solo si la carga de Hoja 1 fue exitosa
         if (equiposMap.size > 0) {
             validateButton.disabled = false;
             validateButton.textContent = 'Buscar Equipo';
@@ -321,4 +317,6 @@ const initialize = () => {
 };
 
 window.onload = initialize;
+window.onload = initialize;
+
 
