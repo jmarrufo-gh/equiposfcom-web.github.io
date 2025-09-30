@@ -1,367 +1,367 @@
-<style>
 /* Variables CSS para consistencia de colores */
 :root {
-    --bg-color: #1a1a2e;
-    --card-bg: #2c2c4d;
-    --primary-color: #6366f1; /* Indigo 500 */
-    --primary-hover: #4f46e5;
-    --text-color-light: #ffffff;
-    --text-color-medium: #b3b3e0;
-    --error-color: #f87171;
-    --border-color: #3f3f6d;
-    --warning-color: #f59e0b; /* Amarillo/Naranja para problemas (Ahora para ambos gráficos) */
+    --bg-color: #1a1a2e;
+    --card-bg: #2c2c4d;
+    --primary-color: #6366f1; /* Indigo 500 */
+    --primary-hover: #4f46e5;
+    --text-color-light: #ffffff;
+    --text-color-medium: #b3b3e0;
+    --error-color: #f87171;
+    --border-color: #3f3f6d;
+    --warning-color: #f59e0b; /* Amarillo/Naranja para problemas */
 }
 
 /* Estilos Globales y Tipografía */
 body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color-light);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    padding: 2rem;
-    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color-light);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 2rem;
+    margin: 0;
 }
 
 /* Contenedor Principal de la Aplicación */
 .container {
-    width: 100%;
-    max-width: 800px;
-    background-color: var(--card-bg);
-    padding: 2.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    transition: transform 0.3s ease-out;
+    width: 100%;
+    max-width: 800px;
+    background-color: var(--card-bg);
+    padding: 2.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease-out;
 }
 
 /* Título */
 h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    text-align: center;
-    margin-bottom: 2rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
 /* Párrafo */
 p {
-    color: var(--text-color-medium);
-    text-align: center;
-    margin-bottom: 1.5rem;
+    color: var(--text-color-medium);
+    text-align: center;
+    margin-bottom: 1.5rem;
 }
 
 /* Sección de Búsqueda */
 .input-group {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
 }
 
 #serie-input {
-    flex-grow: 1;
-    padding: 0.75rem 1.25rem;
-    border: 1px solid var(--border-color);
-    border-radius: 9999px;
-    background-color: #3f3f6d;
-    color: var(--text-color-light);
-    font-size: 1rem;
-    transition: box-shadow 0.3s, border-color 0.3s;
+    flex-grow: 1;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: 9999px;
+    background-color: #3f3f6d;
+    color: var(--text-color-light);
+    font-size: 1rem;
+    transition: box-shadow 0.3s, border-color 0.3s;
 }
 
 #serie-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4);
-    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4);
+    outline: none;
 }
 
 #validate-button {
-    padding: 0.75rem 1.5rem;
-    background-color: var(--primary-color);
-    color: var(--text-color-light);
-    border: none;
-    border-radius: 9999px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    border: none;
+    border-radius: 9999px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 #validate-button:hover:not(:disabled) {
-    background-color: var(--primary-hover);
-    transform: translateY(-1px);
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
 }
 
 #validate-button:disabled {
-    background-color: #4f46e580;
-    cursor: not-allowed;
+    background-color: #4f46e580;
+    cursor: not-allowed;
 }
 
 /* Sección de Resultados */
 #result {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    background-color: #1a1a2e;
-    border-radius: 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    background-color: #1a1a2e;
+    border-radius: 0.75rem;
 }
 
 .result-item {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 0.95rem;
-    display: flex;
-    flex-direction: column;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.95rem;
+    display: flex;
+    flex-direction: column;
 }
 
 .result-item strong {
-    color: var(--text-color-medium);
-    font-weight: 500;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    margin-bottom: 0.2rem;
+    color: var(--text-color-medium);
+    font-weight: 500;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
 }
 
 .result-item span {
-    font-weight: 700;
-    color: var(--text-color-light);
+    font-weight: 700;
+    color: var(--text-color-light);
 }
 
 .main-serie {
-    grid-column: 1 / -1;
-    text-align: center;
-    border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 1rem;
-    margin-bottom: 0.5rem;
+    grid-column: 1 / -1;
+    text-align: center;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .main-serie span {
-    font-size: 1.5rem;
-    color: var(--primary-color);
+    font-size: 1.5rem;
+    color: var(--primary-color);
 }
 
 .highlight {
-    background-color: #3f3f6d80;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
+    background-color: #3f3f6d80;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
 }
 
 /* --- ESTILOS PARA EL GRÁFICO DE TOTAL (SECCIÓN SUPERIOR) --- */
 .incidents-graph-container {
-    grid-column: 1 / -1;
-    padding: 1rem;
-    border-radius: 0.75rem;
-    margin-top: 1rem;
-    background-color: #6366f120;
-    position: relative;
-    cursor: default;
+    grid-column: 1 / -1;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    margin-top: 1rem;
+    background-color: #6366f120;
+    position: relative;
+    cursor: default;
 }
 
 .incidents-graph-container strong {
-    color: var(--text-color-light);
-    font-size: 1rem;
-    display: block;
-    margin-bottom: 0.5rem;
-    text-align: center;
+    color: var(--text-color-light);
+    font-size: 1rem;
+    display: block;
+    margin-bottom: 0.5rem;
+    text-align: center;
 }
 
 .progress-bar-bg {
-    height: 25px;
-    background-color: var(--border-color);
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
+    height: 25px;
+    background-color: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
 }
 
 .progress-bar-fill {
-    height: 100%;
-    width: 0%;
-    background-color: var(--warning-color);
-    transition: width 0.6s ease-out, background-color 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    color: var(--bg-color);
+    height: 100%;
+    width: 0%;
+    background-color: var(--warning-color);
+    transition: width 0.6s ease-out, background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: var(--bg-color);
 }
 
 .progress-bar-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.1rem;
-    font-weight: 900;
-    color: var(--text-color-light);
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
-    z-index: 2;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--text-color-light);
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+    z-index: 2;
 }
 
 .no-incidents .progress-bar-fill {
-    background-color: var(--primary-color); /* Azul/Morado para 0 */
+    background-color: var(--primary-color); /* Azul/Morado para 0 */
 }
 
 /* Tooltip (Total al pasar el mouse - Sección Superior) */
 .tooltip {
-    visibility: hidden;
-    background-color: var(--text-color-light);
-    color: var(--card-bg);
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 10px;
-    position: absolute;
-    z-index: 10;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    transition: opacity 0.3s;
-    white-space: nowrap;
-    font-size: 0.9rem;
-    font-weight: 600;
-    pointer-events: none;
+    visibility: hidden;
+    background-color: var(--text-color-light);
+    color: var(--card-bg);
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 10px;
+    position: absolute;
+    z-index: 10;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    font-weight: 600;
+    pointer-events: none;
 }
 
 .incidents-graph-container:hover .tooltip {
-    visibility: visible;
-    opacity: 1;
-    bottom: calc(100% + 10px);
+    visibility: visible;
+    opacity: 1;
+    bottom: calc(100% + 10px);
 }
 
 /* Mensajes de Error */
 .error-message {
-    grid-column: 1 / -1;
-    background-color: #f8717120;
-    color: var(--error-color);
-    border: 1px solid var(--error-color);
-    padding: 1rem;
-    border-radius: 0.5rem;
-    text-align: center;
+    grid-column: 1 / -1;
+    background-color: #f8717120;
+    color: var(--error-color);
+    border: 1px solid var(--error-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
 }
 
 /* --- ESTILOS DE TABLA DE HISTORIAL (Nivel 2) --- */
 
 #problems-list-title {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: var(--text-color-light);
-    margin-bottom: 1rem;
-    border-bottom: 2px solid var(--border-color);
-    padding-bottom: 0.5rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-color-light);
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
 }
 
 .count-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    border-radius: 0.5rem;
-    overflow: hidden;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border-radius: 0.5rem;
+    overflow: hidden;
 }
 
 .count-table thead th {
-    background-color: var(--primary-color);
-    color: var(--text-color-light);
-    padding: 1rem;
-    text-align: left;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-transform: uppercase;
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    padding: 1rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
 }
 
 .count-table tbody tr {
-    background-color: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
-    transition: background-color 0.3s ease;
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.3s ease;
 }
 
 .count-table tbody tr:hover {
-    background-color: #3f3f6d;
+    background-color: #3f3f6d;
 }
 
 .count-table tbody td {
-    padding: 1rem;
-    vertical-align: middle;
-    color: var(--text-color-light);
-    font-size: 0.95rem;
+    padding: 1rem;
+    vertical-align: middle;
+    color: var(--text-color-light);
+    font-size: 0.95rem;
 }
 
-/* --- ESTILOS ESPECÍFICOS PARA LOS GRÁFICOS DENTRO DE LA TABLA --- */
+/* --- ESTILOS CRÍTICOS PARA EL GRÁFICO DENTRO DE LA TABLA --- */
 .count-table thead th:last-child {
-    text-align: left;
-    width: 25%; /* Asegura que la columna tenga espacio para el gráfico */
+    text-align: left;
+    width: 25%; 
 }
 
 .count-table tbody td:last-child {
-    /* Resetear estilos de alineación y color de la columna anterior */
-    text-align: left !important; 
-    font-weight: normal;
-    color: var(--text-color-light);
-    font-size: 0.95rem;
+    text-align: left !important; 
+    font-weight: normal;
+    color: var(--text-color-light);
+    font-size: 0.95rem;
 }
 
 .count-table .graph-cell {
-    position: relative;
+    position: relative;
 }
 
 .problem-graph-wrapper {
-    height: 20px;
-    background-color: var(--border-color);
-    border-radius: 3px;
-    overflow: hidden;
-    position: relative;
-    width: 100%;
+    /* Fondo de la barra */
+    height: 20px;
+    background-color: var(--border-color);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
 }
 
 .problem-graph-bar {
-    height: 100%;
-    background-color: var(--warning-color);
-    transition: width 0.5s ease-out;
-    position: absolute;
-    top: 0;
-    left: 0;
+    /* Barra que se llena (color y transición) */
+    height: 100%;
+    background-color: var(--warning-color);
+    transition: width 0.5s ease-out;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .problem-count-text {
-    position: absolute;
-    top: 50%;
-    right: 5px;
-    transform: translateY(-50%);
-    font-weight: 700;
-    font-size: 0.9em;
-    color: var(--text-color-light);
-    text-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
-    z-index: 5;
-    cursor: help; /* Indica que tiene tooltip */
+    /* Texto con el número (visible) y el tooltip (con title) */
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+    font-weight: 700;
+    font-size: 0.9em;
+    color: var(--text-color-light);
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
+    z-index: 5;
+    cursor: help; /* Indica que tiene tooltip */
 }
 
 /* Responsive adjustments */
 @media (max-width: 600px) {
-    body {
-        padding: 1rem;
-    }
-    .container {
-        padding: 1.5rem;
-    }
-    h1 {
-        font-size: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-    .input-group {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    #validate-button {
-        width: 100%;
-    }
-    .progress-bar-text {
-        font-size: 1rem;
-    }
-    .count-table thead th, .count-table tbody td {
-        padding: 0.75rem;
-        font-size: 0.9rem;
-    }
+    body {
+        padding: 1rem;
+    }
+    .container {
+        padding: 1.5rem;
+    }
+    h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .input-group {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    #validate-button {
+        width: 100%;
+    }
+    .progress-bar-text {
+        font-size: 1rem;
+    }
+    .count-table thead th, .count-table tbody td {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
 }
-</style>
