@@ -192,109 +192,104 @@
             color: var(--primary-color);
         }
 
-        /* NUEVO: Contenedor del gráfico circular para cada problema */
-        .problem-chart-item {
+        /* NUEVO: Contenedor del gráfico unificado */
+        .unified-chart-container {
+            padding: 1.5rem;
+            background-color: #1a1a2e;
+            border-radius: 0.75rem;
+        }
+
+        .chart-bars-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .chart-bar-item {
             display: flex;
             align-items: center;
             gap: 1rem;
-            padding: 0.75rem;
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-        .problem-chart-item:hover {
-            background-color: #3f3f6d;
-            transform: translateX(5px);
+        .bar-label {
+            min-width: 200px;
+            font-size: 0.9rem;
+            color: var(--text-color-light);
+            font-weight: 500;
         }
 
-        .problem-chart-item:last-child {
-            border-bottom: none;
-        }
-
-        .mini-chart {
+        .bar-container {
+            flex-grow: 1;
+            height: 40px;
+            background-color: #2c2c4d;
+            border-radius: 8px;
             position: relative;
-            width: 60px;
-            height: 60px;
-            flex-shrink: 0;
+            overflow: hidden;
         }
 
-        .mini-chart-ring {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: conic-gradient(
-                var(--primary-color) 0deg,
-                var(--primary-color) var(--angle, 0deg),
-                #3f3f6d var(--angle, 0deg),
-                #3f3f6d 360deg
-            );
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), #8b5cf6);
+            border-radius: 8px;
+            transition: all 0.3s ease;
             position: relative;
-            transition: transform 0.3s ease;
-        }
-
-        .problem-chart-item:hover .mini-chart-ring {
-            transform: scale(1.1) rotate(5deg);
-        }
-
-        .mini-chart-inner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background-color: var(--card-bg);
             display: flex;
             align-items: center;
-            justify-content: center;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+            justify-content: flex-end;
+            padding-right: 0.75rem;
         }
 
-        .mini-chart-value {
-            font-size: 1.1rem;
-            font-weight: 900;
-            color: var(--primary-color);
+        .bar-fill:hover {
+            filter: brightness(1.2);
+            transform: scaleY(1.1);
         }
 
-        .problem-info {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
+        .bar-value {
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
         }
 
-        .problem-name {
-            font-weight: 600;
-            color: var(--text-color-light);
-            font-size: 0.95rem;
-            margin-bottom: 0.2rem;
-        }
-
-        .problem-percentage {
-            font-size: 0.8rem;
-            color: var(--text-color-medium);
-        }
-
-        .problem-tooltip {
+        .bar-tooltip {
             position: absolute;
-            top: -35px;
+            bottom: 50px;
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(0, 0, 0, 0.95);
             color: var(--text-color-light);
-            padding: 0.4rem 0.8rem;
-            border-radius: 0.4rem;
-            font-size: 0.75rem;
+            padding: 0.6rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
             white-space: nowrap;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
-            z-index: 10;
+            z-index: 100;
         }
 
-        .mini-chart:hover .problem-tooltip {
+        .bar-tooltip::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid rgba(0, 0, 0, 0.95);
+        }
+
+        .bar-container:hover .bar-tooltip {
             opacity: 1;
+        }
+
+        .bar-percentage {
+            font-size: 0.75rem;
+            color: var(--text-color-medium);
+            min-width: 50px;
+            text-align: right;
         }
 
         .error-message {
@@ -341,20 +336,15 @@
             #validate-button {
                 width: 100%;
             }
-            .mini-chart {
-                width: 50px;
-                height: 50px;
+            .bar-label {
+                min-width: 150px;
+                font-size: 0.85rem;
             }
-            .mini-chart-ring {
-                width: 50px;
-                height: 50px;
-            }
-            .mini-chart-inner {
-                width: 35px;
+            .bar-container {
                 height: 35px;
             }
-            .mini-chart-value {
-                font-size: 0.9rem;
+            .bar-value {
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -509,32 +499,30 @@
             // Ordenar por cantidad (mayor a menor)
             const sortedCounts = [...problemCounts.entries()].sort((a, b) => b[1] - a[1]);
             
-            // Encontrar el máximo para calcular porcentajes
+            // Encontrar el máximo para calcular porcentajes de barras
             const maxCount = sortedCounts[0][1];
 
-            let html = '';
+            let html = '<div class="unified-chart-container"><div class="chart-bars-wrapper">';
+            
             for (const [nivel, count] of sortedCounts) {
                 const percentage = (count / totalProblems * 100).toFixed(1);
-                const angle = (count / maxCount) * 360;
+                const barWidth = (count / maxCount * 100).toFixed(1);
 
                 html += `
-                    <div class="problem-chart-item">
-                        <div class="mini-chart">
-                            <div class="problem-tooltip">${count} registro(s)</div>
-                            <div class="mini-chart-ring" style="--angle: ${angle}deg;">
-                                <div class="mini-chart-inner">
-                                    <div class="mini-chart-value">${count}</div>
-                                </div>
+                    <div class="chart-bar-item">
+                        <div class="bar-label">${nivel}</div>
+                        <div class="bar-container">
+                            <div class="bar-tooltip">${nivel}: ${count} registro(s) - ${percentage}% del total</div>
+                            <div class="bar-fill" style="width: ${barWidth}%;">
+                                <span class="bar-value">${count}</span>
                             </div>
                         </div>
-                        <div class="problem-info">
-                            <div class="problem-name">${nivel}</div>
-                            <div class="problem-percentage">${percentage}% del total</div>
-                        </div>
+                        <div class="bar-percentage">${percentage}%</div>
                     </div>
                 `;
             }
 
+            html += '</div></div>';
             problemsContainer.innerHTML = html;
         };
 
