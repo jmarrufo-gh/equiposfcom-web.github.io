@@ -1,11 +1,11 @@
-// script.js (VERSIÓN FINAL DE AISLAMIENTO: SÓLO CARGA HOJA 1)
+// script.js (VERSIÓN FINAL Y COMPLETA CON SÚPER-FLEXIBILIDAD DE ENCABEZADOS)
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
-    // URL DE HOJA 1 (CORREGIDA A CSV)
+    // URL DE HOJA 1 (CORRECTA)
     'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
     
-    // URL DE BBDD PM 4 (CORREGIDA A CSV, PERO IGNORADA EN LA CARGA INICIAL)
+    // URL DE BBDD PM 4 (CORREGIDA A CSV, PERO IGNORADA EN LA CARGA)
     'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
 };
 
@@ -61,8 +61,7 @@ const fetchSheet = async (url, sheetName) => {
         if (error.name === 'AbortError') {
              errorMessage = `Tiempo de espera agotado (${TIMEOUT_MS/1000}s).`;
         }
-        // Mensaje de error detallado para diagnosticar CORS/URL
-        throw new Error(`Error de conexión (CORS o URL mal formada) al intentar cargar "${sheetName}". ${errorMessage}. **VERIFICA:** URL de Google Sheets y que uses un servidor local (o GitHub Pages, si tienes CORS activado).`); 
+        throw new Error(`Error de conexión (CORS o URL mal formada) al intentar cargar "${sheetName}". ${errorMessage}.`); 
     }
 };
 
@@ -78,7 +77,6 @@ const getProblemsBySerie = (serie) => {
 };
 
 const renderEquipoDetails = (equipo, problemCount) => {
-    // Usamos nombres de columna flexibles para PapaParse
     const tipo = equipo['tipo'] || equipo['Tipo'] || 'N/A';
     const modelo = equipo['modelo'] || equipo['Modelo'] || 'N/A';
     const proyecto = equipo['proyecto'] || equipo['Proyecto'] || 'N/A';
@@ -102,7 +100,6 @@ const renderEquipoDetails = (equipo, problemCount) => {
     resultDiv.innerHTML = html;
 };
 
-// La tabla de problemas siempre estará vacía en esta versión
 const renderProblemsTable = (problems) => {
     problemsContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-medium); padding: 30px;">Historial de problemas omitido en esta prueba de carga.</div>';
     problemsListTitle.style.display = 'none';
@@ -139,7 +136,7 @@ const handleSearch = async () => {
 };
 
 /**
- * Carga y Parsea solo la Hoja 1 con PapaParse.
+ * Carga y Parsea solo la Hoja 1 con PapaParse. (Incluye lógica flexible de encabezados)
  */
 const loadAllData = async () => {
     displayMessage('Cargando y analizando Hoja 1 (Base de Equipos).');
@@ -149,26 +146,32 @@ const loadAllData = async () => {
         // 1. DESCARGA - SOLO HOJA 1
         const [csv1] = await Promise.all([
             fetchSheet(sheetURLs['Hoja 1'], 'Hoja 1'),
-            // **BBDD PM 4 OMITIDA PARA EVITAR CONGELAMIENTO**
         ]);
         
         // 2. PARSING de Hoja 1 con PapaParse
         const result1 = PapaParse.parse(csv1, { header: true, skipEmptyLines: true });
         
-        // --- CONVERSIÓN DE DATOS ---
+        // --- CONVERSIÓN DE DATOS (LÓGICA SÚPER-FLEXIBLE) ---
         
-        // Hoja 1
         equiposMap = new Map();
+        
+        // 1. Encuentra el nombre real del encabezado de serie (ignora mayús/minús y espacios)
+        const headers = result1.meta.fields || [];
+        const serieHeader = headers.find(h => h.toLowerCase().includes('serie') || h.toLowerCase().includes('serial'));
+
+        if (!serieHeader) {
+            console.error('No se encontró la columna de serie en la Hoja 1. Encabezados detectados:', headers);
+            throw new Error('Hoja 1: No se encontró la columna de serie. Revisa que el encabezado contenga "serie" o "serial".');
+        }
+
+        // 2. Mapea usando el nombre de encabezado encontrado
         result1.data.forEach(item => {
-            const serieLimpia = sanitizeKey(item['serie'] || item['Serie']); 
+            const serieLimpia = sanitizeKey(item[serieHeader]); 
             if (serieLimpia.length > 0) equiposMap.set(serieLimpia, item);
         });
-
-        // BBDD PM 4 (Inicializada vacía)
-        problemsMap = new Map(); 
-
+        
         if (equiposMap.size === 0) {
-            throw new Error('Hoja 1: No se pudo procesar ningún registro válido. Verifica encabezados (columna "serie").');
+            throw new Error('Hoja 1: No se pudo procesar ningún registro válido. Verifica el contenido de la hoja (que no esté vacía).');
         }
 
         displayMessage(`✅ ÉXITO. Datos de EQUIPOS cargados (${equiposMap.size} series). Historial de Problemas OMITIDO. Inicia la búsqueda.`);
@@ -209,5 +212,4 @@ const initialize = () => {
 };
 
 window.onload = initialize;
-
 
