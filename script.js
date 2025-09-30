@@ -2,8 +2,8 @@
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS (Solo para referencia) ---
 const sheetURLs = { 
-    'Hoja 1': '...', 
-    'BBDD PM 4': '...', 
+    'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv', 
+    'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv', 
 };
 
 // Mapas de datos globales
@@ -44,7 +44,7 @@ const createWorkerPromise = (sheetName) => {
             if (e.data.status === 'success') {
                 resolve(e.data.data);
             } else {
-                reject(new Error(e.data.message)); // El error ya incluye el nombre de la hoja
+                reject(new Error(e.data.message));
             }
         };
 
@@ -53,18 +53,15 @@ const createWorkerPromise = (sheetName) => {
     });
 };
 
-// --- Funciones de Búsqueda y Renderizado ---
-
+// --- Funciones de Búsqueda y Renderizado (Se mantienen iguales) ---
 const getEquipoBySerie = (serie) => {
     const key = sanitizeKey(serie);
     return equiposMap.get(key) || null;
 };
-
 const getProblemsBySerie = (serie) => {
     const key = sanitizeKey(serie);
     return problemsMap.get(key) || [];
 };
-
 const renderEquipoDetails = (equipo, problemCount) => {
     const tipo = equipo['tipo'] || 'N/A';
     const modelo = equipo['modelo'] || 'N/A';
@@ -160,33 +157,26 @@ const loadAllData = async () => {
     displayMessage('Cargando la base de datos (Ejecución Asíncrona). Esto puede tardar...');
 
     try {
-      // Carga y procesamiento de Hoja 1 y BBDD PM 4 en paralelo
+        // --- PRUEBA DE AISLAMIENTO: Carga solo Hoja 1 ---
         const [equiposData] = await Promise.all([
             createWorkerPromise('Hoja 1'),
-            // createWorkerPromise('BBDD PM 4') // <-- COMENTADA
+            // createWorkerPromise('BBDD PM 4') // COMENTADA: Descomenta si la Hoja 1 carga bien
         ]);
-        
-        // Asignamos los datos de Hoja 1 y dejamos BBDD PM 4 vacía
+
         equiposMap = equiposData;
+        // Dejamos problemsMap vacío para la prueba
         problemsMap = new Map(); 
-
-        // PAUSA: Simula el tiempo que tardaría la BBDD PM 4
-        await new Promise(resolve => setTimeout(resolve, 5000));
-
-        equiposMap = equiposData;
-        problemsMap = problemsData;
 
         if (equiposMap.size === 0) {
             throw new Error('Hoja 1: Se descargó, pero no contiene registros válidos. Verifica encabezado "serie".');
         }
 
-        // Éxito total
-        displayMessage(`✅ Datos cargados con éxito. Equipos (${equiposMap.size} series), Problemas (${problemsMap.size} series).`);
+        // Éxito parcial para la prueba
+        displayMessage(`✅ Datos cargados con éxito. EQUIPOS (${equiposMap.size} series). Problemas OMITIDOS. Ingresa una serie para probar.`);
         
     } catch (error) {
-        // Fallo crítico
         console.error('[ERROR CRÍTICO] Fallo al cargar los datos:', error);
-        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}. **VERIFICA:** Servidor Local (CORS), URLs de Google Sheets y encabezados.`, true);
+        displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}. **VERIFICA:** URLs de Google Sheets y Consola (F12).`, true);
         validateButton.textContent = 'Error de Carga';
         validateButton.disabled = true; 
     } finally {
@@ -200,9 +190,10 @@ const loadAllData = async () => {
 // --- Inicialización ---
 
 const initialize = () => {
-    // 1. Inicializa el Worker AHORA
     try {
-        dataWorker = new Worker('worker.js');
+        // RUTA ABSOLUTA: Se utiliza para evitar problemas de ruta en servidores (como GitHub Pages)
+        // Si tu proyecto está en la raíz, usa '/worker.js'.
+        dataWorker = new Worker('/worker.js'); 
     } catch(e) {
         displayMessage(`FATAL: No se pudo crear el Worker. Asegúrate que 'worker.js' existe y que estás usando Live Server.`, true);
         validateButton.textContent = 'Error FATAL';
@@ -225,5 +216,3 @@ const initialize = () => {
 };
 
 window.onload = initialize;
-
-
