@@ -2,7 +2,6 @@
 
 // --- CONFIGURACIÓN DE ACCESO A GOOGLE SHEETS ---
 const sheetURLs = {
-    // Estas URLs DEBEN ser exactamente las mismas que en script.js
     'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
     'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
 };
@@ -15,7 +14,6 @@ const sanitizeKey = (key) => {
 };
 
 const fetchSheet = async (url, sheetName) => {
-    // Mantenemos 30s de timeout ya que el archivo tarda 1s, el fallo no es la velocidad.
     const TIMEOUT_MS = 30000; 
     try {
         const controller = new AbortController();
@@ -60,7 +58,6 @@ const loadSheetData = (csvText, sheetName) => {
 
     const attemptParse = (separator) => {
         const data = new Map();
-        // Convertimos encabezados a minúsculas
         const headers = parseLine(lines[0], separator).map(h => h.toLowerCase().trim());
         
         let serieIndex = -1;
@@ -81,7 +78,6 @@ const loadSheetData = (csvText, sheetName) => {
              throw new Error(`Error de formato: No se encontró el encabezado 'nivel 2' en "${sheetName}".`);
         }
 
-        let recordsFound = 0;
         for (let i = 1; i < lines.length; i++) {
             const fields = parseLine(lines[i], separator);
             if (fields.length !== headers.length || fields.length === 0) continue; 
@@ -100,7 +96,6 @@ const loadSheetData = (csvText, sheetName) => {
                     if (!data.has(serieLimpia)) data.set(serieLimpia, []);
                     data.get(serieLimpia).push(record);
                 }
-                recordsFound++;
             }
         }
         
@@ -114,13 +109,10 @@ const loadSheetData = (csvText, sheetName) => {
                  return result.data; 
              }
         } catch (e) {
-            // Si attemptParse falla por encabezados, lanzamos el error
             if (e.message.startsWith('Error de formato')) throw e;
-            // Si falla por el separador, continuamos probando
         }
     }
 
-    // Si llegó hasta aquí, el CSV se descargó, pero no se pudo parsear
     throw new Error(`No se encontraron datos válidos en ${sheetName}. Verifica los encabezados y el contenido.`);
 };
 
