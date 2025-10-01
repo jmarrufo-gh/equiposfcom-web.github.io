@@ -709,8 +709,14 @@
                 const fieldsToShow = ['TICKET', 'ESTADO', 'GRUPO RESOLUTOR', 'OBSERVACIÓN'];
                 
                 filteredRecords.forEach((record, index) => {
+                    // Buscar el campo ID (case-insensitive)
+                    const idKey = Object.keys(record).find(key => 
+                        key.trim().toUpperCase() === 'ID'
+                    );
+                    const idValue = idKey ? record[idKey] : (index + 1);
+                    
                     detailHTML += `<div class="record-item">`;
-                    detailHTML += `<div style="font-weight: 700; color: var(--primary-color); margin-bottom: 0.5rem;">Registro #${index + 1}</div>`;
+                    detailHTML += `<div style="font-weight: 700; color: var(--primary-color); margin-bottom: 0.5rem;">Id Promanager: ${idValue}</div>`;
                     
                     // Buscar y mostrar solo los campos especificados
                     fieldsToShow.forEach(fieldName => {
