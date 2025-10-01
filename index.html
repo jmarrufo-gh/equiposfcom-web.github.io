@@ -403,6 +403,7 @@
             margin-bottom: 0.75rem;
             border-left: 3px solid var(--primary-color);
             transition: transform 0.2s ease;
+            position: relative;
         }
 
         .record-item:hover {
@@ -412,6 +413,18 @@
 
         .record-item:last-child {
             margin-bottom: 0;
+        }
+
+        .record-project-tag {
+            display: inline-block;
+            background-color: #3f3f6d;
+            color: var(--text-color-medium);
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border-color);
         }
 
         .record-field {
@@ -719,7 +732,7 @@
             if (filteredRecords.length === 0) {
                 detailHTML += '<div class="no-records-message">No se encontraron registros detallados.</div>';
             } else {
-                const fieldsToShow = ['ESTADO', 'GRUPO RESOLUTOR', 'DEPENDENCIA', 'NOMBRE USUARIO', 'OBSERVACIÓN'];
+                const fieldsToShow = ['FECHA CREACION', 'ESTADO', 'GRUPO RESOLUTOR', 'DEPENDENCIA', 'NOMBRE USUARIO', 'OBSERVACIÓN'];
                 
                 filteredRecords.forEach((record, index) => {
                     const ticketKey = Object.keys(record).find(key => 
@@ -727,7 +740,19 @@
                     );
                     const ticketValue = ticketKey ? record[ticketKey] : `Registro ${index + 1}`;
                     
+                    // Buscar el campo PROYECTO
+                    const proyectoKey = Object.keys(record).find(key => 
+                        key.trim().toUpperCase() === 'PROYECTO'
+                    );
+                    const proyectoValue = proyectoKey ? record[proyectoKey] : '';
+                    
                     detailHTML += `<div class="record-item">`;
+                    
+                    // Mostrar proyecto como tag si existe
+                    if (proyectoValue && proyectoValue !== 'N/A' && proyectoValue.trim() !== '') {
+                        detailHTML += `<div class="record-project-tag">📁 ${proyectoValue}</div>`;
+                    }
+                    
                     detailHTML += `<div style="font-weight: 700; color: var(--primary-color); margin-bottom: 0.5rem;">🎫 Ticket: ${ticketValue}</div>`;
                     
                     fieldsToShow.forEach(fieldName => {
