@@ -415,6 +415,25 @@
             margin-bottom: 0;
         }
 
+        .record-header-tags {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            gap: 0.5rem;
+        }
+
+        .record-date-tag {
+            display: inline-block;
+            background-color: #3f3f6d;
+            color: var(--text-color-medium);
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+        }
+
         .record-project-tag {
             display: inline-block;
             background-color: #3f3f6d;
@@ -423,7 +442,6 @@
             border-radius: 0.35rem;
             font-size: 0.75rem;
             font-weight: 600;
-            margin-bottom: 0.75rem;
             border: 1px solid var(--border-color);
         }
 
@@ -732,7 +750,7 @@
             if (filteredRecords.length === 0) {
                 detailHTML += '<div class="no-records-message">No se encontraron registros detallados.</div>';
             } else {
-                const fieldsToShow = ['FECHA CREACION', 'ESTADO', 'GRUPO RESOLUTOR', 'DEPENDENCIA', 'NOMBRE USUARIO', 'OBSERVACIÓN'];
+                const fieldsToShow = ['ESTADO', 'GRUPO RESOLUTOR', 'DEPENDENCIA', 'NOMBRE USUARIO', 'OBSERVACIÓN'];
                 
                 filteredRecords.forEach((record, index) => {
                     const ticketKey = Object.keys(record).find(key => 
@@ -746,12 +764,32 @@
                     );
                     const proyectoValue = proyectoKey ? record[proyectoKey] : '';
                     
+                    // Buscar el campo FECHA CREACION
+                    const fechaKey = Object.keys(record).find(key => 
+                        key.trim().toUpperCase() === 'FECHA CREACION'
+                    );
+                    const fechaValue = fechaKey ? record[fechaKey] : '';
+                    
                     detailHTML += `<div class="record-item">`;
                     
-                    // Mostrar proyecto como tag si existe
+                    // Mostrar header con fecha y proyecto
+                    detailHTML += `<div class="record-header-tags">`;
+                    
+                    // Fecha a la izquierda
+                    if (fechaValue && fechaValue !== 'N/A' && fechaValue.trim() !== '') {
+                        detailHTML += `<div class="record-date-tag">📅 ${fechaValue}</div>`;
+                    } else {
+                        detailHTML += `<div></div>`; // Espacio vacío para mantener el layout
+                    }
+                    
+                    // Proyecto a la derecha
                     if (proyectoValue && proyectoValue !== 'N/A' && proyectoValue.trim() !== '') {
                         detailHTML += `<div class="record-project-tag">📁 ${proyectoValue}</div>`;
+                    } else {
+                        detailHTML += `<div></div>`; // Espacio vacío para mantener el layout
                     }
+                    
+                    detailHTML += `</div>`;
                     
                     detailHTML += `<div style="font-weight: 700; color: var(--primary-color); margin-bottom: 0.5rem;">🎫 Ticket: ${ticketValue}</div>`;
                     
