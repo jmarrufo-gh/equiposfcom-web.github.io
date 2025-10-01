@@ -300,7 +300,6 @@
         /* Desglose de registros detallados */
         .records-detail {
             margin-top: 1rem;
-            padding: 1.5rem;
             background-color: #2c2c4d;
             border-radius: 0.75rem;
             border-left: 4px solid var(--primary-color);
@@ -310,14 +309,13 @@
         }
 
         .records-detail.expanded {
-            max-height: 2000px;
+            max-height: 600px;
             margin-top: 1rem;
-            padding: 1.5rem;
         }
 
         .records-detail.collapsed {
             max-height: 0;
-            padding: 0 1.5rem;
+            padding: 0;
             margin-top: 0;
         }
 
@@ -325,9 +323,38 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
+            padding: 1.5rem 1.5rem 0.75rem 1.5rem;
             border-bottom: 2px solid var(--border-color);
+            background-color: #2c2c4d;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .detail-content {
+            max-height: 480px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 1.5rem;
+        }
+
+        /* Estilos personalizados para la scrollbar */
+        .detail-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .detail-content::-webkit-scrollbar-track {
+            background: #1a1a2e;
+            border-radius: 10px;
+        }
+
+        .detail-content::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        .detail-content::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-hover);
         }
 
         .detail-title {
@@ -672,6 +699,7 @@
                         Cerrar ✕
                     </button>
                 </div>
+                <div class="detail-content">
             `;
 
             if (filteredRecords.length === 0) {
@@ -705,6 +733,8 @@
                     detailHTML += `</div>`;
                 });
             }
+
+            detailHTML += '</div>'; // Cerrar detail-content
 
             detailDiv.innerHTML = detailHTML;
             detailDiv.classList.remove('collapsed');
