@@ -534,8 +534,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>Consulta de Equipos y Historial de Problemas</h1>
-        <p>Ingrese el número de serie para obtener los datos base (Hoja 1) y el historial de problemas (BBDD PM 4).</p>
+        <h1>Consulta de Equipos</h1>
+        <p>Ingrese el número de serie para obtener los datos base y el historial de problemas.</p>
 
         <div class="search-section">
             <input type="text" id="serie-input" placeholder="Ej: 5CG9426Q2D (o TESTPROBLEMS para ver historial)">
@@ -544,7 +544,7 @@
 
         <div id="result"></div>
 
-        <h2 id="problems-list-title">Historial de Registros de Problemas (Nivel 2)</h2>
+        <h2 id="problems-list-title">Problemas Registrados</h2>
         <div id="problems-container"></div>
     </div>
 
@@ -668,7 +668,7 @@
                     <div class="result-item highlight"><strong>Modelo:</strong> <span>${modelo}</span></div>
                 </div>
                 <div class="total-incidents">
-                    <strong>Total Registros de Problemas:</strong>
+                    <strong>Total Problemas Reportados:</strong>
                     <span>${totalProblems}</span>
                 </div>
             `;
@@ -835,7 +835,7 @@
                     if (serieLimpia.length > 0) equiposMap.set(serieLimpia, item);
                 });
                 if (equiposMap.size === 0) throw new Error('Hoja 1: No se pudo procesar ningún registro válido.');
-                displayMessage(`✅ ÉXITO. Datos de EQUIPOS cargados (${equiposMap.size} series). Ingresa una serie para buscar.`);
+                displayMessage(`✅ Datos de equipos cargados. Ingresa una serie para buscar.`);
             } catch (error) {
                 console.error('[ERROR CRÍTICO] Fallo al cargar los datos iniciales:', error);
                 displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}.`, true);
@@ -909,3 +909,4 @@
     </script>
 </body>
 </html>
+
