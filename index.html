@@ -535,7 +535,7 @@
 <body>
     <div class="container">
         <h1>Consulta de Equipos y Historial de Problemas</h1>
-        <p>Ingrese el número de serie para obtener los datos base (Hoja 1) y el historial de problemas (BBDD PM 4).</p>
+        <p>Ingrese el número de serie para obtener los datos base y el historial de problemas.</p>
 
         <div class="search-section">
             <input type="text" id="serie-input" placeholder="Ej: 5CG9426Q2D (o TESTPROBLEMS para ver historial)">
@@ -821,7 +821,7 @@
         };
 
         const loadInitialData = async () => {
-            displayMessage('Cargando y analizando Hoja 1 (Base de Equipos).');
+            displayMessage('Cargando y analizando (BBDD de Equipos).');
             showLoading(true, 'Cargando Estructura...');
             try {
                 const csv1 = await fetchSheet(sheetURLs['Hoja 1'], 'Hoja 1');
@@ -829,12 +829,12 @@
                 equiposMap = new Map();
                 const headers = result1.headers || [];
                 const serieHeader = headers.find(h => h.toLowerCase().includes('serie') || h.toLowerCase().includes('serial'));
-                if (!serieHeader) throw new Error('Hoja 1: No se encontró la columna de serie.');
+                if (!serieHeader) throw new Error('No se encontró la columna de serie en BBDD Equipos.');
                 result1.data.forEach(item => {
                     const serieLimpia = sanitizeKey(item[serieHeader]);
                     if (serieLimpia.length > 0) equiposMap.set(serieLimpia, item);
                 });
-                if (equiposMap.size === 0) throw new Error('Hoja 1: No se pudo procesar ningún registro válido.');
+                if (equiposMap.size === 0) throw new Error('BBDD Equipos: No se pudo procesar ningún registro válido.');
                 displayMessage(`✅ ÉXITO. Datos de EQUIPOS cargados (${equiposMap.size} series). Ingresa una serie para buscar.`);
             } catch (error) {
                 console.error('[ERROR CRÍTICO] Fallo al cargar los datos iniciales:', error);
@@ -889,7 +889,7 @@
                             <span>${serie}</span>
                         </div>
                         <div class="error-message" style="background-color: #f59e0b20; color: var(--warning-color); border-color: var(--warning-color);">
-                            ⚠️ Equipo no encontrado en Base de Datos de Equipamiento (Hoja 1)
+                            ⚠️ Equipo no encontrado en Base de Datos de Equipamiento
                             <br><small style="margin-top: 0.5rem; display: block;">Sin embargo, se encontraron registros de problemas para esta serie.</small>
                         </div>
                         <div class="total-incidents">
@@ -902,7 +902,7 @@
                 } 
                 // Si el equipo no fue encontrado y tampoco hay problemas
                 else if (!equipoEncontrado && totalProblems === 0) {
-                    displayMessage(`⚠️ Serie "${serie}" no encontrada en la Base de Equipos (Hoja 1) ni en registros de problemas (BBDD PM 4).`, true);
+                    displayMessage(`⚠️ Serie "${serie}" no encontrada en la BBDD de Equipos ni en registros de problemas.`, true);
                 }
                 // Si el equipo fue encontrado (caso normal)
                 else {
@@ -913,10 +913,10 @@
                 console.error("Error al buscar en BBDD PM 4:", error);
                 if (equipoEncontrado) {
                     renderEquipoDetails(equipo, 0);
-                    problemsContainer.innerHTML = `<div class="error-message">⚠️ Error al cargar BBDD PM 4: ${error.message}. La Hoja 1 se cargó correctamente.</div>`;
+                    problemsContainer.innerHTML = `<div class="error-message">⚠️ Error al cargar BBDD PM 4: ${error.message}. La BBDD de equipos se cargó correctamente.</div>`;
                     problemsListTitle.style.display = 'block';
                 } else {
-                    displayMessage(`⚠️ Serie "${serie}" no encontrada en la Base de Equipos (Hoja 1). Además, hubo un error al cargar BBDD PM 4: ${error.message}`, true);
+                    displayMessage(`⚠️ Serie "${serie}" no encontrada en la BBDD de Equipos. Además, hubo un error al cargar BBDD de Promanager: ${error.message}`, true);
                 }
             } finally {
                 showLoading(false);
@@ -939,3 +939,4 @@
     </script>
 </body>
 </html>
+
