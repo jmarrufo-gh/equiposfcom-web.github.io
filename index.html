@@ -54,6 +54,169 @@
             font-size: 0.9rem;
         }
 
+        /* Loading Progress Bar Styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(26, 26, 46, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-content {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .loading-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .loading-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
+
+        .loading-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-color-medium);
+        }
+
+        .progress-bar-container {
+            background-color: #1a1a2e;
+            border-radius: 9999px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), #8b5cf6);
+            border-radius: 9999px;
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-color-medium);
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-status {
+            font-weight: 600;
+        }
+
+        .progress-percentage {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .loading-steps {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .loading-step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background-color: #1a1a2e;
+            border-radius: 0.5rem;
+            opacity: 0.4;
+            transition: all 0.3s ease;
+        }
+
+        .loading-step.active {
+            opacity: 1;
+            background-color: #3f3f6d;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .loading-step.completed {
+            opacity: 1;
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left: 3px solid var(--success-color);
+        }
+
+        .step-icon {
+            font-size: 1.2rem;
+            min-width: 24px;
+        }
+
+        .step-text {
+            font-size: 0.9rem;
+            flex-grow: 1;
+        }
+
+        .step-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        .loading-step.active .step-spinner {
+            display: block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .step-check {
+            color: var(--success-color);
+            font-size: 1.2rem;
+            display: none;
+        }
+
+        .loading-step.completed .step-check {
+            display: block;
+        }
+
         .search-section {
             display: flex;
             gap: 1rem;
@@ -142,7 +305,6 @@
             color: var(--primary-color);
         }
 
-        /* Contenedor para los tres campos en fila */
         .info-row {
             grid-column: 1 / -1;
             display: grid;
@@ -161,7 +323,6 @@
             justify-content: center;
         }
 
-        /* Proyecto con más protagonismo */
         .project-item {
             background: linear-gradient(135deg, #6366f130, #8b5cf630);
             padding: 1.2rem;
@@ -185,7 +346,6 @@
             font-weight: 800;
         }
 
-        /* Estilo simple para total de incidentes (sin gráfico) */
         .total-incidents {
             grid-column: 1 / -1;
             text-align: center;
@@ -208,7 +368,6 @@
             color: var(--primary-color);
         }
 
-        /* NUEVO: Contenedor del gráfico unificado */
         .unified-chart-container {
             padding: 1.5rem;
             background-color: #1a1a2e;
@@ -313,7 +472,6 @@
             text-align: right;
         }
 
-        /* Desglose de registros detallados */
         .records-detail {
             margin-top: 1rem;
             background-color: #2c2c4d;
@@ -354,7 +512,6 @@
             padding: 1.5rem;
         }
 
-        /* Estilos personalizados para la scrollbar */
         .detail-content::-webkit-scrollbar {
             width: 8px;
         }
@@ -529,16 +686,60 @@
             .info-row {
                 grid-template-columns: 1fr;
             }
+            .loading-content {
+                padding: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-header">
+                <div class="loading-icon">⚙️</div>
+                <div class="loading-title" id="loading-title">Cargando Sistema</div>
+                <div class="loading-subtitle" id="loading-subtitle">Inicializando conexiones...</div>
+            </div>
+            
+            <div class="progress-info">
+                <span class="progress-status" id="progress-status">Preparando...</span>
+                <span class="progress-percentage" id="progress-percentage">0%</span>
+            </div>
+            
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progress-bar"></div>
+            </div>
+
+            <div class="loading-steps">
+                <div class="loading-step" id="step-1">
+                    <span class="step-icon">📦</span>
+                    <span class="step-text">Conectando con Base de Datos de Equipos</span>
+                    <div class="step-spinner"></div>
+                    <span class="step-check">✓</span>
+                </div>
+                <div class="loading-step" id="step-2">
+                    <span class="step-icon">🔍</span>
+                    <span class="step-text">Procesando registros de equipamiento</span>
+                    <div class="step-spinner"></div>
+                    <span class="step-check">✓</span>
+                </div>
+                <div class="loading-step" id="step-3">
+                    <span class="step-icon">✅</span>
+                    <span class="step-text">Validando integridad de datos</span>
+                    <div class="step-spinner"></div>
+                    <span class="step-check">✓</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <h1>Consulta de Equipos y Historial de Problemas</h1>
         <p>Ingrese el número de serie para obtener los datos base y el historial de problemas.</p>
 
         <div class="search-section">
-            <input type="text" id="serie-input" placeholder="Ej: 5CG9426Q2D (o TESTPROBLEMS para ver historial)">
+            <input type="text" id="serie-input" placeholder="Ej: 5CG9426Q2D">
             <button id="validate-button">Inicializando...</button>
         </div>
 
@@ -562,6 +763,61 @@
         const resultDiv = document.getElementById('result');
         const problemsContainer = document.getElementById('problems-container');
         const problemsListTitle = document.getElementById('problems-list-title');
+
+        // Loading progress functions
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const progressBar = document.getElementById('progress-bar');
+        const progressPercentage = document.getElementById('progress-percentage');
+        const progressStatus = document.getElementById('progress-status');
+        const loadingTitle = document.getElementById('loading-title');
+        const loadingSubtitle = document.getElementById('loading-subtitle');
+
+        function showLoadingOverlay() {
+            loadingOverlay.classList.add('active');
+        }
+
+        function hideLoadingOverlay() {
+            setTimeout(() => {
+                loadingOverlay.classList.remove('active');
+            }, 300);
+        }
+
+        function updateProgress(percentage, status, title = null, subtitle = null) {
+            progressBar.style.width = percentage + '%';
+            progressPercentage.textContent = Math.round(percentage) + '%';
+            progressStatus.textContent = status;
+            if (title) loadingTitle.textContent = title;
+            if (subtitle) loadingSubtitle.textContent = subtitle;
+        }
+
+        function activateStep(stepNumber) {
+            const step = document.getElementById(`step-${stepNumber}`);
+            if (step) {
+                document.querySelectorAll('.loading-step').forEach(s => {
+                    s.classList.remove('active');
+                });
+                step.classList.add('active');
+            }
+        }
+
+        function completeStep(stepNumber) {
+            const step = document.getElementById(`step-${stepNumber}`);
+            if (step) {
+                step.classList.remove('active');
+                step.classList.add('completed');
+            }
+        }
+
+        function showLoadingWithSteps(isSearch = false) {
+            showLoadingOverlay();
+            if (isSearch) {
+                loadingTitle.textContent = 'Consultando Base de Datos';
+                loadingSubtitle.textContent = 'Buscando registros de problemas...';
+                document.getElementById('step-1').querySelector('.step-text').textContent = 'Conectando con Promanager';
+                document.getElementById('step-2').querySelector('.step-text').textContent = 'Filtrando registros por serie';
+                document.getElementById('step-3').querySelector('.step-text').textContent = 'Generando visualización';
+            }
+        }
 
         const sanitizeKey = (key) => {
             if (typeof key !== 'string') return '';
@@ -611,332 +867,4 @@
             const headers = lines[0].split(CSV_SPLIT_REGEX).map(h => h.trim().replace(/"/g, ''));
             const data = [];
             for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(CSV_SPLIT_REGEX);
-                if (values.length !== headers.length) continue;
-                const obj = {};
-                headers.forEach((header, index) => {
-                    let value = values[index] ? values[index].trim() : '';
-                    if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
-                    value = value.replace(/""/g, '"');
-                    obj[header] = value;
-                });
-                data.push(obj);
-            }
-            return { data, headers };
-        };
-
-        const getEquipoBySerie = (serie) => {
-            const key = sanitizeKey(serie);
-            return equiposMap.get(key) || null;
-        };
-
-        const getProblemsBySerieAndCount = (serie, problemsData, serieHeader, nivelHeader) => {
-            const problemCounts = new Map();
-            let totalProblems = 0;
-            for (const item of problemsData) {
-                const reportedSerie = sanitizeKey(item[serieHeader]);
-                if (reportedSerie === serie) {
-                    totalProblems++;
-                    const nivel2 = item[nivelHeader] ? item[nivelHeader].trim() : 'SIN NIVEL 2';
-                    if (problemCounts.has(nivel2)) {
-                        problemCounts.set(nivel2, problemCounts.get(nivel2) + 1);
-                    } else {
-                        problemCounts.set(nivel2, 1);
-                    }
-                }
-            }
-            return { problemCounts, totalProblems };
-        };
-
-        const renderEquipoDetails = (equipo, totalProblems) => {
-            const tipo = equipo['Tipo'] || equipo['tipo'] || 'N/A';
-            const modelo = equipo['Modelo'] || equipo['modelo'] || 'N/A';
-            const proyecto = equipo['Proyecto'] || equipo['proyecto'] || 'N/A';
-            const serie = equipo['Serie'] || equipo['serie'] || 'N/A';
-
-            const html = `
-                <div class="result-item main-serie">
-                    <strong>NÚMERO DE SERIE CONSULTADO</strong>
-                    <span>${serie}</span>
-                </div>
-                <div class="info-row">
-                    <div class="result-item highlight"><strong>Tipo:</strong> <span>${tipo}</span></div>
-                    <div class="result-item project-item">
-                        <strong>Proyecto:</strong> 
-                        <span>${proyecto}</span>
-                    </div>
-                    <div class="result-item highlight"><strong>Modelo:</strong> <span>${modelo}</span></div>
-                </div>
-                <div class="total-incidents">
-                    <strong>Total Registros de Problemas:</strong>
-                    <span>${totalProblems}</span>
-                </div>
-            `;
-            resultDiv.innerHTML = html;
-        };
-
-        const renderProblemsTable = (problemCounts, totalProblems, serieKey) => {
-            problemsListTitle.style.display = 'block';
-            if (totalProblems === 0) {
-                problemsContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-medium); padding: 15px;">No se encontraron registros de problemas para esta serie.</div>';
-                return;
-            }
-
-            const sortedCounts = [...problemCounts.entries()].sort((a, b) => b[1] - a[1]);
-            const maxCount = sortedCounts[0][1];
-
-            let html = '<div class="unified-chart-container"><div class="chart-bars-wrapper">';
-            
-            for (const [nivel, count] of sortedCounts) {
-                const percentage = (count / totalProblems * 100).toFixed(1);
-                const barWidth = (count / maxCount * 100).toFixed(1);
-                const safeNivel = nivel.replace(/'/g, "\\'");
-
-                html += `
-                    <div class="chart-bar-item">
-                        <div class="bar-label">${nivel}</div>
-                        <div class="bar-container" onclick="toggleRecordDetail('${safeNivel}', '${serieKey}')">
-                            <div class="bar-tooltip">Click para ver detalle • ${nivel}: ${count} registro(s) - ${percentage}% del total</div>
-                            <div class="bar-fill" style="width: ${barWidth}%;">
-                                <span class="bar-value">${count}</span>
-                            </div>
-                        </div>
-                        <div class="bar-percentage">${percentage}%</div>
-                    </div>
-                    <div id="detail-${safeNivel.replace(/\s/g, '-')}" class="records-detail collapsed"></div>
-                `;
-            }
-
-            html += '</div></div>';
-            problemsContainer.innerHTML = html;
-        };
-
-        window.toggleRecordDetail = function(nivel, serieKey) {
-            const detailId = `detail-${nivel.replace(/\s/g, '-')}`;
-            const detailDiv = document.getElementById(detailId);
-            
-            if (!detailDiv) return;
-
-            if (detailDiv.classList.contains('expanded')) {
-                detailDiv.classList.remove('expanded');
-                detailDiv.classList.add('collapsed');
-                return;
-            }
-
-            document.querySelectorAll('.records-detail').forEach(el => {
-                el.classList.remove('expanded');
-                el.classList.add('collapsed');
-            });
-
-            const pmSerieHeader = currentProblemHeaders.find(h => h.toLowerCase().includes('serie reportada'));
-            const pmNivel2Header = currentProblemHeaders.find(h => h.toLowerCase().includes('nivel 2'));
-            
-            const filteredRecords = allProblemsData.filter(record => {
-                const recordSerie = sanitizeKey(record[pmSerieHeader]);
-                const recordNivel = record[pmNivel2Header] ? record[pmNivel2Header].trim() : 'SIN NIVEL 2';
-                return recordSerie === serieKey && recordNivel === nivel;
-            });
-
-            let detailHTML = `
-                <div class="detail-header">
-                    <div class="detail-title">📋 ${nivel} (${filteredRecords.length} registro${filteredRecords.length !== 1 ? 's' : ''})</div>
-                    <button class="close-detail-btn" onclick="toggleRecordDetail('${nivel.replace(/'/g, "\\'")}', '${serieKey}')">
-                        Cerrar ✕
-                    </button>
-                </div>
-                <div class="detail-content">
-            `;
-
-            if (filteredRecords.length === 0) {
-                detailHTML += '<div class="no-records-message">No se encontraron registros detallados.</div>';
-            } else {
-                const fieldsToShow = ['ESTADO', 'GRUPO RESOLUTOR', 'DEPENDENCIA', 'NOMBRE USUARIO', 'OBSERVACIÓN'];
-                
-                filteredRecords.forEach((record, index) => {
-                    const ticketKey = Object.keys(record).find(key => 
-                        key.trim().toUpperCase() === 'TICKET'
-                    );
-                    const ticketValue = ticketKey ? record[ticketKey] : `Registro ${index + 1}`;
-                    
-                    // Buscar el campo PROYECTO
-                    const proyectoKey = Object.keys(record).find(key => 
-                        key.trim().toUpperCase() === 'PROYECTO'
-                    );
-                    const proyectoValue = proyectoKey ? record[proyectoKey] : '';
-                    
-                    // Buscar el campo FECHA CREACION
-                    const fechaKey = Object.keys(record).find(key => 
-                        key.trim().toUpperCase() === 'FECHA CREACION'
-                    );
-                    const fechaValue = fechaKey ? record[fechaKey] : '';
-                    
-                    detailHTML += `<div class="record-item">`;
-                    
-                    // Mostrar header con fecha y proyecto
-                    detailHTML += `<div class="record-header-tags">`;
-                    
-                    // Fecha a la izquierda
-                    if (fechaValue && fechaValue !== 'N/A' && fechaValue.trim() !== '') {
-                        detailHTML += `<div class="record-date-tag">📅 ${fechaValue}</div>`;
-                    } else {
-                        detailHTML += `<div></div>`; // Espacio vacío para mantener el layout
-                    }
-                    
-                    // Proyecto a la derecha
-                    if (proyectoValue && proyectoValue !== 'N/A' && proyectoValue.trim() !== '') {
-                        detailHTML += `<div class="record-project-tag">📁 ${proyectoValue}</div>`;
-                    } else {
-                        detailHTML += `<div></div>`; // Espacio vacío para mantener el layout
-                    }
-                    
-                    detailHTML += `</div>`;
-                    
-                    detailHTML += `<div style="font-weight: 700; color: var(--primary-color); margin-bottom: 0.5rem;">🎫 Ticket: ${ticketValue}</div>`;
-                    
-                    fieldsToShow.forEach(fieldName => {
-                        const foundKey = Object.keys(record).find(key => 
-                            key.trim().toUpperCase() === fieldName.toUpperCase()
-                        );
-                        
-                        if (foundKey) {
-                            const value = record[foundKey] || 'N/A';
-                            detailHTML += `
-                                <div class="record-field">
-                                    <div class="record-field-label">${fieldName}:</div>
-                                    <div class="record-field-value">${value}</div>
-                                </div>
-                            `;
-                        }
-                    });
-                    
-                    detailHTML += `</div>`;
-                });
-            }
-
-            detailHTML += '</div>';
-
-            detailDiv.innerHTML = detailHTML;
-            detailDiv.classList.remove('collapsed');
-            detailDiv.classList.add('expanded');
-        };
-
-        const loadInitialData = async () => {
-            displayMessage('Cargando y analizando (BBDD de Equipos).');
-            showLoading(true, 'Cargando Estructura...');
-            try {
-                const csv1 = await fetchSheet(sheetURLs['Hoja 1'], 'Hoja 1');
-                const result1 = parseCSV(csv1);
-                equiposMap = new Map();
-                const headers = result1.headers || [];
-                const serieHeader = headers.find(h => h.toLowerCase().includes('serie') || h.toLowerCase().includes('serial'));
-                if (!serieHeader) throw new Error('No se encontró la columna de serie en BBDD Equipos.');
-                result1.data.forEach(item => {
-                    const serieLimpia = sanitizeKey(item[serieHeader]);
-                    if (serieLimpia.length > 0) equiposMap.set(serieLimpia, item);
-                });
-                if (equiposMap.size === 0) throw new Error('BBDD Equipos: No se pudo procesar ningún registro válido.');
-                displayMessage(`✅ ÉXITO. Datos de EQUIPOS cargados (${equiposMap.size} series). Ingresa una serie para buscar.`);
-            } catch (error) {
-                console.error('[ERROR CRÍTICO] Fallo al cargar los datos iniciales:', error);
-                displayMessage(`⚠️ Fallo crítico al cargar los datos: ${error.message}.`, true);
-                validateButton.textContent = 'Error de Carga';
-                validateButton.disabled = true;
-            } finally {
-                if (equiposMap.size > 0) {
-                    validateButton.disabled = false;
-                    validateButton.textContent = 'Buscar Equipo';
-                }
-            }
-        };
-
-        const handleSearch = async () => {
-            const serie = serieInput.value.trim();
-            if (serie.length < 5) {
-                displayMessage('Por favor, ingresa un número de serie válido (mínimo 5 caracteres).', true);
-                return;
-            }
-            
-            const equipo = getEquipoBySerie(serie);
-            const equipoEncontrado = equipo !== null;
-            
-            showLoading(true, 'Cargando BBDD de Problemas...');
-            try {
-                const csv2 = await fetchSheet(sheetURLs['BBDD PM 4'], 'BBDD PM 4');
-                const result2 = parseCSV(csv2);
-                
-                allProblemsData = result2.data;
-                currentProblemHeaders = result2.headers || [];
-                
-                const headers2 = result2.headers || [];
-                const pmSerieHeader = headers2.find(h => h.toLowerCase().includes('serie reportada'));
-                const pmNivel2Header = headers2.find(h => h.toLowerCase().includes('nivel 2'));
-                if (!pmSerieHeader || !pmNivel2Header) {
-                    throw new Error('BBDD PM 4: Faltan las columnas "SERIE REPORTADA" o "NIVEL 2".');
-                }
-                const saneadoSerie = sanitizeKey(serie);
-                const { problemCounts, totalProblems } = getProblemsBySerieAndCount(
-                    saneadoSerie,
-                    result2.data,
-                    pmSerieHeader,
-                    pmNivel2Header
-                );
-                
-                // Si el equipo no fue encontrado pero hay problemas registrados
-                if (!equipoEncontrado && totalProblems > 0) {
-                    const html = `
-                        <div class="result-item main-serie">
-                            <strong>NÚMERO DE SERIE CONSULTADO</strong>
-                            <span>${serie}</span>
-                        </div>
-                        <div class="error-message" style="background-color: #f59e0b20; color: var(--warning-color); border-color: var(--warning-color);">
-                            ⚠️ Equipo no encontrado en Base de Datos de Equipamiento
-                            <br><small style="margin-top: 0.5rem; display: block;">Sin embargo, se encontraron registros de problemas para esta serie.</small>
-                        </div>
-                        <div class="total-incidents">
-                            <strong>Total Registros de Problemas:</strong>
-                            <span>${totalProblems}</span>
-                        </div>
-                    `;
-                    resultDiv.innerHTML = html;
-                    renderProblemsTable(problemCounts, totalProblems, saneadoSerie);
-                } 
-                // Si el equipo no fue encontrado y tampoco hay problemas
-                else if (!equipoEncontrado && totalProblems === 0) {
-                    displayMessage(`⚠️ Serie "${serie}" no encontrada en la BBDD de Equipos ni en registros de problemas.`, true);
-                }
-                // Si el equipo fue encontrado (caso normal)
-                else {
-                    renderEquipoDetails(equipo, totalProblems);
-                    renderProblemsTable(problemCounts, totalProblems, saneadoSerie);
-                }
-            } catch (error) {
-                console.error("Error al buscar en BBDD PM 4:", error);
-                if (equipoEncontrado) {
-                    renderEquipoDetails(equipo, 0);
-                    problemsContainer.innerHTML = `<div class="error-message">⚠️ Error al cargar BBDD PM 4: ${error.message}. La BBDD de equipos se cargó correctamente.</div>`;
-                    problemsListTitle.style.display = 'block';
-                } else {
-                    displayMessage(`⚠️ Serie "${serie}" no encontrada en la BBDD de Equipos. Además, hubo un error al cargar BBDD de Promanager: ${error.message}`, true);
-                }
-            } finally {
-                showLoading(false);
-            }
-        };
-
-        const initialize = () => {
-            validateButton.textContent = 'Inicializando...';
-            validateButton.disabled = true;
-            validateButton.addEventListener('click', handleSearch);
-            serieInput.addEventListener('keyup', (e) => {
-                if (e.key === 'Enter' && !validateButton.disabled) {
-                    handleSearch();
-                }
-            });
-            loadInitialData();
-        };
-
-        window.onload = initialize;
-    </script>
-</body>
-</html>
-
+                const values = lines[i].split(CSV_SPLIT_REGEX
