@@ -139,6 +139,7 @@
             padding: 0.5rem;
             background: rgba(0,0,0,0.2);
             border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
         }
         .db-status span.ok { color: var(--success-color); font-weight: bold; }
         .db-status span.fail { color: var(--error-color); font-weight: bold; }
@@ -166,7 +167,7 @@
         .total-incidents strong { color: var(--text-color-medium); font-size: .8rem; display: block; text-transform: uppercase; }
         .total-incidents span { font-size: 1.3rem; font-weight: 800; color: var(--primary-color); }
 
-        /* --- CHARTS & DETAILS (Same as before) --- */
+        /* --- CHARTS & DETAILS --- */
         .unified-chart-container { padding: 1.5rem; background-color: #1a1a2e; border-radius: .75rem; overflow-x: hidden; }
         .chart-bars-wrapper { display: flex; flex-direction: column; gap: .8rem; }
         .chart-bar-item { display: flex; align-items: center; gap: 1rem; }
@@ -254,7 +255,9 @@
         <h1>Consulta de Equipos e Historial de Reportes</h1>
         <p>Ingrese el número de serie para obtener los datos base y el historial de problemas.</p>
         
-        <div class="db-status" id="db-status">Estado del sistema: Cargando...</div>
+        <div class="db-status" id="db-status">
+            Iniciando...
+        </div>
 
         <div class="search-section">
             <input type="text" id="serie-input" placeholder="Ej: 5CG9426Q2D">
@@ -272,11 +275,12 @@
         el('pjud-toggle').onclick = (e) => { e.stopPropagation(); el('pjud-list').classList.toggle('active'); };
         document.onclick = (e) => { if (!document.querySelector('.pjud-dropdown-container').contains(e.target)) el('pjud-list').classList.remove('active'); };
 
-        // Configuration
+        // --- CONFIGURACIÓN DE LINKS CORREGIDA ---
         const sheetURLs = {
             'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
             'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
-            'Habilitaciones': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?output=csv'
+            // NUEVO LINK CON EL GID ESPECÍFICO DE HABILITACIONES
+            'Habilitaciones': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1180790714&single=true&output=csv' 
         };
 
         let equiposMap = new Map();
@@ -284,7 +288,7 @@
         let allProblemsData = [];
         let currentProblemHeaders = [];
 
-        // Loading UI Functions
+        // UI Functions
         const updateProgress = (pct, status, sub) => {
             el('progress-bar').style.width = pct + '%';
             el('progress-percentage').textContent = Math.round(pct) + '%';
@@ -329,11 +333,11 @@
             return { data, headers };
         };
 
-        // PARSER ESPECÍFICO PARA TU ESTRUCTURA DE HABILITACIONES
         const parseHabilitaciones = (text) => {
             if (!text) return;
             const lines = text.split('\n').filter(l => l.trim());
-            // Busca la fila donde empiezan los títulos reales
+            
+            // Intento 1: Buscar fila con "Serie Principal Antigua"
             let headerRowIndex = -1;
             for (let i = 0; i < Math.min(lines.length, 10); i++) {
                 if (lines[i].toLowerCase().includes('serie principal antigua')) {
@@ -343,20 +347,21 @@
             }
             
             if (headerRowIndex === -1) {
-                console.error("No se encontró 'Serie Principal Antigua' en las primeras filas.");
-                el('db-status').innerHTML += '<br><span class="fail">Error: No se encontró columna Serie Principal Antigua</span>';
-                return;
+                console.warn("No se encontró 'Serie Principal Antigua'. Intentando lectura estándar.");
+                headerRowIndex = 0; 
             }
 
             const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
             const headers = lines[headerRowIndex].split(regex).map(h => h.trim().replace(/"/g, ''));
             
-            // Buscar índice de la columna exacta
+            // Busqueda flexible del indice de la columna
             const targetIndex = headers.findIndex(h => h.toLowerCase().includes('serie principal antigua'));
             
-            if (targetIndex === -1) return;
+            if (targetIndex === -1) {
+                console.error("Columna 'Serie Principal Antigua' no encontrada en los headers:", headers);
+                return;
+            }
 
-            // Procesar datos desde la siguiente fila
             for (let i = headerRowIndex + 1; i < lines.length; i++) {
                 const vals = lines[i].split(regex);
                 if (vals[targetIndex]) {
@@ -372,7 +377,7 @@
             setStep(1, 'active');
 
             try {
-                // Cargar Hoja 1
+                // 1. Cargar Hoja 1 (Inventario)
                 const csv1 = await fetchSheet(sheetURLs['Hoja 1']);
                 const res1 = parseCSV(csv1);
                 const serieHeader = res1.headers.find(h => h.toLowerCase().includes('serie') || h.toLowerCase().includes('serial'));
@@ -384,16 +389,14 @@
                 }
                 setStep(1, 'complete');
 
-                // Cargar Habilitaciones
+                // 2. Cargar Habilitaciones
                 setStep(2, 'active');
                 updateProgress(50, 'Analizando Habilitaciones...', 'Leyendo registros...');
                 const csvHab = await fetchSheet(sheetURLs['Habilitaciones']);
                 parseHabilitaciones(csvHab);
                 
-                el('db-status').innerHTML = `
-                    Equipos en Inventario: <span class="ok">${equiposMap.size}</span> | 
-                    Reg. Habilitaciones: <span class="${habilitacionesSet.size > 0 ? 'ok' : 'fail'}">${habilitacionesSet.size}</span>
-                `;
+                let habStatusClass = habilitacionesSet.size > 0 ? 'ok' : 'fail';
+                el('db-status').innerHTML = `Equipos en Inventario: <span class="ok">${equiposMap.size}</span> | Reg. Habilitaciones: <span class="${habStatusClass}">${habilitacionesSet.size}</span>`;
                 setStep(2, 'complete');
 
                 updateProgress(100, 'Listo', 'Sistema preparado');
@@ -405,7 +408,7 @@
 
             } catch (err) {
                 console.error(err);
-                el('db-status').innerHTML = `<span class="fail">Error de carga: ${err.message}</span>`;
+                el('db-status').innerHTML = `<span class="fail">Error crítico de carga: ${err.message}</span>`;
                 showLoading(false);
             }
         };
@@ -414,7 +417,7 @@
             const inHab = habilitacionesSet.has(serie);
             const inInv = !!equipo;
             
-            // Generar HTML del Banner de Alerta
+            // Lógica del Banner Rojo
             let alertHTML = '';
             if (inHab) {
                 alertHTML = `
@@ -422,19 +425,18 @@
                         <span class="alert-icon">⛔</span>
                         <div class="alert-banner-title">ADVERTENCIA CRÍTICA</div>
                         <div class="alert-banner-text">ÉSTA SERIE SE ENCUENTRA POR CAMBIO Y NO DEBERÍA ESTAR HABILITADA</div>
-                        ${!inInv ? '<div style="margin-top:0.5rem;font-size:0.9rem;opacity:0.9">(Serie encontrada en Habilitaciones, pero NO en Inventario activo)</div>' : ''}
+                        ${!inInv ? '<div style="margin-top:0.5rem;font-size:0.9rem;opacity:0.9">(Detectado en registro de cambios, pero no existe en inventario activo)</div>' : ''}
                     </div>
                 `;
             }
 
-            // Si no está en inventario y no está en habilitaciones -> No encontrado
+            // Si no hay nada de nada
             if (!inInv && !inHab && totalProblems === 0) {
                 el('result').innerHTML = `<div class="error-message">⚠️ Serie "${serie}" no encontrada en ninguna base de datos.</div>`;
                 el('problems-container').innerHTML = '';
                 return;
             }
 
-            // Datos del equipo (si existe)
             const tipo = equipo ? (equipo['Tipo'] || 'N/A') : 'No Registrado';
             const modelo = equipo ? (equipo['Modelo'] || 'N/A') : 'No Registrado';
             const proyecto = equipo ? (equipo['Proyecto'] || 'N/A') : 'No Registrado';
@@ -457,12 +459,11 @@
             `;
             el('result').innerHTML = html;
 
-            // Renderizar problemas
+            // Historial
             el('problems-list-title').style.display = 'block';
             if (totalProblems === 0) {
                 el('problems-container').innerHTML = '<div style="text-align:center;color:var(--text-color-medium);padding:15px;">No se encontraron registros de problemas.</div>';
             } else {
-                // (Lógica simplificada de renderizado de gráfico para brevedad, usando la misma de antes)
                 const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
                 let bars = '<div class="unified-chart-container"><div class="chart-bars-wrapper">';
                 sorted.forEach(([k, v]) => {
@@ -489,10 +490,8 @@
             if (rawSerie.length < 3) return alert("Ingrese una serie válida");
             const serie = sanitizeKey(rawSerie);
             
-            // Buscar en mapas locales
             const equipo = equiposMap.get(serie);
 
-            // Cargar historial de problemas (dinámico)
             el('validate-button').disabled = true;
             el('validate-button').textContent = 'Consultando historial...';
             
@@ -529,20 +528,18 @@
             }
         };
 
-        // Función global para detalles (necesaria para el onclick del HTML generado)
         window.toggleDetail = (nivel, serieKey) => {
              const id = `detail-${nivel.replace(/\s/g, '-')}`;
              const div = el(id);
              if(div.classList.contains('expanded')) { div.classList.remove('expanded'); return; }
              document.querySelectorAll('.records-detail').forEach(d => d.classList.remove('expanded'));
              
-             // Filtrar datos
              const hSerie = currentProblemHeaders.find(h => h.toLowerCase().includes('serie reportada'));
              const hNivel = currentProblemHeaders.find(h => h.toLowerCase().includes('nivel 2'));
              const recs = allProblemsData.filter(d => sanitizeKey(d[hSerie]) === sanitizeKey(serieKey) && (d[hNivel] || 'SIN NIVEL 2').trim() === nivel);
              
              let html = `<div class="detail-header"><div class="detail-title">${nivel}</div><button class="close-detail-btn" onclick="document.getElementById('${id}').classList.remove('expanded')">X</button></div><div class="detail-content">`;
-             rec = recs.forEach(r => {
+             recs.forEach(r => {
                  const tkt = Object.entries(r).find(([k]) => k.toLowerCase().includes('ticket'))?.[1] || 'N/A';
                  const obs = Object.entries(r).find(([k]) => k.toLowerCase().includes('observación'))?.[1] || '...';
                  const fecha = Object.entries(r).find(([k]) => k.toLowerCase().includes('fecha'))?.[1] || '';
