@@ -34,55 +34,53 @@
             margin: 0;
         }
 
-        /* --- ALERT BANNER (ANUNCIO ROJO) --- */
+        /* --- GRAN ANUNCIO ROJO (BANNER) --- */
         .alert-banner {
             grid-column: 1 / -1;
-            background-color: #7f1d1d; /* Rojo oscuro solido */
-            border: 4px solid #ef4444; /* Borde rojo brillante */
+            background-color: #450a0a; /* Fondo rojo muy oscuro */
+            border: 3px solid #ef4444; /* Borde rojo brillante */
             color: #ffffff;
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 0.75rem;
             margin-bottom: 2rem;
             text-align: center;
-            font-size: 1.3rem;
-            font-weight: 800;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 1rem;
-            animation: slideDown 0.4s ease-out;
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+            animation: slideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
             z-index: 100;
         }
 
-        .alert-banner .icon {
+        .alert-banner-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fca5a5;
+        }
+
+        .alert-banner-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .alert-icon {
             font-size: 3rem;
-            animation: pulse-warning 1s infinite;
+            animation: pulse-warning 1.5s infinite;
         }
 
         @keyframes pulse-warning {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            0% { transform: scale(1); text-shadow: 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.1); text-shadow: 0 0 20px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); text-shadow: 0 0 0 rgba(239, 68, 68, 0); }
         }
 
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
+            from { opacity: 0; transform: translateY(-50px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- DEBUG / SYSTEM ERROR MSG --- */
-        .system-msg {
-            background-color: #eab308;
-            color: #000;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            font-family: monospace;
-            white-space: pre-wrap;
-            display: none; /* Se activa con JS si hay error de columna */
         }
 
         /* --- LOADING OVERLAY --- */
@@ -775,115 +773,26 @@
         .pjud-list::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 10px; }
 
         /* --- RESPONSIVE ADJUSTMENTS --- */
-        
-        /* Tablets y pantallas medianas */
         @media (max-width: 900px) {
-            .container {
-                padding: 2rem;
-            }
-            .info-row {
-                grid-template-columns: 1fr;
-            }
-            .loading-content {
-                padding: 1.5rem;
-            }
-            /* Mover botón PJUD al flujo normal */
-            .pjud-dropdown-container {
-                position: relative;
-                top: auto;
-                right: auto;
-                width: 100%;
-                display: flex;
-                justify-content: center;
-                margin-bottom: 1.5rem;
-            }
-            .pjud-list {
-                right: 50%;
-                transform: translateX(50%);
-                width: 90%;
-                max-width: 300px;
-            }
-            .pjud-list.active {
-                /* Sobrescribe animación */
-                transform: translateX(50%);
-                animation: none;
-            }
+            .container { padding: 2rem; }
+            .info-row { grid-template-columns: 1fr; }
+            .pjud-dropdown-container { position: relative; top: auto; right: auto; width: 100%; display: flex; justify-content: center; margin-bottom: 1.5rem; }
+            .pjud-list { right: 50%; transform: translateX(50%); width: 90%; max-width: 300px; }
+            .pjud-list.active { transform: translateX(50%); animation: none; }
         }
-
-        /* Móviles */
         @media (max-width: 600px) {
-            body {
-                padding: 1rem;
-            }
-
-            .container {
-                padding: 1.5rem;
-            }
-
-            h1 {
-                font-size: 1.4rem;
-            }
-
-            .search-section {
-                flex-direction: column;
-                gap: 0.75rem;
-            }
-
-            #validate-button {
-                width: 100%;
-            }
-
-            /* Ajuste de gráficos en móvil */
-            .chart-bar-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.3rem;
-                margin-bottom: 1rem;
-            }
-
-            .bar-label {
-                width: 100%;
-                font-size: 0.85rem;
-                margin-bottom: 2px;
-            }
-
-            .bar-container {
-                width: 100%;
-            }
-            
-            .bar-percentage {
-                align-self: flex-end;
-                margin-top: -35px; /* Hack visual para poner el % junto a la barra */
-                z-index: 5;
-                position: relative;
-                color: #fff;
-                padding-right: 5px;
-                text-shadow: 0 0 4px #000;
-            }
-
-            /* Detalles de registros */
-            .detail-header {
-                flex-direction: column;
-                gap: 0.5rem;
-                text-align: center;
-            }
-
-            .record-field {
-                flex-direction: column;
-            }
-
-            .record-field-label {
-                margin-bottom: 0.2rem;
-                color: var(--primary-color);
-            }
-            
-            .record-header-tags {
-                flex-direction: column;
-            }
-            
-            .record-date-tag, .record-project-tag {
-                width: fit-content;
-            }
+            body { padding: 1rem; }
+            .container { padding: 1.5rem; }
+            .search-section { flex-direction: column; gap: 0.75rem; }
+            #validate-button { width: 100%; }
+            .chart-bar-item { flex-direction: column; align-items: flex-start; gap: 0.3rem; margin-bottom: 1rem; }
+            .bar-label { width: 100%; margin-bottom: 2px; }
+            .bar-container { width: 100%; }
+            .bar-percentage { align-self: flex-end; margin-top: -35px; z-index: 5; position: relative; color: #fff; padding-right: 5px; text-shadow: 0 0 4px #000; }
+            .detail-header { flex-direction: column; gap: 0.5rem; text-align: center; }
+            .record-field { flex-direction: column; }
+            .record-header-tags { flex-direction: column; }
+            .record-date-tag, .record-project-tag { width: fit-content; }
         }
     </style>
 </head>
@@ -958,8 +867,6 @@
         <h1>Consulta de Equipos e Historial de Reportes</h1>
         <p>Ingrese el número de serie para obtener los datos base y el historial de problemas.</p>
         
-        <div id="system-msg" class="system-msg"></div>
-
         <div class="search-section">
             <input type="text" id="serie-input" placeholder="Ej: 5CG9426Q2D">
             <button id="validate-button">Inicializando...</button>
@@ -986,18 +893,20 @@
             }
         });
 
-        // --- CONFIGURACIÓN ---
+        // --- CONFIGURACIÓN DE LINKS ---
         const sheetURLs = {
             'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
             'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
-            // *** PEGA EL LINK AQUÍ ***
-            'Habilitaciones': 'PON_AQUI_EL_LINK_CSV_DE_HABILITACIONES' 
+            // ESTE ES EL LINK QUE PROPORCIONASTE
+            'Habilitaciones': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?output=csv' 
         };
 
         let equiposMap = new Map();
         let habilitacionesSet = new Set();
         let allProblemsData = [];
         let currentProblemHeaders = [];
+        
+        // Elementos DOM
         const serieInput = document.getElementById('serie-input');
         const validateButton = document.getElementById('validate-button');
         const resultDiv = document.getElementById('result');
@@ -1008,22 +917,9 @@
         const progressPercentage = document.getElementById('progress-percentage');
         const progressStatus = document.getElementById('progress-status');
         const loadingSubtitle = document.getElementById('loading-subtitle');
-        const systemMsgDiv = document.getElementById('system-msg');
 
-        function showSystemMsg(msg) {
-            systemMsgDiv.textContent = msg;
-            systemMsgDiv.style.display = 'block';
-        }
-
-        function showLoadingOverlay() {
-            loadingOverlay.classList.add('active');
-        }
-
-        function hideLoadingOverlay() {
-            setTimeout(() => {
-                loadingOverlay.classList.remove('active');
-            }, 500);
-        }
+        function showLoadingOverlay() { loadingOverlay.classList.add('active'); }
+        function hideLoadingOverlay() { setTimeout(() => { loadingOverlay.classList.remove('active'); }, 500); }
 
         function updateProgress(percentage, status, subtitle) {
             progressBar.style.width = percentage + '%';
@@ -1033,9 +929,7 @@
         }
 
         function activateStep(stepNumber) {
-            document.querySelectorAll('.loading-step').forEach(s => {
-                s.classList.remove('active');
-            });
+            document.querySelectorAll('.loading-step').forEach(s => { s.classList.remove('active'); });
             const step = document.getElementById(`step-${stepNumber}`);
             if (step) step.classList.add('active');
         }
@@ -1053,11 +947,6 @@
             return key.trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
         };
 
-        const normalizeHeader = (header) => {
-            if (!header) return "";
-            return header.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
-        };
-
         const displayMessage = (message, isError = false) => {
             resultDiv.innerHTML = `<div class="result-item ${isError ? 'error-message' : ''}">${message}</div>`;
             problemsContainer.innerHTML = '';
@@ -1072,12 +961,6 @@
         const fetchSheet = async (url, sheetName) => {
             const TIMEOUT_MS = 60000;
             try {
-                if (url.includes('PON_AQUI_EL_LINK')) {
-                    if (sheetName === 'Habilitaciones') {
-                        return ""; 
-                    }
-                }
-
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
                 const response = await fetch(url, { signal: controller.signal });
@@ -1100,6 +983,7 @@
             }
         };
 
+        // PARSER ESTÁNDAR (Para Hoja 1 y BBDD PM 4)
         const parseCSV = (csvText) => {
             if (!csvText) return { data: [], headers: [] };
             const lines = csvText.split('\n').filter(line => line.trim() !== '');
@@ -1110,6 +994,46 @@
             for (let i = 1; i < lines.length; i++) {
                 const values = lines[i].split(CSV_SPLIT_REGEX);
                 if (values.length !== headers.length) continue;
+                const obj = {};
+                headers.forEach((header, index) => {
+                    let value = values[index] ? values[index].trim() : '';
+                    if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+                    value = value.replace(/""/g, '"');
+                    obj[header] = value;
+                });
+                data.push(obj);
+            }
+            return { data, headers };
+        };
+
+        // --- PARSER INTELIGENTE PARA HABILITACIONES ---
+        // Busca la fila que contiene "Serie Principal Antigua"
+        const parseSmartHabilitaciones = (csvText) => {
+            if (!csvText) return { data: [], headers: [] };
+            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            
+            // Buscar en las primeras 20 líneas el encabezado correcto
+            let headerIndex = -1;
+            for(let i = 0; i < Math.min(lines.length, 20); i++) {
+                if(lines[i].toLowerCase().includes("serie principal antigua")) {
+                    headerIndex = i;
+                    console.log("✅ Encabezado encontrado en fila:", i + 1);
+                    break;
+                }
+            }
+
+            if(headerIndex === -1) {
+                console.warn("⚠️ No se encontró la frase 'Serie Principal Antigua' en las primeras filas.");
+                return { data: [], headers: [] };
+            }
+
+            const CSV_SPLIT_REGEX = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+            const headers = lines[headerIndex].split(CSV_SPLIT_REGEX).map(h => h.trim().replace(/"/g, ''));
+            
+            const data = [];
+            for (let i = headerIndex + 1; i < lines.length; i++) {
+                const values = lines[i].split(CSV_SPLIT_REGEX);
+                // Permitimos filas un poco imperfectas, pero intentamos mapear
                 const obj = {};
                 headers.forEach((header, index) => {
                     let value = values[index] ? values[index].trim() : '';
@@ -1160,8 +1084,9 @@
             if (checkHabilitaciones(serie)) {
                 alertHTML = `
                     <div class="alert-banner">
-                        <span class="icon">⛔</span>
-                        <span>ÉSTA SERIE SE ENCUENTRA POR CAMBIO Y NO DEBERÍA ESTAR HABILITADA</span>
+                        <span class="alert-icon">⛔</span>
+                        <div class="alert-banner-title">ADVERTENCIA CRÍTICA</div>
+                        <div class="alert-banner-text">ÉSTA SERIE SE ENCUENTRA POR CAMBIO Y NO DEBERÍA ESTAR HABILITADA</div>
                     </div>
                 `;
             }
@@ -1227,7 +1152,6 @@
         window.toggleRecordDetail = function(nivel, serieKey) {
             const detailId = `detail-${nivel.replace(/\s/g, '-')}`;
             const detailDiv = document.getElementById(detailId);
-            
             if (!detailDiv) return;
 
             if (detailDiv.classList.contains('expanded')) {
@@ -1235,9 +1159,7 @@
                 return;
             }
 
-            document.querySelectorAll('.records-detail').forEach(el => {
-                el.classList.remove('expanded');
-            });
+            document.querySelectorAll('.records-detail').forEach(el => { el.classList.remove('expanded'); });
 
             const pmSerieHeader = currentProblemHeaders.find(h => h.toLowerCase().includes('serie reportada'));
             const pmNivel2Header = currentProblemHeaders.find(h => h.toLowerCase().includes('nivel 2'));
@@ -1251,9 +1173,7 @@
             let detailHTML = `
                 <div class="detail-header">
                     <div class="detail-title">📋 ${nivel} (${filteredRecords.length} registro${filteredRecords.length !== 1 ? 's' : ''})</div>
-                    <button class="close-detail-btn" onclick="toggleRecordDetail('${nivel.replace(/'/g, "\\'")}', '${serieKey}')">
-                        Cerrar ✕
-                    </button>
+                    <button class="close-detail-btn" onclick="toggleRecordDetail('${nivel.replace(/'/g, "\\'")}', '${serieKey}')">Cerrar ✕</button>
                 </div>
                 <div class="detail-content">
             `;
@@ -1262,59 +1182,33 @@
                 detailHTML += '<div style="text-align:center;color:var(--text-color-medium);padding:2rem;">Sin registros</div>';
             } else {
                 const fieldsToShow = ['ESTADO', 'GRUPO RESOLUTOR', 'DEPENDENCIA', 'NOMBRE USUARIO', 'OBSERVACIÓN'];
-                
                 filteredRecords.forEach((record, index) => {
                     const ticketKey = Object.keys(record).find(key => key.trim().toUpperCase() === 'TICKET');
                     const ticketValue = ticketKey ? record[ticketKey] : `Registro ${index + 1}`;
-                    
                     const proyectoKey = Object.keys(record).find(key => key.trim().toUpperCase() === 'PROYECTO');
                     const proyectoValue = proyectoKey ? record[proyectoKey] : '';
-                    
                     const fechaKey = Object.keys(record).find(key => key.trim().toUpperCase() === 'FECHA CREACION');
                     const fechaValue = fechaKey ? record[fechaKey] : '';
                     
-                    detailHTML += `<div class="record-item">`;
+                    detailHTML += `<div class="record-item"><div class="record-header-tags">`;
+                    if (fechaValue && fechaValue !== 'N/A') detailHTML += `<div class="record-date-tag">📅 ${fechaValue}</div>`;
+                    else detailHTML += `<div></div>`;
+                    if (proyectoValue && proyectoValue !== 'N/A') detailHTML += `<div class="record-project-tag">📁 ${proyectoValue}</div>`;
+                    else detailHTML += `<div></div>`;
                     
-                    detailHTML += `<div class="record-header-tags">`;
-                    
-                    if (fechaValue && fechaValue !== 'N/A' && fechaValue.trim() !== '') {
-                        detailHTML += `<div class="record-date-tag">📅 ${fechaValue}</div>`;
-                    } else {
-                        detailHTML += `<div></div>`;
-                    }
-                    
-                    if (proyectoValue && proyectoValue !== 'N/A' && proyectoValue.trim() !== '') {
-                        detailHTML += `<div class="record-project-tag">📁 ${proyectoValue}</div>`;
-                    } else {
-                        detailHTML += `<div></div>`;
-                    }
-                    
-                    detailHTML += `</div>`;
-                    
-                    detailHTML += `<div style="font-weight:700;color:var(--primary-color);margin-bottom:0.5rem;">🎫 Ticket: ${ticketValue}</div>`;
+                    detailHTML += `</div><div style="font-weight:700;color:var(--primary-color);margin-bottom:0.5rem;">🎫 Ticket: ${ticketValue}</div>`;
                     
                     fieldsToShow.forEach(fieldName => {
-                        const foundKey = Object.keys(record).find(key => 
-                            key.trim().toUpperCase() === fieldName.toUpperCase()
-                        );
-                        
+                        const foundKey = Object.keys(record).find(key => key.trim().toUpperCase() === fieldName.toUpperCase());
                         if (foundKey) {
                             const value = record[foundKey] || 'N/A';
-                            detailHTML += `
-                                <div class="record-field">
-                                    <div class="record-field-label">${fieldName}:</div>
-                                    <div class="record-field-value">${value}</div>
-                                </div>
-                            `;
+                            detailHTML += `<div class="record-field"><div class="record-field-label">${fieldName}:</div><div class="record-field-value">${value}</div></div>`;
                         }
                     });
-                    
                     detailHTML += `</div>`;
                 });
             }
-
             detailHTML += '</div>';
-
             detailDiv.innerHTML = detailHTML;
             detailDiv.classList.add('expanded');
         };
@@ -1325,9 +1219,11 @@
             activateStep(1);
             
             try {
+                // 1. CARGA HOJA 1
                 updateProgress(25, 'Conectando...', 'Accediendo a Google Sheets (Equipos)');
                 const csv1 = await fetchSheet(sheetURLs['Hoja 1'], 'Hoja 1');
                 
+                // 2. CARGA HABILITACIONES
                 updateProgress(40, 'Conectando...', 'Accediendo a Google Sheets (Habilitaciones)');
                 const csvHab = await fetchSheet(sheetURLs['Habilitaciones'], 'Habilitaciones');
                 
@@ -1335,6 +1231,7 @@
                 completeStep(1);
                 activateStep(2);
                 
+                // 3. PROCESAR HOJA 1
                 const result1 = parseCSV(csv1);
                 equiposMap = new Map();
                 const headers = result1.headers || [];
@@ -1347,28 +1244,26 @@
                     if (serieLimpia.length > 0) equiposMap.set(serieLimpia, item);
                 });
 
+                // 4. PROCESAR HABILITACIONES (USANDO PARSER INTELIGENTE)
                 updateProgress(65, 'Procesando...', 'Indexando lista de habilitaciones');
                 habilitacionesSet = new Set();
                 
                 if (csvHab) {
-                    const resultHab = parseCSV(csvHab);
+                    // AQUÍ ESTÁ EL CAMBIO CLAVE:
+                    const resultHab = parseSmartHabilitaciones(csvHab);
                     const habHeaders = resultHab.headers || [];
                     
-                    // LÓGICA DE BÚSQUEDA MÁS AGRESIVA
-                    // Busca "AN", o "ANTIGUA" y "SERIE" juntos en el nombre
-                    const serieHabHeader = habHeaders.find(h => {
-                        const cleanHeader = normalizeHeader(h);
-                        return cleanHeader === "AN" || (cleanHeader.includes("SERIE") && cleanHeader.includes("ANTIGUA"));
-                    });
+                    // Buscar columna por nombre exacto o aproximado
+                    const serieHabHeader = habHeaders.find(h => h.toLowerCase().includes("serie principal antigua"));
 
                     if (serieHabHeader) {
                         resultHab.data.forEach(row => {
                             const s = sanitizeKey(row[serieHabHeader]);
                             if (s.length > 0) habilitacionesSet.add(s);
                         });
+                        console.log(`✅ Se indexaron ${habilitacionesSet.size} registros de Habilitaciones.`);
                     } else {
-                        // SI NO ENCUENTRA LA COLUMNA, MUESTRA MENSAJE DE ERROR EN PANTALLA
-                        showSystemMsg("⚠️ AVISO DE SISTEMA:\nNo se encontró la columna 'Serie Principal Antigua' en el archivo Habilitaciones.\nColumnas detectadas: " + habHeaders.join(", "));
+                        console.warn('No se pudo identificar la columna Serie Principal Antigua después del parseo inteligente.');
                     }
                 }
                 
@@ -1377,12 +1272,10 @@
                 updateProgress(90, 'Validando...', 'Verificando integridad de datos');
                 completeStep(2);
                 activateStep(3);
-                
                 await new Promise(resolve => setTimeout(resolve, 300));
                 
                 updateProgress(100, 'Completado', 'Sistema listo para usar');
                 completeStep(3);
-                
                 displayMessage(`✅ Sistema cargado correctamente. ${equiposMap.size} equipos disponibles. Validaciones activas.`);
                 
             } catch (error) {
@@ -1463,8 +1356,9 @@
                     if (checkHabilitaciones(serie)) {
                         alertHTML = `
                             <div class="alert-banner">
-                                <span class="icon">⛔</span>
-                                <span>ÉSTA SERIE SE ENCUENTRA POR CAMBIO Y NO DEBERÍA ESTAR HABILITADA</span>
+                                <span class="alert-icon">⛔</span>
+                                <div class="alert-banner-title">ADVERTENCIA CRÍTICA</div>
+                                <div class="alert-banner-text">ÉSTA SERIE SE ENCUENTRA POR CAMBIO Y NO DEBERÍA ESTAR HABILITADA</div>
                             </div>
                         `;
                     }
@@ -1507,19 +1401,15 @@
             }
         };
 
-        const initialize = () => {
+        window.onload = () => {
             validateButton.textContent = 'Inicializando...';
             validateButton.disabled = true;
             validateButton.addEventListener('click', handleSearch);
             serieInput.addEventListener('keyup', (e) => {
-                if (e.key === 'Enter' && !validateButton.disabled) {
-                    handleSearch();
-                }
+                if (e.key === 'Enter' && !validateButton.disabled) handleSearch();
             });
             loadInitialData();
         };
-
-        window.onload = initialize;
     </script>
 </body>
 </html>
