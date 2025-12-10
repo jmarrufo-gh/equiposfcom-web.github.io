@@ -32,7 +32,7 @@
             margin: 0;
         }
 
-        /* --- ALERT BANNER (ROJO) --- */
+        /* --- ALERT BANNER MEJORADO --- */
         .alert-banner {
             grid-column: 1 / -1;
             background-color: #450a0a;
@@ -63,6 +63,38 @@
         .alert-banner-text {
             font-size: 1.1rem;
             font-weight: 600;
+        }
+
+        /* Nuevo contenedor para detalles de habilitación */
+        .alert-details {
+            display: flex;
+            gap: 1.5rem;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            border: 1px solid #ef4444;
+        }
+
+        .alert-detail-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .alert-detail-label {
+            font-size: 0.75rem;
+            color: #fca5a5;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .alert-detail-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
         }
 
         .alert-icon {
@@ -275,16 +307,17 @@
         el('pjud-toggle').onclick = (e) => { e.stopPropagation(); el('pjud-list').classList.toggle('active'); };
         document.onclick = (e) => { if (!document.querySelector('.pjud-dropdown-container').contains(e.target)) el('pjud-list').classList.remove('active'); };
 
-        // --- CONFIGURACIÓN DE LINKS CORREGIDA ---
+        // --- CONFIGURACIÓN DE LINKS ---
         const sheetURLs = {
             'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
             'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
-            // NUEVO LINK CON EL GID ESPECÍFICO DE HABILITACIONES
+            // Enlace con GID correcto para Habilitaciones
             'Habilitaciones': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1180790714&single=true&output=csv' 
         };
 
+        // Cambiamos Set por Map para guardar datos extra
         let equiposMap = new Map();
-        let habilitacionesSet = new Set();
+        let habilitacionesMap = new Map();
         let allProblemsData = [];
         let currentProblemHeaders = [];
 
@@ -357,16 +390,21 @@
             // Busqueda flexible del indice de la columna
             const targetIndex = headers.findIndex(h => h.toLowerCase().includes('serie principal antigua'));
             
-            if (targetIndex === -1) {
-                console.error("Columna 'Serie Principal Antigua' no encontrada en los headers:", headers);
-                return;
-            }
+            if (targetIndex === -1) return;
 
             for (let i = headerRowIndex + 1; i < lines.length; i++) {
                 const vals = lines[i].split(regex);
                 if (vals[targetIndex]) {
                     const cleanVal = vals[targetIndex].replace(/^"|"$/g, '').trim();
-                    if (cleanVal) habilitacionesSet.add(sanitizeKey(cleanVal));
+                    if (cleanVal) {
+                        // Capturar columnas extra: F (índice 5) y M (índice 12)
+                        // Aseguramos que existan los índices antes de acceder
+                        const fecha = vals[5] ? vals[5].replace(/^"|"$/g, '').trim() : 'N/A';
+                        const sucursal = vals[12] ? vals[12].replace(/^"|"$/g, '').trim() : 'N/A';
+                        
+                        // Guardamos objeto con detalles en lugar de solo true/false
+                        habilitacionesMap.set(sanitizeKey(cleanVal), { fecha, sucursal });
+                    }
                 }
             }
         };
@@ -395,8 +433,8 @@
                 const csvHab = await fetchSheet(sheetURLs['Habilitaciones']);
                 parseHabilitaciones(csvHab);
                 
-                let habStatusClass = habilitacionesSet.size > 0 ? 'ok' : 'fail';
-                el('db-status').innerHTML = `Equipos en Inventario: <span class="ok">${equiposMap.size}</span> | Reg. Habilitaciones: <span class="${habStatusClass}">${habilitacionesSet.size}</span>`;
+                let habStatusClass = habilitacionesMap.size > 0 ? 'ok' : 'fail';
+                el('db-status').innerHTML = `Equipos en Inventario: <span class="ok">${equiposMap.size}</span> | Reg. Habilitaciones: <span class="${habStatusClass}">${habilitacionesMap.size}</span>`;
                 setStep(2, 'complete');
 
                 updateProgress(100, 'Listo', 'Sistema preparado');
@@ -414,7 +452,9 @@
         };
 
         const renderResult = (serie, equipo, totalProblems, counts) => {
-            const inHab = habilitacionesSet.has(serie);
+            // Obtenemos los datos guardados en el mapa
+            const habInfo = habilitacionesMap.get(serie);
+            const inHab = !!habInfo; // true si existe
             const inInv = !!equipo;
             
             // Lógica del Banner Rojo
@@ -425,6 +465,18 @@
                         <span class="alert-icon">⛔</span>
                         <div class="alert-banner-title">ADVERTENCIA CRÍTICA</div>
                         <div class="alert-banner-text">ÉSTA SERIE SE ENCUENTRA POR CAMBIO Y NO DEBERÍA ESTAR HABILITADA</div>
+                        
+                        <div class="alert-details">
+                            <div class="alert-detail-item">
+                                <span class="alert-detail-label">Fecha Instalación</span>
+                                <span class="alert-detail-value">${habInfo.fecha}</span>
+                            </div>
+                            <div class="alert-detail-item">
+                                <span class="alert-detail-label">Sucursal</span>
+                                <span class="alert-detail-value">${habInfo.sucursal}</span>
+                            </div>
+                        </div>
+
                         ${!inInv ? '<div style="margin-top:0.5rem;font-size:0.9rem;opacity:0.9">(Detectado en registro de cambios, pero no existe en inventario activo)</div>' : ''}
                     </div>
                 `;
