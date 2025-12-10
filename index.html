@@ -3,42 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta de Equipos e Historial de Reportes</title>
+    <title>Consulta de Equipos - HP / FCOM</title>
     <style>
         :root {
-            /* --- PALETA CORPORATIVA --- */
-            --bg-gradient-start: #e6f0ff; /* Azul muy claro para inicio de degradado */
-            --bg-gradient-end: #f8f9fa;   /* Blanco suave para fin de degradado */
-            --card-bg: #ffffff;           
-            --primary-color: #0071c5;     /* Azul corporativo HP */
-            --primary-hover: #005a9e;     
-            --secondary-color: #0096d6;   /* Azul FCOM */
-            --gradient-start: #0071c5;
-            --gradient-end: #00b4d8;      
+            /* --- NUEVA PALETA DE COLORES --- */
+            --hp-blue: #0071c5;          /* Azul corporativo HP */
+            --fcom-blue: #0096d6;        /* Azul FCOM */
+            --gradient-blue: #00b4d8;    /* Azul gradiente claro */
+            --hover-blue: #005a9e;       /* Hover azul */
+            --btn-bg: #f1f7ff;           /* Fondo botones */
+            --border-light: #cfe2ff;     /* Borde claro */
+            --hover-light: #e0efff;      /* Hover fondo claro */
+            --bg-soft: #f8f9fa;          /* Fondos suaves */
+            --warning: #ffc107;          /* Amarillo advertencia */
+            --info: #d1ecf1;             /* Celeste información */
+            --white: #ffffff;            /* Blanco limpio */
+            --text-main: #2d2d2d;        /* Texto general */
+            --text-muted: #6c757d;       /* Texto secundario */
             
-            --text-main: #2d2d2d;         
-            --text-secondary: #555555;
-            --text-inverse: #ffffff;
-            
-            --border-color: #cfe2ff;      
-            --input-bg: #ffffff;
-            --button-bg-light: #f1f7ff;   
-            --hover-light: #e0efff;       
-            
-            --error-color: #dc3545;       
-            --warning-color: #ffc107;     
-            --success-color: #28a745;
-            
-            --shadow: 0 4px 12px rgba(0, 113, 197, 0.15); 
+            --error-color: #dc3545;
+            --success-color: #198754;
         }
 
         * { box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            /* NUEVO FONDO DEGRADADO */
-            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
-            background-attachment: fixed; /* El fondo se queda fijo al hacer scroll */
+            font-family: 'Segoe UI', 'Inter', -apple-system, sans-serif;
+            /* Fondo azul degradado solicitado */
+            background: linear-gradient(135deg, var(--hp-blue) 0%, var(--gradient-blue) 100%);
             color: var(--text-main);
             display: flex;
             justify-content: center;
@@ -46,38 +38,116 @@
             min-height: 100vh;
             padding: 2rem;
             margin: 0;
-            position: relative; /* Necesario para los logos absolutos */
+            background-attachment: fixed;
         }
 
-        /* --- ESTILOS PARA LOS LOGOS DE LA PÁGINA --- */
-        .page-logo {
-            position: absolute;
-            top: 1.5rem;
-            height: auto;
-            z-index: 50;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .container { 
+            width: 100%; 
+            max-width: 900px; 
+            background-color: var(--white); 
+            padding: 2.5rem; 
+            border-radius: 12px; 
+            box-shadow: 0 15px 35px rgba(0, 50, 100, 0.3); 
+            margin-top: 1rem; 
+            position: relative;
         }
 
-        .left-logo {
-            left: 2rem;
-            height: 55px; /* Ajuste de tamaño para el logo FCOM */
+        /* --- HEADER CON LOGOS --- */
+        .header-logos {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-light);
         }
 
-        .right-logo {
-            right: 2rem;
-            height: 60px; /* Ajuste de tamaño para el logo HP */
-            border-radius: 8px; /* Suavizar esquinas del JPG de HP */
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Sombra para que resalte del fondo */
+        .logo-img {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo-img:hover { transform: scale(1.05); }
+
+        h1 { 
+            font-size: 1.8rem; 
+            font-weight: 700; 
+            color: var(--hp-blue); 
+            text-align: center; 
+            margin: 0.5rem 0; 
+            line-height: 1.2; 
         }
 
-        /* --- ALERT BANNER (CRÍTICO) --- */
+        p { 
+            text-align: center; 
+            color: var(--text-muted); 
+            margin-bottom: 1.5rem; 
+            font-size: 0.95rem; 
+        }
+        
+        /* --- ESTADO DB --- */
+        .db-status {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            padding: 0.5rem;
+            background: var(--bg-soft);
+            border-radius: 6px;
+            border: 1px solid var(--border-light);
+        }
+        .db-status span.ok { color: var(--success-color); font-weight: bold; }
+        .db-status span.fail { color: var(--error-color); font-weight: bold; }
+
+        /* --- SEARCH SECTION --- */
+        .search-section { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        
+        #serie-input { 
+            flex-grow: 1; 
+            padding: 0.8rem 1.25rem; 
+            border: 2px solid var(--border-light); 
+            border-radius: 50px; 
+            background-color: var(--bg-soft); 
+            color: var(--text-main); 
+            font-size: 1rem; 
+            width: 100%; 
+            transition: all 0.3s;
+        }
+        
+        #serie-input:focus { 
+            border-color: var(--fcom-blue); 
+            background-color: var(--white);
+            box-shadow: 0 0 0 4px rgba(0, 150, 214, 0.15); 
+            outline: 0; 
+        }
+
+        #validate-button { 
+            padding: 0.8rem 2rem; 
+            background-color: var(--hp-blue); 
+            color: var(--white); 
+            border: none; 
+            border-radius: 50px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            white-space: nowrap; 
+            box-shadow: 0 4px 6px rgba(0, 113, 197, 0.3);
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        
+        #validate-button:hover { background-color: var(--hover-blue); transform: translateY(-1px); }
+        #validate-button:disabled { background-color: var(--border-light); color: var(--text-muted); cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* --- ALERT BANNER --- */
         .alert-banner {
             grid-column: 1 / -1;
             background-color: #fff5f5;
-            border: 2px solid #dc3545;
-            color: #721c24;
+            border: 2px solid var(--error-color);
+            color: #842029;
             padding: 1.5rem;
-            border-radius: 0.75rem;
+            border-radius: 8px;
             margin-bottom: 2rem;
             text-align: center;
             display: flex;
@@ -85,142 +155,302 @@
             align-items: center;
             justify-content: center;
             gap: 1rem;
-            animation: slideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 8px 20px rgba(220, 53, 69, 0.15);
-            z-index: 100;
+            animation: slideDown 0.5s ease-out;
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.1);
         }
-        .alert-banner-title { font-size: 1.4rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #dc3545; }
-        .alert-banner-text { font-size: 1.1rem; font-weight: 600; }
-        .alert-details { display: flex; gap: 1.5rem; background-color: #ffffff; padding: 0.8rem 1.5rem; border-radius: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; justify-content: center; border: 1px solid #f5c6cb; }
-        .alert-detail-item { display: flex; flex-direction: column; align-items: center; }
-        .alert-detail-label { font-size: 0.75rem; color: #dc3545; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-        .alert-detail-value { font-size: 1.1rem; font-weight: 700; color: #2d2d2d; }
-        .alert-icon { font-size: 3rem; animation: pulse-warning 1.5s infinite; }
-        @keyframes pulse-warning { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- LOADING OVERLAY --- */
-        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 9999; padding: 1rem; }
+        .alert-banner-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--error-color);
+        }
+
+        .alert-details {
+            display: flex;
+            gap: 1.5rem;
+            background-color: #fff;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            border: 1px solid #f5c2c7;
+        }
+
+        .alert-detail-label { font-size: 0.75rem; color: var(--error-color); text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
+        .alert-detail-value { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
+        .alert-icon { font-size: 2.5rem; }
+
+        /* --- RESULTADOS --- */
+        #result { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1rem; 
+            padding: 1.5rem; 
+            margin-bottom: 2rem; 
+            background-color: var(--bg-soft); 
+            border-radius: 8px; 
+            border: 1px solid var(--border-light);
+        }
+        
+        .result-item { 
+            padding: 0.5rem 0; 
+            display: flex; 
+            flex-direction: column; 
+            word-break: break-word; 
+        }
+        
+        .result-item strong { 
+            color: var(--text-muted); 
+            font-size: 0.8rem; 
+            text-transform: uppercase; 
+            margin-bottom: 0.3rem; 
+        }
+        
+        .result-item span { 
+            font-weight: 600; 
+            color: var(--text-main); 
+            font-size: 1.1rem;
+        }
+
+        .main-serie { 
+            grid-column: 1/-1; 
+            text-align: center; 
+            border-bottom: 2px solid var(--border-light); 
+            padding-bottom: 1rem; 
+            margin-bottom: 0.5rem; 
+        }
+        .main-serie span { font-size: 1.8rem; color: var(--hp-blue); font-weight: 800; letter-spacing: 1px; }
+
+        .info-row { 
+            grid-column: 1/-1; 
+            display: grid; 
+            grid-template-columns: 1fr 1.5fr 1fr; 
+            gap: 1rem; 
+            align-items: stretch; 
+            margin: 0.5rem 0; 
+        }
+        
+        .highlight { 
+            background-color: var(--white); 
+            padding: 1rem; 
+            border-radius: 8px; 
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+        
+        .project-item { 
+            background: linear-gradient(135deg, var(--btn-bg), var(--hover-light)); 
+            padding: 1.2rem; 
+            border-radius: 8px; 
+            border: 1px solid var(--border-light);
+            border-left: 5px solid var(--fcom-blue); 
+            text-align: center; 
+        }
+        .project-item span { color: var(--hp-blue); font-weight: 800; }
+
+        .total-incidents { 
+            grid-column: 1/-1; 
+            text-align: center; 
+            background-color: var(--btn-bg); 
+            padding: 1rem; 
+            border-radius: 8px; 
+            margin-top: 0.5rem; 
+            border: 1px solid var(--border-light);
+        }
+        .total-incidents span { font-size: 1.4rem; font-weight: 800; color: var(--hp-blue); }
+
+        /* --- GRÁFICAS Y DETALLES --- */
+        .unified-chart-container { 
+            padding: 1.5rem; 
+            background-color: var(--bg-soft); 
+            border-radius: 8px; 
+            border: 1px solid var(--border-light);
+        }
+        
+        .bar-label { min-width: 200px; font-size: 0.9rem; color: var(--text-main); font-weight: 600; }
+        
+        .bar-container { 
+            flex-grow: 1; 
+            height: 35px; 
+            background-color: var(--border-light); 
+            border-radius: 6px; 
+            overflow: hidden; 
+            cursor: pointer; 
+        }
+        
+        .bar-fill { 
+            height: 100%; 
+            background: linear-gradient(90deg, var(--hp-blue), var(--fcom-blue)); 
+            border-radius: 6px; 
+            transition: all 0.3s ease; 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; 
+            padding-right: 0.75rem; 
+        }
+        .bar-fill:hover { background: linear-gradient(90deg, var(--hover-blue), var(--hp-blue)); }
+        
+        .chart-bars-wrapper { display: flex; flex-direction: column; gap: 0.8rem; }
+        .chart-bar-item { display: flex; align-items: center; gap: 1rem; }
+        .bar-value { color: var(--white); font-weight: 700; font-size: 0.9rem; }
+        .bar-percentage { font-size: 0.75rem; color: var(--text-muted); min-width: 45px; text-align: right; }
+
+        /* Detalles expandibles */
+        .records-detail { 
+            margin-top: 1rem; 
+            background-color: var(--white); 
+            border-radius: 8px; 
+            border: 1px solid var(--border-light);
+            border-left: 4px solid var(--hp-blue); 
+            max-height: 0; 
+            overflow: hidden; 
+            transition: max-height 0.4s ease; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .records-detail.expanded { max-height: 600px; }
+        
+        .detail-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 1rem; 
+            border-bottom: 1px solid var(--border-light); 
+            background-color: var(--btn-bg); 
+        }
+        .detail-title { font-weight: 700; color: var(--hp-blue); }
+        .close-detail-btn { 
+            background: transparent; 
+            border: 1px solid var(--border-light); 
+            color: var(--text-muted); 
+            border-radius: 4px; 
+            cursor: pointer; 
+        }
+        .close-detail-btn:hover { background: var(--hp-blue); color: #fff; }
+
+        .detail-content { max-height: 480px; overflow-y: auto; padding: 1rem; }
+        
+        .record-item { 
+            background-color: var(--bg-soft); 
+            padding: 1rem; 
+            border-radius: 6px; 
+            margin-bottom: 0.75rem; 
+            border: 1px solid var(--border-light); 
+        }
+        .record-date-tag { background-color: var(--border-light); color: var(--hp-blue); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+        .record-field-value { color: var(--text-main); margin-top: 0.5rem; font-size: 0.9rem; line-height: 1.4; }
+
+        .error-message { 
+            grid-column: 1/-1; 
+            background-color: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb; 
+            padding: 1rem; 
+            border-radius: 6px; 
+            text-align: center; 
+            font-weight: 500;
+        }
+
+        #problems-list-title { 
+            font-size: 1.3rem; 
+            font-weight: 700; 
+            color: var(--text-main); 
+            margin: 2rem 0 1rem 0; 
+            border-bottom: 2px solid var(--border-light); 
+            padding-bottom: 0.5rem; 
+            display: none; 
+        }
+
+        /* --- LOADING OVERLAY (Tema Claro) --- */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.95);
+            display: none;
+            justify-content: center; align-items: center;
+            z-index: 9999;
+        }
         .loading-overlay.active { display: flex; }
-        .loading-content { background-color: var(--card-bg); padding: 2.5rem; border-radius: 1rem; box-shadow: 0 20px 60px rgba(0, 113, 197, 0.2); max-width: 500px; width: 100%; border: 1px solid var(--border-color); }
-        .loading-header { text-align: center; margin-bottom: 2rem; }
-        .loading-icon { font-size: 3rem; margin-bottom: 1rem; animation: pulse 2s ease-in-out infinite; color: var(--primary-color); }
-        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .7; transform: scale(1.05); } }
-        .loading-title { font-size: 1.3rem; font-weight: 700; color: var(--primary-color); margin-bottom: .5rem; }
-        .loading-subtitle { font-size: .9rem; color: var(--text-secondary); }
-        .progress-bar-container { background-color: #e9ecef; border-radius: 9999px; height: 8px; overflow: hidden; margin-bottom: 1rem; }
-        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end)); border-radius: 9999px; width: 0%; transition: width .3s ease; }
-        .progress-info { display: flex; justify-content: space-between; align-items: center; font-size: .85rem; color: var(--text-secondary); margin-bottom: .5rem; }
-        .loading-steps { margin-top: 1.5rem; display: flex; flex-direction: column; gap: .75rem; }
-        .loading-step { display: flex; align-items: center; gap: .75rem; padding: .75rem; background-color: var(--button-bg-light); border-radius: .5rem; opacity: .5; transition: all .3s ease; border: 1px solid transparent; }
-        .loading-step.active { opacity: 1; background-color: #fff; border-color: var(--primary-color); border-left: 4px solid var(--primary-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .loading-step.completed { opacity: 1; background-color: #f0fff4; border-left: 4px solid var(--success-color); }
-        .step-spinner { width: 16px; height: 16px; border: 2px solid var(--border-color); border-top-color: var(--primary-color); border-radius: 50%; animation: spin .8s linear infinite; display: none; }
+        
+        .loading-content {
+            background-color: var(--white);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+        .loading-icon { font-size: 3rem; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        .loading-title { font-size: 1.4rem; font-weight: 700; color: var(--hp-blue); margin-bottom: 0.5rem; }
+        .loading-subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+        
+        .progress-bar-container { background-color: var(--border-light); border-radius: 10px; height: 10px; overflow: hidden; margin-bottom: 1rem; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--hp-blue), var(--fcom-blue)); width: 0%; transition: width 0.3s ease; }
+        
+        .loading-steps { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; text-align: left; }
+        .loading-step { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; background-color: var(--bg-soft); border-radius: 6px; font-size: 0.85rem; color: var(--text-muted); opacity: 0.6; }
+        .loading-step.active { opacity: 1; background-color: var(--hover-light); border-left: 3px solid var(--hp-blue); color: var(--text-main); font-weight: 600; }
+        .loading-step.completed { opacity: 1; background-color: #d1e7dd; border-left: 3px solid var(--success-color); color: var(--success-color); }
+        .step-spinner { width: 14px; height: 14px; border: 2px solid var(--border-light); border-top-color: var(--hp-blue); border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
         .loading-step.active .step-spinner { display: block; }
         .loading-step.completed .step-check { display: block; }
-        .step-check { color: var(--success-color); font-size: 1.2rem; display: none; }
+        .step-check { display: none; font-weight: bold; }
+
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- MAIN CONTAINER --- */
-        .container { width: 100%; max-width: 800px; background-color: var(--card-bg); padding: 2.5rem; border-radius: 1rem; box-shadow: var(--shadow); margin-top: 4rem; /* Margen superior extra para los logos */ border: 1px solid var(--border-color); }
-        h1 { font-size: 1.75rem; font-weight: 700; color: var(--primary-color); text-align: center; margin-bottom: .5rem; line-height: 1.2; }
-        p { text-align: center; color: var(--text-secondary); margin-bottom: 2rem; font-size: .9rem; line-height: 1.5; }
-        .db-status { text-align: center; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1.5rem; padding: 0.5rem; background: var(--button-bg-light); border-radius: 0.5rem; border: 1px solid var(--border-color); }
-        .db-status span.ok { color: var(--success-color); font-weight: bold; }
-        .db-status span.fail { color: var(--error-color); font-weight: bold; }
-
-        /* --- SEARCH SECTION --- */
-        .search-section { display: flex; gap: 1rem; margin-bottom: 2rem; }
-        #serie-input { flex-grow: 1; padding: .75rem 1.25rem; border: 2px solid var(--border-color); border-radius: 9999px; background-color: var(--input-bg); color: var(--text-main); font-size: 1rem; width: 100%; transition: all 0.3s ease; }
-        #serie-input:focus { border-color: var(--secondary-color); box-shadow: 0 0 0 4px rgba(0, 150, 214, 0.1); outline: 0; }
-        #validate-button { padding: .75rem 1.5rem; background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); color: var(--text-inverse); border: none; border-radius: 9999px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s ease; box-shadow: 0 4px 6px rgba(0, 113, 197, 0.2); }
-        #validate-button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 12px rgba(0, 113, 197, 0.3); filter: brightness(1.05); }
-        #validate-button:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
-
-        /* --- RESULTS --- */
-        #result { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 1.5rem; margin-bottom: 2rem; background-color: #fff; border: 1px solid var(--border-color); border-radius: .75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-        .result-item { padding: .5rem 0; border-bottom: 1px solid #eee; font-size: .95rem; display: flex; flex-direction: column; word-break: break-word; }
-        .result-item strong { color: var(--text-secondary); font-weight: 600; font-size: .75rem; text-transform: uppercase; margin-bottom: .2rem; }
-        .result-item span { font-weight: 700; color: var(--text-main); }
-        .main-serie { grid-column: 1/-1; text-align: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 1rem; margin-bottom: .5rem; }
-        .main-serie span { font-size: 1.5rem; color: var(--primary-color); word-break: break-all; }
-        .info-row { grid-column: 1/-1; display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 1rem; align-items: stretch; margin: .5rem 0; }
-        .highlight { background-color: var(--button-bg-light); padding: .75rem; border-radius: .5rem; display: flex; flex-direction: column; justify-content: center; border: 1px solid var(--border-color); }
-        .project-item { background: linear-gradient(135deg, #f1f7ff, #e0efff); padding: 1.2rem; border-radius: .75rem; border-left: 4px solid var(--secondary-color); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .project-item span { font-size: 1.5rem; color: var(--primary-color); font-weight: 800; }
-        .total-incidents { grid-column: 1/-1; text-align: center; background-color: #fff3cd; padding: .75rem; border-radius: .5rem; margin-top: .5rem; border: 1px solid #ffeeba; }
-        .total-incidents strong { color: #856404; }
-        .total-incidents span { font-size: 1.3rem; font-weight: 800; color: #856404; }
-
-        /* --- CHARTS & DETAILS --- */
-        .unified-chart-container { padding: 1.5rem; background-color: #fff; border-radius: .75rem; overflow-x: hidden; border: 1px solid var(--border-color); }
-        .chart-bars-wrapper { display: flex; flex-direction: column; gap: .8rem; }
-        .chart-bar-item { display: flex; align-items: center; gap: 1rem; }
-        .bar-label { min-width: 200px; font-size: .9rem; color: var(--text-main); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .bar-container { flex-grow: 1; height: 36px; background-color: #f1f3f5; border-radius: 6px; position: relative; overflow: hidden; cursor: pointer; }
-        .bar-fill { height: 100%; background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end)); border-radius: 6px; transition: all .3s ease; position: relative; display: flex; align-items: center; justify-content: flex-end; padding-right: .75rem; }
-        .bar-fill:hover { filter: brightness(1.1); }
-        .bar-value { color: #fff; font-weight: 700; font-size: .9rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        .bar-percentage { font-size: .75rem; color: var(--text-secondary); min-width: 45px; text-align: right; }
-        .records-detail { margin-top: 1rem; background-color: #fff; border-radius: .75rem; border-left: 4px solid var(--primary-color); max-height: 0; overflow: hidden; transition: max-height .4s ease; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .records-detail.expanded { max-height: 600px; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); }
-        .detail-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); background-color: var(--button-bg-light); position: sticky; top: 0; z-index: 10; }
-        .detail-content { max-height: 480px; overflow-y: auto; padding: 1.5rem; }
-        .detail-content::-webkit-scrollbar { width: 8px; }
-        .detail-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .detail-title { font-size: 1rem; font-weight: 700; color: var(--primary-color); }
-        .close-detail-btn { background-color: #fff; border: 1px solid var(--border-color); color: var(--text-secondary); padding: .3rem .8rem; border-radius: .5rem; cursor: pointer; font-size: .8rem; transition: all 0.2s; }
-        .close-detail-btn:hover { background-color: var(--primary-color); color: #fff; border-color: var(--primary-color); }
-        .record-item { background-color: #fff; padding: 1rem; border-radius: .5rem; margin-bottom: .75rem; border: 1px solid var(--border-color); border-left: 3px solid var(--secondary-color); transition: transform 0.2s; }
-        .record-item:hover { transform: translateX(3px); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .record-header-tags { display: flex; justify-content: space-between; margin-bottom: .75rem; flex-wrap: wrap; gap: 0.5rem; }
-        .record-date-tag, .record-project-tag { background-color: var(--button-bg-light); color: var(--primary-color); padding: .25rem .75rem; border-radius: .35rem; font-size: .75rem; font-weight: 700; border: 1px solid var(--border-color); }
-        .record-field { display: flex; padding: .3rem 0; font-size: .9rem; border-bottom: 1px dashed #eee; }
-        .record-field:last-child { border-bottom: none; }
-        .record-field-label { font-weight: 600; color: var(--text-secondary); min-width: 150px; text-transform: uppercase; font-size: .7rem; }
-        .record-field-value { color: var(--text-main); flex-grow: 1; word-break: break-word; }
-        .error-message { grid-column: 1/-1; background-color: #fff5f5; color: #dc3545; border: 1px solid #f5c6cb; padding: 1.5rem; border-radius: .5rem; text-align: center; }
-        #problems-list-title { font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem; margin-top: 2rem; border-bottom: 2px solid var(--border-color); padding-bottom: .5rem; display: none; }
-
-        /* --- PJUD DROPDOWN (Updated Position) --- */
-        .pjud-dropdown-container { 
-            position: absolute; 
-            top: 5.5rem; /* Bajado para no chocar con el logo HP */
-            right: 2rem; 
-            z-index: 1000; 
+        /* --- PJUD BUTTON --- */
+        .pjud-dropdown-container { position: absolute; top: 2rem; right: 2rem; z-index: 100; }
+        .pjud-btn { 
+            background-color: var(--warning); 
+            border: 1px solid #d39e00; 
+            color: #212529; 
+            padding: 0.6rem 1.2rem; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            display: flex; align-items: center; gap: 0.5rem; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
         }
-        .pjud-btn { background-color: var(--button-bg-light); border: 1px solid var(--border-color); color: var(--primary-color); padding: 0.6rem 1.2rem; border-radius: 9999px; cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s; }
-        .pjud-btn:hover { background-color: var(--hover-light); border-color: var(--primary-color); }
-        .pjud-list { display: none; position: absolute; top: calc(100% + 10px); right: 0; width: 300px; background-color: #fff; border: 1px solid var(--border-color); border-radius: 0.75rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); max-height: 400px; overflow-y: auto; padding: 1rem; }
-        .pjud-list.active { display: block; animation: fadeIn 0.2s ease; }
-        .pjud-list h3 { font-size: 0.8rem; color: var(--warning-color); margin: 0 0 0.8rem 0; padding-bottom: 0.5rem; border-bottom: 1px solid #eee; text-align: center; text-transform: uppercase; font-weight: 800; }
+        .pjud-btn:hover { background-color: #e0a800; }
+        
+        .pjud-list { 
+            display: none; 
+            position: absolute; 
+            top: calc(100% + 10px); 
+            right: 0; 
+            width: 320px; 
+            background-color: var(--white); 
+            border: 1px solid var(--border-light); 
+            border-radius: 8px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+            max-height: 400px; 
+            overflow-y: auto; 
+            padding: 1rem; 
+        }
+        .pjud-list.active { display: block; }
+        .pjud-list h3 { margin-top: 0; color: var(--text-main); font-size: 1rem; border-bottom: 2px solid var(--warning); padding-bottom: 0.5rem; }
         .pjud-list ul { list-style: none; padding: 0; margin: 0; }
-        .pjud-list li { padding: 0.5rem; border-bottom: 1px solid #f8f9fa; font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; }
-        .pjud-list li::before { content: "•"; color: var(--primary-color); margin-right: 0.5rem; font-weight: bold; }
+        .pjud-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--bg-soft); font-size: 0.85rem; color: var(--text-main); }
+        .pjud-list li::before { content: "•"; color: var(--warning); margin-right: 0.5rem; font-weight: bold; }
 
         @media (max-width: 900px) {
-            .container { padding: 2rem; margin-top: 6rem; /* Más espacio en tablets */ }
+            .container { padding: 1.5rem; }
             .info-row { grid-template-columns: 1fr; }
-            .pjud-dropdown-container { position: relative; top: auto; right: auto; width: 100%; display: flex; justify-content: center; margin-bottom: 1.5rem; }
-            .pjud-list { right: 50%; transform: translateX(50%); width: 90%; }
-            .left-logo, .right-logo { height: 45px; top: 1rem; } /* Logos más pequeños */
-        }
-        @media (max-width: 600px) {
-            body { padding: 1rem; }
-            .container { padding: 1.5rem; margin-top: 5rem; }
-            .search-section { flex-direction: column; }
-            #validate-button { width: 100%; }
-            .record-field { flex-direction: column; }
-            .left-logo { left: 1rem; } .right-logo { right: 1rem; }
+            .pjud-dropdown-container { position: relative; top: auto; right: auto; margin-bottom: 1rem; display: flex; justify-content: center; }
+            .pjud-list { right: 50%; transform: translateX(50%); width: 90%; z-index: 200; }
         }
     </style>
 </head>
 <body>
-    <img src="https://fcom.cl/images/logo_simple-p-500.png" alt="FCOM Logo" class="page-logo left-logo">
-    <img src="https://1000marcas.net/wp-content/uploads/2020/01/HP-logo-1.jpg" alt="HP Logo" class="page-logo right-logo">
 
     <div class="pjud-dropdown-container">
-        <button class="pjud-btn" id="pjud-toggle">⚠️ Equipamiento Propiedad PJUD ▼</button>
+        <button class="pjud-btn" id="pjud-toggle">⚠️ Equipamiento PJUD ▼</button>
         <div class="pjud-list" id="pjud-list">
             <h3>No están en contrato</h3>
             <ul>
@@ -231,39 +461,40 @@
 
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-content">
-            <div class="loading-header">
-                <div class="loading-icon">⚙️</div>
-                <div class="loading-title">Cargando Sistema</div>
-                <div class="loading-subtitle" id="loading-subtitle">Inicializando...</div>
-            </div>
-            <div class="progress-info">
-                <span class="progress-status" id="progress-status">Preparando...</span>
-                <span class="progress-percentage" id="progress-percentage">0%</span>
-            </div>
+            <div class="loading-icon">⚙️</div>
+            <div class="loading-title">Cargando Sistema</div>
+            <div class="loading-subtitle" id="loading-subtitle">Conectando servicios...</div>
             <div class="progress-bar-container"><div class="progress-bar-fill" id="progress-bar"></div></div>
+            <div class="progress-info" style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                <span id="progress-status">Iniciando</span>
+                <span id="progress-percentage">0%</span>
+            </div>
             <div class="loading-steps">
-                <div class="loading-step" id="step-1"><span class="step-text">Conectando con Base de Datos</span><div class="step-spinner"></div><span class="step-check">✓</span></div>
-                <div class="loading-step" id="step-2"><span class="step-text">Verificando Habilitaciones</span><div class="step-spinner"></div><span class="step-check">✓</span></div>
-                <div class="loading-step" id="step-3"><span class="step-text">Validando integridad</span><div class="step-spinner"></div><span class="step-check">✓</span></div>
+                <div class="loading-step" id="step-1"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Base de Datos Inventario</span></div>
+                <div class="loading-step" id="step-2"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Registro de Habilitaciones</span></div>
+                <div class="loading-step" id="step-3"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Finalizando carga</span></div>
             </div>
         </div>
     </div>
 
     <div class="container">
-        <h1>Consulta de Equipos e Historial de Reportes</h1>
-        <p>Ingrese el número de serie para obtener los datos base y el historial de problemas.</p>
-        
-        <div class="db-status" id="db-status">
-            Iniciando...
+        <div class="header-logos">
+            <img src="https://fcom.cl/images/logo_simple.png" alt="Logo FCOM" class="logo-img" style="height: 45px;">
+            <img src="http://e7.pngegg.com/pngimages/1001/292/png-clipart-hewlett-packard-logo-hp-pavilion-printer-work-blue-cdr.png" alt="Logo HP" class="logo-img" style="height: 55px;">
         </div>
+
+        <h1>Consulta de Equipos e Historial</h1>
+        <p>Ingrese el número de serie para verificar inventario, habilitaciones e historial de reportes.</p>
+        
+        <div class="db-status" id="db-status">Iniciando conexión...</div>
 
         <div class="search-section">
             <input type="text" id="serie-input" placeholder="Ej: 5CG9426Q2D">
-            <button id="validate-button">Inicializando...</button>
+            <button id="validate-button">Cargando datos...</button>
         </div>
 
         <div id="result"></div>
-        <h2 id="problems-list-title">Historial de Registros</h2>
+        <h2 id="problems-list-title">Historial de Reportes</h2>
         <div id="problems-container"></div>
     </div>
 
@@ -275,4 +506,285 @@
 
         // --- CONFIGURACIÓN DE LINKS ---
         const sheetURLs = {
-            'Hoja 1': '
+            'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
+            'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
+            'Habilitaciones': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1180790714&single=true&output=csv' 
+        };
+
+        let equiposMap = new Map();
+        let habilitacionesMap = new Map();
+        let allProblemsData = [];
+        let currentProblemHeaders = [];
+
+        // UI Functions
+        const updateProgress = (pct, status, sub) => {
+            el('progress-bar').style.width = pct + '%';
+            el('progress-percentage').textContent = Math.round(pct) + '%';
+            el('progress-status').textContent = status;
+            if (sub) el('loading-subtitle').textContent = sub;
+        };
+        const setStep = (n, state) => {
+            const s = el(`step-${n}`);
+            if (state === 'active') { document.querySelectorAll('.loading-step').forEach(x => x.classList.remove('active')); s.classList.add('active'); }
+            if (state === 'complete') { s.classList.remove('active'); s.classList.add('completed'); }
+        };
+        const showLoading = (show) => {
+            if (show) el('loading-overlay').classList.add('active');
+            else setTimeout(() => el('loading-overlay').classList.remove('active'), 500);
+        };
+
+        const sanitizeKey = (key) => typeof key === 'string' ? key.trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : '';
+
+        const fetchSheet = async (url) => {
+            const c = new AbortController();
+            setTimeout(() => c.abort(), 60000);
+            const res = await fetch(url, { signal: c.signal });
+            if (!res.ok) throw new Error(res.status);
+            return (await res.text()).replace(/\r\n|\r/g, '\n');
+        };
+
+        const parseCSV = (text) => {
+            if (!text) return { data: [], headers: [] };
+            const lines = text.split('\n').filter(l => l.trim());
+            if (lines.length < 1) return { data: [], headers: [] };
+            const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+            const headers = lines[0].split(regex).map(h => h.trim().replace(/"/g, ''));
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                const vals = lines[i].split(regex);
+                if (vals.length === headers.length) {
+                    const obj = {};
+                    headers.forEach((h, idx) => obj[h] = vals[idx].replace(/^"|"$/g, '').replace(/""/g, '"').trim());
+                    data.push(obj);
+                }
+            }
+            return { data, headers };
+        };
+
+        const parseHabilitaciones = (text) => {
+            if (!text) return;
+            const lines = text.split('\n').filter(l => l.trim());
+            
+            let headerRowIndex = -1;
+            for (let i = 0; i < Math.min(lines.length, 10); i++) {
+                if (lines[i].toLowerCase().includes('serie principal antigua')) {
+                    headerRowIndex = i;
+                    break;
+                }
+            }
+            if (headerRowIndex === -1) headerRowIndex = 0; 
+
+            const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+            const headers = lines[headerRowIndex].split(regex).map(h => h.trim().replace(/"/g, ''));
+            
+            const targetIndex = headers.findIndex(h => h.toLowerCase().includes('serie principal antigua'));
+            if (targetIndex === -1) return;
+
+            for (let i = headerRowIndex + 1; i < lines.length; i++) {
+                const vals = lines[i].split(regex);
+                if (vals[targetIndex]) {
+                    const cleanVal = vals[targetIndex].replace(/^"|"$/g, '').trim();
+                    if (cleanVal) {
+                        const fecha = vals[5] ? vals[5].replace(/^"|"$/g, '').trim() : 'N/A';
+                        const sucursal = vals[12] ? vals[12].replace(/^"|"$/g, '').trim() : 'N/A';
+                        habilitacionesMap.set(sanitizeKey(cleanVal), { fecha, sucursal });
+                    }
+                }
+            }
+        };
+
+        const loadInitialData = async () => {
+            showLoading(true);
+            updateProgress(10, 'Conectando...', 'Estableciendo enlace seguro');
+            setStep(1, 'active');
+
+            try {
+                // 1. Cargar Hoja 1 (Inventario)
+                const csv1 = await fetchSheet(sheetURLs['Hoja 1']);
+                const res1 = parseCSV(csv1);
+                const serieHeader = res1.headers.find(h => h.toLowerCase().includes('serie') || h.toLowerCase().includes('serial'));
+                if (serieHeader) {
+                    res1.data.forEach(item => {
+                        const s = sanitizeKey(item[serieHeader]);
+                        if (s) equiposMap.set(s, item);
+                    });
+                }
+                setStep(1, 'complete');
+
+                // 2. Cargar Habilitaciones
+                setStep(2, 'active');
+                updateProgress(50, 'Procesando Habilitaciones...', 'Analizando base de datos...');
+                const csvHab = await fetchSheet(sheetURLs['Habilitaciones']);
+                parseHabilitaciones(csvHab);
+                
+                let habStatusClass = habilitacionesMap.size > 0 ? 'ok' : 'fail';
+                el('db-status').innerHTML = `Equipos en Inventario: <span class="ok">${equiposMap.size}</span> | Reg. Habilitaciones: <span class="${habStatusClass}">${habilitacionesMap.size}</span>`;
+                setStep(2, 'complete');
+
+                updateProgress(100, 'Sistema Listo', 'Esperando consulta');
+                setStep(3, 'complete');
+                setTimeout(() => showLoading(false), 600);
+
+                el('validate-button').textContent = 'Buscar Equipo';
+                el('validate-button').disabled = false;
+
+            } catch (err) {
+                console.error(err);
+                el('db-status').innerHTML = `<span class="fail">Error de conexión: ${err.message}</span>`;
+                showLoading(false);
+            }
+        };
+
+        const renderResult = (serie, equipo, totalProblems, counts) => {
+            const habInfo = habilitacionesMap.get(serie);
+            const inHab = !!habInfo; 
+            const inInv = !!equipo;
+            
+            let alertHTML = '';
+            if (inHab) {
+                alertHTML = `
+                    <div class="alert-banner">
+                        <span class="alert-icon">⛔</span>
+                        <div class="alert-banner-title">ADVERTENCIA CRÍTICA</div>
+                        <div style="font-weight:600">ESTA SERIE SE ENCUENTRA POR CAMBIO Y NO DEBERÍA ESTAR HABILITADA</div>
+                        
+                        <div class="alert-details">
+                            <div style="display:flex;flex-direction:column;align-items:center;margin:0 10px;">
+                                <span class="alert-detail-label">Fecha Instalación</span>
+                                <span class="alert-detail-value">${habInfo.fecha}</span>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:center;margin:0 10px;">
+                                <span class="alert-detail-label">Sucursal</span>
+                                <span class="alert-detail-value">${habInfo.sucursal}</span>
+                            </div>
+                        </div>
+
+                        ${!inInv ? '<div style="margin-top:0.5rem;font-size:0.85rem;color:#842029;">(Detectado en habilitaciones, pero no existe en inventario activo)</div>' : ''}
+                    </div>
+                `;
+            }
+
+            if (!inInv && !inHab && totalProblems === 0) {
+                el('result').innerHTML = `<div class="error-message">⚠️ Serie "${serie}" no encontrada en ninguna base de datos.</div>`;
+                el('problems-container').innerHTML = '';
+                return;
+            }
+
+            const tipo = equipo ? (equipo['Tipo'] || 'N/A') : 'No Registrado';
+            const modelo = equipo ? (equipo['Modelo'] || 'N/A') : 'No Registrado';
+            const proyecto = equipo ? (equipo['Proyecto'] || 'N/A') : 'No Registrado';
+
+            const html = `
+                ${alertHTML}
+                <div class="result-item main-serie">
+                    <strong>NÚMERO DE SERIE</strong>
+                    <span>${serie}</span>
+                </div>
+                <div class="info-row">
+                    <div class="result-item highlight"><strong>Tipo</strong> <span>${tipo}</span></div>
+                    <div class="result-item project-item"><strong>Proyecto</strong> <span>${proyecto}</span></div>
+                    <div class="result-item highlight"><strong>Modelo</strong> <span>${modelo}</span></div>
+                </div>
+                <div class="total-incidents">
+                    <strong>Total Reportes Registrados</strong><br>
+                    <span>${totalProblems}</span>
+                </div>
+            `;
+            el('result').innerHTML = html;
+
+            el('problems-list-title').style.display = 'block';
+            if (totalProblems === 0) {
+                el('problems-container').innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;background:var(--bg-soft);border-radius:8px;">No se encontraron registros de problemas.</div>';
+            } else {
+                const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+                let bars = '<div class="unified-chart-container"><div class="chart-bars-wrapper">';
+                sorted.forEach(([k, v]) => {
+                    const pct = (v/totalProblems*100).toFixed(1);
+                    const safeK = k.replace(/'/g, "\\'");
+                    bars += `
+                        <div class="chart-bar-item">
+                            <div class="bar-label">${k}</div>
+                            <div class="bar-container" onclick="toggleDetail('${safeK}', '${serie}')" title="Ver detalles">
+                                <div class="bar-fill" style="width:${(v/sorted[0][1]*100)}%"><span class="bar-value" style="padding-right:8px;">${v}</span></div>
+                            </div>
+                            <div class="bar-percentage">${pct}%</div>
+                        </div>
+                        <div id="detail-${k.replace(/\s/g, '-')}" class="records-detail"></div>
+                    `;
+                });
+                bars += '</div></div>';
+                el('problems-container').innerHTML = bars;
+            }
+        };
+
+        const handleSearch = async () => {
+            const rawSerie = el('serie-input').value;
+            if (rawSerie.length < 3) return alert("Ingrese una serie válida");
+            const serie = sanitizeKey(rawSerie);
+            
+            const equipo = equiposMap.get(serie);
+
+            el('validate-button').disabled = true;
+            el('validate-button').textContent = 'Consultando...';
+            
+            try {
+                const csv2 = await fetchSheet(sheetURLs['BBDD PM 4']);
+                const res2 = parseCSV(csv2);
+                allProblemsData = res2.data;
+                currentProblemHeaders = res2.headers;
+                
+                const hSerie = res2.headers.find(h => h.toLowerCase().includes('serie reportada'));
+                const hNivel = res2.headers.find(h => h.toLowerCase().includes('nivel 2'));
+                
+                let counts = new Map();
+                let total = 0;
+                
+                if (hSerie) {
+                    res2.data.forEach(d => {
+                        if (sanitizeKey(d[hSerie]) === serie) {
+                            total++;
+                            const n = d[hNivel] ? d[hNivel].trim() : 'SIN NIVEL 2';
+                            counts.set(n, (counts.get(n) || 0) + 1);
+                        }
+                    });
+                }
+                
+                renderResult(rawSerie, equipo, total, counts);
+
+            } catch (e) {
+                console.error(e);
+                alert("Error consultando historial");
+            } finally {
+                el('validate-button').disabled = false;
+                el('validate-button').textContent = 'Buscar Equipo';
+            }
+        };
+
+        window.toggleDetail = (nivel, serieKey) => {
+             const id = `detail-${nivel.replace(/\s/g, '-')}`;
+             const div = el(id);
+             if(div.classList.contains('expanded')) { div.classList.remove('expanded'); return; }
+             document.querySelectorAll('.records-detail').forEach(d => d.classList.remove('expanded'));
+             
+             const hSerie = currentProblemHeaders.find(h => h.toLowerCase().includes('serie reportada'));
+             const hNivel = currentProblemHeaders.find(h => h.toLowerCase().includes('nivel 2'));
+             const recs = allProblemsData.filter(d => sanitizeKey(d[hSerie]) === sanitizeKey(serieKey) && (d[hNivel] || 'SIN NIVEL 2').trim() === nivel);
+             
+             let html = `<div class="detail-header"><div class="detail-title">${nivel}</div><button class="close-detail-btn" onclick="document.getElementById('${id}').classList.remove('expanded')">Cerrar</button></div><div class="detail-content">`;
+             recs.forEach(r => {
+                 const tkt = Object.entries(r).find(([k]) => k.toLowerCase().includes('ticket'))?.[1] || 'N/A';
+                 const obs = Object.entries(r).find(([k]) => k.toLowerCase().includes('observación'))?.[1] || 'Sin observación';
+                 const fecha = Object.entries(r).find(([k]) => k.toLowerCase().includes('fecha'))?.[1] || '';
+                 html += `<div class="record-item"><div class="record-header-tags"><span class="record-date-tag">${fecha}</span></div><div style="font-weight:700;color:var(--hp-blue);font-size:0.9rem;">Ticket: ${tkt}</div><div class="record-field-value">${obs}</div></div>`;
+             });
+             html += '</div>';
+             div.innerHTML = html;
+             div.classList.add('expanded');
+        };
+
+        el('validate-button').onclick = handleSearch;
+        el('serie-input').onkeyup = (e) => e.key === 'Enter' && handleSearch();
+        loadInitialData();
+    </script>
+</body>
+</html>
