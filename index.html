@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -34,76 +34,34 @@
             margin: 0;
         }
 
-        /* --- WARNING MODAL (POP UP ROJO) --- */
-        .warning-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(26, 26, 46, 0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            padding: 1rem;
-            backdrop-filter: blur(5px);
-        }
-
-        .warning-modal.active {
-            display: flex;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .warning-content {
-            background-color: #2c1a1a; /* Fondo rojizo oscuro */
-            padding: 2.5rem;
-            border-radius: 1rem;
-            border: 2px solid var(--error-color);
-            box-shadow: 0 0 50px rgba(248, 113, 113, 0.3);
-            max-width: 500px;
-            width: 100%;
+        /* --- ALERT BANNER (EL NUEVO ANUNCIO) --- */
+        .alert-banner {
+            grid-column: 1 / -1;
+            background-color: rgba(220, 38, 38, 0.15);
+            border: 2px solid #ef4444;
+            color: #fca5a5;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
             text-align: center;
-            position: relative;
-        }
-
-        .warning-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            display: block;
-        }
-
-        .warning-title {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 800;
-            color: var(--error-color);
-            margin-bottom: 1rem;
-            text-transform: uppercase;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            animation: slideDown 0.4s ease-out;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
         }
 
-        .warning-message {
-            font-size: 1.1rem;
-            color: #fff;
-            margin-bottom: 2rem;
-            line-height: 1.6;
-            font-weight: 500;
+        .alert-banner .icon {
+            font-size: 2rem;
         }
 
-        .warning-close-btn {
-            background-color: var(--error-color);
-            color: #fff;
-            border: none;
-            padding: 0.8rem 2rem;
-            border-radius: 9999px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-        }
-
-        .warning-close-btn:hover {
-            background-color: #ef4444;
-            transform: scale(1.05);
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* --- LOADING OVERLAY --- */
@@ -938,17 +896,6 @@
         </div>
     </div>
 
-    <div id="warning-modal" class="warning-modal">
-        <div class="warning-content">
-            <span class="warning-icon">⛔</span>
-            <div class="warning-title">Advertencia de Cambio</div>
-            <div class="warning-message">
-                Esta serie se encuentra por cambio y no debería estar habilitada.
-            </div>
-            <button class="warning-close-btn" onclick="closeWarningModal()">Entendido</button>
-        </div>
-    </div>
-
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-content">
             <div class="loading-header">
@@ -1017,15 +964,6 @@
             }
         });
 
-        // Lógica del Modal de Advertencia
-        const warningModal = document.getElementById('warning-modal');
-        function showWarningModal() {
-            warningModal.classList.add('active');
-        }
-        function closeWarningModal() {
-            warningModal.classList.remove('active');
-        }
-
         // --- CÓDIGO ORIGINAL ---
         const sheetURLs = {
             'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
@@ -1087,6 +1025,12 @@
             return key.trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
         };
 
+        const normalizeHeader = (header) => {
+            if (!header) return "";
+            // Eliminar acentos y poner en mayusculas
+            return header.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+        };
+
         const displayMessage = (message, isError = false) => {
             resultDiv.innerHTML = `<div class="result-item ${isError ? 'error-message' : ''}">${message}</div>`;
             problemsContainer.innerHTML = '';
@@ -1105,7 +1049,7 @@
                 if (url.includes('PON_AQUI_EL_LINK')) {
                     if (sheetName === 'Habilitaciones') {
                         console.warn('Link de Habilitaciones no configurado. Saltando validación.');
-                        return ""; // Retorna vacío si no hay link configurado para evitar error fatal
+                        return ""; 
                     }
                 }
 
@@ -1188,7 +1132,20 @@
             const proyecto = equipo['Proyecto'] || equipo['proyecto'] || 'N/A';
             const serie = equipo['Serie'] || equipo['serie'] || 'N/A';
 
+            // GENERAMOS EL ALERT SI CORRESPONDE
+            let alertHTML = '';
+            // Verificamos si existe en Habilitaciones (El set ya está cargado)
+            if (checkHabilitaciones(serie)) {
+                alertHTML = `
+                    <div class="alert-banner">
+                        <span class="icon">⛔</span>
+                        <span>ÉSTA SERIE SE ENCUENTRA POR CAMBIO Y NO DEBERÍA ESTAR HABILITADA</span>
+                    </div>
+                `;
+            }
+
             const html = `
+                ${alertHTML}
                 <div class="result-item main-serie">
                     <strong>NÚMERO DE SERIE CONSULTADO</strong>
                     <span>${serie}</span>
@@ -1350,9 +1307,8 @@
                 updateProgress(25, 'Conectando...', 'Accediendo a Google Sheets (Equipos)');
                 const csv1 = await fetchSheet(sheetURLs['Hoja 1'], 'Hoja 1');
                 
-                // 2. CARGA HABILITACIONES (En paralelo o secuencial)
+                // 2. CARGA HABILITACIONES
                 updateProgress(40, 'Conectando...', 'Accediendo a Google Sheets (Habilitaciones)');
-                // Si tienes el link, esto funcionará:
                 const csvHab = await fetchSheet(sheetURLs['Habilitaciones'], 'Habilitaciones');
                 
                 updateProgress(50, 'Descargando...', 'Datos recibidos correctamente');
@@ -1375,23 +1331,28 @@
                 // 4. PROCESAR HABILITACIONES
                 updateProgress(65, 'Procesando...', 'Indexando lista de habilitaciones');
                 habilitacionesSet = new Set();
+                
                 if (csvHab) {
                     const resultHab = parseCSV(csvHab);
-                    // Buscar columna "Serie Principal Antigua" (o AN, pero es mejor por nombre)
                     const habHeaders = resultHab.headers || [];
-                    // Buscamos "Serie Principal Antigua" o "AN" si el CSV tuviera esa cabecera (raro en exports)
-                    const serieHabHeader = habHeaders.find(h => 
-                        h.toLowerCase().includes('serie principal antigua') || 
-                        h.toLowerCase() === 'an'
-                    );
+                    
+                    // LÓGICA MEJORADA DE BÚSQUEDA DE COLUMNA
+                    // Buscamos "Serie Principal Antigua" ignorando mayus/minus y acentos.
+                    // También buscamos por "AN" si existe.
+                    const serieHabHeader = habHeaders.find(h => {
+                        const cleanHeader = normalizeHeader(h);
+                        return cleanHeader.includes("SERIE PRINCIPAL ANTIGUA") || cleanHeader === "AN";
+                    });
 
                     if (serieHabHeader) {
+                        console.log("✅ Columna encontrada en Habilitaciones:", serieHabHeader);
                         resultHab.data.forEach(row => {
                             const s = sanitizeKey(row[serieHabHeader]);
                             if (s.length > 0) habilitacionesSet.add(s);
                         });
                     } else {
-                        console.warn('Advertencia: No se encontró la columna "Serie Principal Antigua" en Habilitaciones.');
+                        console.warn('⚠️ ADVERTENCIA: No se encontró la columna "Serie Principal Antigua" en Habilitaciones.');
+                        console.log('Columnas disponibles:', habHeaders);
                     }
                 }
                 
@@ -1431,22 +1392,13 @@
             
             const equipo = getEquipoBySerie(serie);
             const equipoEncontrado = equipo !== null;
-
-            // --- NUEVA VALIDACIÓN ---
-            if (equipoEncontrado) {
-                // Verificar si existe en la lista de Habilitaciones
-                if (checkHabilitaciones(serie)) {
-                    showWarningModal();
-                }
-            }
             
             showLoadingOverlay();
             updateProgress(10, 'Buscando...', 'Consultando base de datos de problemas');
-            // Reset steps text
+            // Reset steps
             document.getElementById('step-1').querySelector('.step-text').textContent = 'Conectando con Promanager';
             document.getElementById('step-2').querySelector('.step-text').textContent = 'Filtrando registros por serie';
             document.getElementById('step-3').querySelector('.step-text').textContent = 'Generando visualización';
-            // Reset steps state
             document.querySelectorAll('.loading-step').forEach(s => {
                 s.classList.remove('active', 'completed');
                 s.querySelector('.step-check').style.display = 'none';
@@ -1495,7 +1447,19 @@
                 await new Promise(resolve => setTimeout(resolve, 200));
                 
                 if (!equipoEncontrado && totalProblems > 0) {
+                    let alertHTML = '';
+                    // Verificar Habilitaciones aunque no esté en inventario, si es un caso borde
+                    if (checkHabilitaciones(serie)) {
+                        alertHTML = `
+                            <div class="alert-banner">
+                                <span class="icon">⛔</span>
+                                <span>ÉSTA SERIE SE ENCUENTRA POR CAMBIO Y NO DEBERÍA ESTAR HABILITADA</span>
+                            </div>
+                        `;
+                    }
+
                     const html = `
+                        ${alertHTML}
                         <div class="result-item main-serie">
                             <strong>NÚMERO DE SERIE CONSULTADO</strong>
                             <span>${serie}</span>
