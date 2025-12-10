@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -19,7 +19,7 @@
         }
 
         * {
-            box-sizing: border-box; /* Asegura que el padding no rompa el ancho */
+            box-sizing: border-box;
         }
 
         body {
@@ -32,6 +32,78 @@
             min-height: 100vh;
             padding: 2rem;
             margin: 0;
+        }
+
+        /* --- WARNING MODAL (POP UP ROJO) --- */
+        .warning-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(26, 26, 46, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            padding: 1rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .warning-modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .warning-content {
+            background-color: #2c1a1a; /* Fondo rojizo oscuro */
+            padding: 2.5rem;
+            border-radius: 1rem;
+            border: 2px solid var(--error-color);
+            box-shadow: 0 0 50px rgba(248, 113, 113, 0.3);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+        }
+
+        .warning-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .warning-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--error-color);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .warning-message {
+            font-size: 1.1rem;
+            color: #fff;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .warning-close-btn {
+            background-color: var(--error-color);
+            color: #fff;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .warning-close-btn:hover {
+            background-color: #ef4444;
+            transform: scale(1.05);
         }
 
         /* --- LOADING OVERLAY --- */
@@ -202,7 +274,6 @@
             padding: 2.5rem;
             border-radius: 1rem;
             box-shadow: 0 10px 25px rgba(0, 0, 0, .5);
-            /* Asegura que el contenedor no se pegue a los bordes en móviles */
             margin-top: 0; 
         }
 
@@ -239,7 +310,7 @@
             color: var(--text-color-light);
             font-size: 1rem;
             transition: box-shadow .3s, border-color .3s;
-            width: 100%; /* Asegura ancho completo en mobile */
+            width: 100%;
         }
 
         #serie-input:focus {
@@ -287,7 +358,7 @@
             font-size: .95rem;
             display: flex;
             flex-direction: column;
-            word-break: break-word; /* Evita desbordamiento de texto largo */
+            word-break: break-word;
         }
 
         .result-item strong {
@@ -385,7 +456,7 @@
             padding: 1.5rem;
             background-color: #1a1a2e;
             border-radius: .75rem;
-            overflow-x: hidden; /* Evita scroll horizontal */
+            overflow-x: hidden;
         }
 
         .chart-bars-wrapper {
@@ -867,6 +938,17 @@
         </div>
     </div>
 
+    <div id="warning-modal" class="warning-modal">
+        <div class="warning-content">
+            <span class="warning-icon">⛔</span>
+            <div class="warning-title">Advertencia de Cambio</div>
+            <div class="warning-message">
+                Esta serie se encuentra por cambio y no debería estar habilitada.
+            </div>
+            <button class="warning-close-btn" onclick="closeWarningModal()">Entendido</button>
+        </div>
+    </div>
+
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-content">
             <div class="loading-header">
@@ -889,8 +971,8 @@
                     <span class="step-check">✓</span>
                 </div>
                 <div class="loading-step" id="step-2">
-                    <span class="step-icon">🔍</span>
-                    <span class="step-text">Procesando registros de equipamiento</span>
+                    <span class="step-icon">📋</span>
+                    <span class="step-text">Verificando lista de Habilitaciones</span>
                     <div class="step-spinner"></div>
                     <span class="step-check">✓</span>
                 </div>
@@ -905,7 +987,7 @@
     </div>
 
     <div class="container">
-        <h1>Consulta de Equipos y Historial de Reportes</h1>
+        <h1>Consulta de Equipos e Historial de Reportes</h1>
         <p>Ingrese el número de serie para obtener los datos base y el historial de problemas.</p>
 
         <div class="search-section">
@@ -935,13 +1017,25 @@
             }
         });
 
+        // Lógica del Modal de Advertencia
+        const warningModal = document.getElementById('warning-modal');
+        function showWarningModal() {
+            warningModal.classList.add('active');
+        }
+        function closeWarningModal() {
+            warningModal.classList.remove('active');
+        }
+
         // --- CÓDIGO ORIGINAL ---
         const sheetURLs = {
             'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
             'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
+            // *** IMPORTANTE: PEGA AQUÍ ABAJO EL LINK CSV DE LA HOJA "HABILITACIONES" ***
+            'Habilitaciones': 'PON_AQUI_EL_LINK_CSV_DE_HABILITACIONES' 
         };
 
         let equiposMap = new Map();
+        let habilitacionesSet = new Set(); // Nueva estructura para validación
         let allProblemsData = [];
         let currentProblemHeaders = [];
         const serieInput = document.getElementById('serie-input');
@@ -1007,6 +1101,14 @@
         const fetchSheet = async (url, sheetName) => {
             const TIMEOUT_MS = 60000;
             try {
+                // Verificar si el usuario olvidó poner el link
+                if (url.includes('PON_AQUI_EL_LINK')) {
+                    if (sheetName === 'Habilitaciones') {
+                        console.warn('Link de Habilitaciones no configurado. Saltando validación.');
+                        return ""; // Retorna vacío si no hay link configurado para evitar error fatal
+                    }
+                }
+
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
                 const response = await fetch(url, { signal: controller.signal });
@@ -1030,6 +1132,7 @@
         };
 
         const parseCSV = (csvText) => {
+            if (!csvText) return { data: [], headers: [] };
             const lines = csvText.split('\n').filter(line => line.trim() !== '');
             if (lines.length === 0) return { data: [], headers: [] };
             const CSV_SPLIT_REGEX = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
@@ -1053,6 +1156,12 @@
         const getEquipoBySerie = (serie) => {
             const key = sanitizeKey(serie);
             return equiposMap.get(key) || null;
+        };
+
+        // Nueva función para verificar Habilitaciones
+        const checkHabilitaciones = (serie) => {
+            const key = sanitizeKey(serie);
+            return habilitacionesSet.has(key);
         };
 
         const getProblemsBySerieAndCount = (serie, problemsData, serieHeader, nivelHeader) => {
@@ -1237,28 +1346,54 @@
             activateStep(1);
             
             try {
-                updateProgress(25, 'Conectando...', 'Accediendo a Google Sheets');
-                
+                // 1. CARGA HOJA 1
+                updateProgress(25, 'Conectando...', 'Accediendo a Google Sheets (Equipos)');
                 const csv1 = await fetchSheet(sheetURLs['Hoja 1'], 'Hoja 1');
+                
+                // 2. CARGA HABILITACIONES (En paralelo o secuencial)
+                updateProgress(40, 'Conectando...', 'Accediendo a Google Sheets (Habilitaciones)');
+                // Si tienes el link, esto funcionará:
+                const csvHab = await fetchSheet(sheetURLs['Habilitaciones'], 'Habilitaciones');
                 
                 updateProgress(50, 'Descargando...', 'Datos recibidos correctamente');
                 completeStep(1);
                 activateStep(2);
                 
+                // 3. PROCESAR HOJA 1
                 const result1 = parseCSV(csv1);
-                
-                updateProgress(75, 'Procesando...', 'Analizando registros de equipamiento');
-                
                 equiposMap = new Map();
                 const headers = result1.headers || [];
                 const serieHeader = headers.find(h => h.toLowerCase().includes('serie') || h.toLowerCase().includes('serial'));
                 
-                if (!serieHeader) throw new Error('No se encontró la columna de serie.');
+                if (!serieHeader) throw new Error('No se encontró la columna de serie en Hoja 1.');
                 
                 result1.data.forEach(item => {
                     const serieLimpia = sanitizeKey(item[serieHeader]);
                     if (serieLimpia.length > 0) equiposMap.set(serieLimpia, item);
                 });
+
+                // 4. PROCESAR HABILITACIONES
+                updateProgress(65, 'Procesando...', 'Indexando lista de habilitaciones');
+                habilitacionesSet = new Set();
+                if (csvHab) {
+                    const resultHab = parseCSV(csvHab);
+                    // Buscar columna "Serie Principal Antigua" (o AN, pero es mejor por nombre)
+                    const habHeaders = resultHab.headers || [];
+                    // Buscamos "Serie Principal Antigua" o "AN" si el CSV tuviera esa cabecera (raro en exports)
+                    const serieHabHeader = habHeaders.find(h => 
+                        h.toLowerCase().includes('serie principal antigua') || 
+                        h.toLowerCase() === 'an'
+                    );
+
+                    if (serieHabHeader) {
+                        resultHab.data.forEach(row => {
+                            const s = sanitizeKey(row[serieHabHeader]);
+                            if (s.length > 0) habilitacionesSet.add(s);
+                        });
+                    } else {
+                        console.warn('Advertencia: No se encontró la columna "Serie Principal Antigua" en Habilitaciones.');
+                    }
+                }
                 
                 if (equiposMap.size === 0) throw new Error('No se pudo procesar ningún registro válido.');
                 
@@ -1271,7 +1406,7 @@
                 updateProgress(100, 'Completado', 'Sistema listo para usar');
                 completeStep(3);
                 
-                displayMessage(`✅ Sistema cargado correctamente. ${equiposMap.size} equipos disponibles.`);
+                displayMessage(`✅ Sistema cargado correctamente. ${equiposMap.size} equipos disponibles. Validaciones activas.`);
                 
             } catch (error) {
                 console.error('[ERROR] Fallo al cargar:', error);
@@ -1296,12 +1431,27 @@
             
             const equipo = getEquipoBySerie(serie);
             const equipoEncontrado = equipo !== null;
+
+            // --- NUEVA VALIDACIÓN ---
+            if (equipoEncontrado) {
+                // Verificar si existe en la lista de Habilitaciones
+                if (checkHabilitaciones(serie)) {
+                    showWarningModal();
+                }
+            }
             
             showLoadingOverlay();
             updateProgress(10, 'Buscando...', 'Consultando base de datos de problemas');
+            // Reset steps text
             document.getElementById('step-1').querySelector('.step-text').textContent = 'Conectando con Promanager';
             document.getElementById('step-2').querySelector('.step-text').textContent = 'Filtrando registros por serie';
             document.getElementById('step-3').querySelector('.step-text').textContent = 'Generando visualización';
+            // Reset steps state
+            document.querySelectorAll('.loading-step').forEach(s => {
+                s.classList.remove('active', 'completed');
+                s.querySelector('.step-check').style.display = 'none';
+            });
+
             activateStep(1);
             showLoading(true, 'Consultando...');
             
