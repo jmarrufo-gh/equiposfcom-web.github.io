@@ -531,3 +531,260 @@
         const showLoading = (show) => {
             if (show) el('loading-overlay').classList.add('active');
             else setTimeout(() => el('loading-overlay').classList.remove('active'), 500);
+        };
+
+        const sanitizeKey = (key) => typeof key === 'string' ? key.trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : '';
+
+        const fetchSheet = async (url) => {
+            const c = new AbortController();
+            setTimeout(() => c.abort(), 60000);
+            const res = await fetch(url, { signal: c.signal });
+            if (!res.ok) throw new Error(res.status);
+            return (await res.text()).replace(/\r\n|\r/g, '\n');
+        };
+
+        const parseCSV = (text) => {
+            if (!text) return { data: [], headers: [] };
+            const lines = text.split('\n').filter(l => l.trim());
+            if (lines.length < 1) return { data: [], headers: [] };
+            const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+            const headers = lines[0].split(regex).map(h => h.trim().replace(/"/g, ''));
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                const vals = lines[i].split(regex);
+                if (vals.length === headers.length) {
+                    const obj = {};
+                    headers.forEach((h, idx) => obj[h] = vals[idx].replace(/^"|"$/g, '').replace(/""/g, '"').trim());
+                    data.push(obj);
+                }
+            }
+            return { data, headers };
+        };
+
+        const parseHabilitaciones = (text) => {
+            if (!text) return;
+            const lines = text.split('\n').filter(l => l.trim());
+            
+            let headerRowIndex = -1;
+            for (let i = 0; i < Math.min(lines.length, 10); i++) {
+                if (lines[i].toLowerCase().includes('serie principal antigua')) {
+                    headerRowIndex = i;
+                    break;
+                }
+            }
+            if (headerRowIndex === -1) headerRowIndex = 0; 
+
+            const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+            const headers = lines[headerRowIndex].split(regex).map(h => h.trim().replace(/"/g, ''));
+            
+            const targetIndex = headers.findIndex(h => h.toLowerCase().includes('serie principal antigua'));
+            if (targetIndex === -1) return;
+
+            for (let i = headerRowIndex + 1; i < lines.length; i++) {
+                const vals = lines[i].split(regex);
+                if (vals[targetIndex]) {
+                    const cleanVal = vals[targetIndex].replace(/^"|"$/g, '').trim();
+                    if (cleanVal) {
+                        const fecha = vals[5] ? vals[5].replace(/^"|"$/g, '').trim() : 'N/A';
+                        const sucursal = vals[12] ? vals[12].replace(/^"|"$/g, '').trim() : 'N/A';
+                        habilitacionesMap.set(sanitizeKey(cleanVal), { fecha, sucursal });
+                    }
+                }
+            }
+        };
+
+        const loadInitialData = async () => {
+            showLoading(true);
+            updateProgress(10, 'Conectando...', 'Estableciendo enlace seguro');
+            setStep(1, 'active');
+
+            try {
+                // 1. Cargar Hoja 1 (Inventario)
+                const csv1 = await fetchSheet(sheetURLs['Hoja 1']);
+                const res1 = parseCSV(csv1);
+                const serieHeader = res1.headers.find(h => h.toLowerCase().includes('serie') || h.toLowerCase().includes('serial'));
+                if (serieHeader) {
+                    res1.data.forEach(item => {
+                        const s = sanitizeKey(item[serieHeader]);
+                        if (s) equiposMap.set(s, item);
+                    });
+                }
+                setStep(1, 'complete');
+
+                // 2. Cargar Habilitaciones
+                setStep(2, 'active');
+                updateProgress(50, 'Procesando Habilitaciones...', 'Analizando base de datos...');
+                const csvHab = await fetchSheet(sheetURLs['Habilitaciones']);
+                parseHabilitaciones(csvHab);
+                
+                let habStatusClass = habilitacionesMap.size > 0 ? 'ok' : 'fail';
+                el('db-status').innerHTML = `Equipos en Inventario: <span class="ok">${equiposMap.size}</span> | Reg. Habilitaciones: <span class="${habStatusClass}">${habilitacionesMap.size}</span>`;
+                setStep(2, 'complete');
+
+                updateProgress(100, 'Sistema Listo', 'Esperando consulta');
+                setStep(3, 'complete');
+                setTimeout(() => showLoading(false), 600);
+
+                el('validate-button').textContent = 'Buscar Equipo';
+                el('validate-button').disabled = false;
+
+            } catch (err) {
+                console.error(err);
+                el('db-status').innerHTML = `<span class="fail">Error de conexión: ${err.message}</span>`;
+                showLoading(false);
+            }
+        };
+
+        const renderResult = (serie, equipo, totalProblems, counts) => {
+            const habInfo = habilitacionesMap.get(serie);
+            const inHab = !!habInfo; 
+            const inInv = !!equipo;
+            
+            let alertHTML = '';
+            if (inHab) {
+                alertHTML = `
+                    <div class="alert-banner">
+                        <span class="alert-icon">⛔</span>
+                        <div class="alert-banner-title">ADVERTENCIA CRÍTICA</div>
+                        <div style="font-weight:600">ESTA SERIE SE ENCUENTRA POR CAMBIO Y NO DEBERÍA ESTAR HABILITADA</div>
+                        
+                        <div class="alert-details">
+                            <div style="display:flex;flex-direction:column;align-items:center;margin:0 10px;">
+                                <span class="alert-detail-label">Fecha Instalación</span>
+                                <span class="alert-detail-value">${habInfo.fecha}</span>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:center;margin:0 10px;">
+                                <span class="alert-detail-label">Sucursal</span>
+                                <span class="alert-detail-value">${habInfo.sucursal}</span>
+                            </div>
+                        </div>
+
+                        ${!inInv ? '<div style="margin-top:0.5rem;font-size:0.85rem;color:#842029;">(Detectado en habilitaciones, pero no existe en inventario activo)</div>' : ''}
+                    </div>
+                `;
+            }
+
+            if (!inInv && !inHab && totalProblems === 0) {
+                el('result').innerHTML = `<div class="error-message">⚠️ Serie "${serie}" no encontrada en ninguna base de datos.</div>`;
+                el('problems-container').innerHTML = '';
+                return;
+            }
+
+            const tipo = equipo ? (equipo['Tipo'] || 'N/A') : 'No Registrado';
+            const modelo = equipo ? (equipo['Modelo'] || 'N/A') : 'No Registrado';
+            const proyecto = equipo ? (equipo['Proyecto'] || 'N/A') : 'No Registrado';
+
+            const html = `
+                ${alertHTML}
+                <div class="result-item main-serie">
+                    <strong>NÚMERO DE SERIE</strong>
+                    <span>${serie}</span>
+                </div>
+                <div class="info-row">
+                    <div class="result-item highlight"><strong>Tipo</strong> <span>${tipo}</span></div>
+                    <div class="result-item project-item"><strong>Proyecto</strong> <span>${proyecto}</span></div>
+                    <div class="result-item highlight"><strong>Modelo</strong> <span>${modelo}</span></div>
+                </div>
+                <div class="total-incidents">
+                    <strong>Total Reportes Registrados</strong><br>
+                    <span>${totalProblems}</span>
+                </div>
+            `;
+            el('result').innerHTML = html;
+
+            el('problems-list-title').style.display = 'block';
+            if (totalProblems === 0) {
+                el('problems-container').innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;background:var(--bg-soft);border-radius:8px;">No se encontraron registros de problemas.</div>';
+            } else {
+                const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+                let bars = '<div class="unified-chart-container"><div class="chart-bars-wrapper">';
+                sorted.forEach(([k, v]) => {
+                    const pct = (v/totalProblems*100).toFixed(1);
+                    const safeK = k.replace(/'/g, "\\'");
+                    bars += `
+                        <div class="chart-bar-item">
+                            <div class="bar-label">${k}</div>
+                            <div class="bar-container" onclick="toggleDetail('${safeK}', '${serie}')" title="Ver detalles">
+                                <div class="bar-fill" style="width:${(v/sorted[0][1]*100)}%"><span class="bar-value" style="padding-right:8px;">${v}</span></div>
+                            </div>
+                            <div class="bar-percentage">${pct}%</div>
+                        </div>
+                        <div id="detail-${k.replace(/\s/g, '-')}" class="records-detail"></div>
+                    `;
+                });
+                bars += '</div></div>';
+                el('problems-container').innerHTML = bars;
+            }
+        };
+
+        const handleSearch = async () => {
+            const rawSerie = el('serie-input').value;
+            if (rawSerie.length < 3) return alert("Ingrese una serie válida");
+            const serie = sanitizeKey(rawSerie);
+            
+            const equipo = equiposMap.get(serie);
+
+            el('validate-button').disabled = true;
+            el('validate-button').textContent = 'Consultando...';
+            
+            try {
+                const csv2 = await fetchSheet(sheetURLs['BBDD PM 4']);
+                const res2 = parseCSV(csv2);
+                allProblemsData = res2.data;
+                currentProblemHeaders = res2.headers;
+                
+                const hSerie = res2.headers.find(h => h.toLowerCase().includes('serie reportada'));
+                const hNivel = res2.headers.find(h => h.toLowerCase().includes('nivel 2'));
+                
+                let counts = new Map();
+                let total = 0;
+                
+                if (hSerie) {
+                    res2.data.forEach(d => {
+                        if (sanitizeKey(d[hSerie]) === serie) {
+                            total++;
+                            const n = d[hNivel] ? d[hNivel].trim() : 'SIN NIVEL 2';
+                            counts.set(n, (counts.get(n) || 0) + 1);
+                        }
+                    });
+                }
+                
+                renderResult(rawSerie, equipo, total, counts);
+
+            } catch (e) {
+                console.error(e);
+                alert("Error consultando historial");
+            } finally {
+                el('validate-button').disabled = false;
+                el('validate-button').textContent = 'Buscar Equipo';
+            }
+        };
+
+        window.toggleDetail = (nivel, serieKey) => {
+             const id = `detail-${nivel.replace(/\s/g, '-')}`;
+             const div = el(id);
+             if(div.classList.contains('expanded')) { div.classList.remove('expanded'); return; }
+             document.querySelectorAll('.records-detail').forEach(d => d.classList.remove('expanded'));
+             
+             const hSerie = currentProblemHeaders.find(h => h.toLowerCase().includes('serie reportada'));
+             const hNivel = currentProblemHeaders.find(h => h.toLowerCase().includes('nivel 2'));
+             const recs = allProblemsData.filter(d => sanitizeKey(d[hSerie]) === sanitizeKey(serieKey) && (d[hNivel] || 'SIN NIVEL 2').trim() === nivel);
+             
+             let html = `<div class="detail-header"><div class="detail-title">${nivel}</div><button class="close-detail-btn" onclick="document.getElementById('${id}').classList.remove('expanded')">Cerrar</button></div><div class="detail-content">`;
+             recs.forEach(r => {
+                 const tkt = Object.entries(r).find(([k]) => k.toLowerCase().includes('ticket'))?.[1] || 'N/A';
+                 const obs = Object.entries(r).find(([k]) => k.toLowerCase().includes('observación'))?.[1] || 'Sin observación';
+                 const fecha = Object.entries(r).find(([k]) => k.toLowerCase().includes('fecha'))?.[1] || '';
+                 html += `<div class="record-item"><div class="record-header-tags"><span class="record-date-tag">${fecha}</span></div><div style="font-weight:700;color:var(--hp-blue);font-size:0.9rem;">Ticket: ${tkt}</div><div class="record-field-value">${obs}</div></div>`;
+             });
+             html += '</div>';
+             div.innerHTML = html;
+             div.classList.add('expanded');
+        };
+
+        el('validate-button').onclick = handleSearch;
+        el('serie-input').onkeyup = (e) => e.key === 'Enter' && handleSearch();
+        loadInitialData();
+    </script>
+</body>
+</html>
