@@ -482,11 +482,45 @@
         .pjud-list li::before { content: "•"; color: var(--warning); margin-right: 0.5rem; font-weight: bold; }
 
         @media (max-width: 900px) {
-            .container { padding: 1.5rem; }
+            .container { 
+                padding: 1.5rem; 
+                margin-bottom: 70px; /* Margen extra para que el contenido final no quede tapado por el botón */
+            }
             .info-row { grid-template-columns: 1fr; }
-            .pjud-dropdown-container { position: relative; top: auto; right: auto; margin-bottom: 1rem; display: flex; justify-content: center; }
-            .pjud-list { right: 50%; transform: translateX(50%); width: 90%; z-index: 200; }
             .alert-details { grid-template-columns: 1fr; }
+
+            /* --- CAMBIO PARA RESPONSIVE: Botón Fijo Abajo --- */
+            .pjud-dropdown-container { 
+                position: fixed;        /* Fijamos el contenedor en pantalla */
+                top: auto;              /* Anulamos el top original */
+                right: auto;            /* Anulamos el right original */
+                bottom: 20px;           /* Lo pegamos abajo */
+                left: 50%;              /* Centramos horizontalmente */
+                transform: translateX(-50%); 
+                width: 90%;             /* Ancho adaptable al móvil */
+                display: flex; 
+                justify-content: center; 
+                z-index: 1000;          /* Aseguramos que esté sobre todo */
+                margin-bottom: 0;
+            }
+            
+            .pjud-btn {
+                width: 100%;            /* Botón ancho para facilitar el toque */
+                justify-content: center;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            }
+
+            .pjud-list { 
+                right: 0;
+                left: 0;
+                width: 100%;
+                transform: none; 
+                z-index: 200; 
+                /* CAMBIO CRÍTICO: Que abra hacia ARRIBA */
+                top: auto; 
+                bottom: 100%;           /* Se despliega desde la parte superior del botón hacia arriba */
+                margin-bottom: 10px;    /* Espacio entre botón y lista */
+            }
         }
     </style>
 </head>
@@ -544,8 +578,17 @@
     <script>
         // UI Helpers
         const el = id => document.getElementById(id);
-        el('pjud-toggle').onclick = (e) => { e.stopPropagation(); el('pjud-list').classList.toggle('active'); };
-        document.onclick = (e) => { if (!document.querySelector('.pjud-dropdown-container').contains(e.target)) el('pjud-list').classList.remove('active'); };
+        const togglePjud = (e) => { 
+            e.stopPropagation(); 
+            el('pjud-list').classList.toggle('active'); 
+        };
+        el('pjud-toggle').onclick = togglePjud;
+        
+        document.onclick = (e) => { 
+            if (!document.querySelector('.pjud-dropdown-container').contains(e.target)) {
+                el('pjud-list').classList.remove('active'); 
+            }
+        };
 
         // --- CONFIGURACIÓN DE LINKS ---
         const sheetURLs = {
@@ -850,5 +893,3 @@
     </script>
 </body>
 </html>
-
-
