@@ -679,7 +679,9 @@
                 if (vals[targetIndex]) {
                     const cleanVal = vals[targetIndex].replace(/^"|"$/g, '').trim();
                     if (cleanVal) {
-                        const fecha = vals[5] ? vals[5].replace(/^"|"$/g, '').trim() : 'N/A';
+                        // CAMBIO REALIZADO AQUÍ: 
+                        // Columna Z = Índice 25 (A=0 ... Z=25)
+                        const fecha = vals[25] ? vals[25].replace(/^"|"$/g, '').trim() : 'N/A';
                         const sucursal = vals[12] ? vals[12].replace(/^"|"$/g, '').trim() : 'N/A';
                         const preSolicitud = vals[3] ? vals[3].replace(/^"|"$/g, '').trim() : '-';
                         
