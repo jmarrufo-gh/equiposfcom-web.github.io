@@ -762,7 +762,7 @@
                 if (habInfo.fecha.toUpperCase() === 'N/A') {
                     bannerHTML = `
                         <div class="status-banner">
-                            <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--info-text); opacity:0.8; font-weight:700;">Estado Actual del Equipo</div>
+                            <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--info-text); opacity:0.8; font-weight:700;">Estado Actual de la Habilitación</div>
                             <span style="font-size: 1.8rem; font-weight: 800; color: var(--info-text); margin-bottom:0.5rem;">${habInfo.estado}</span>
                             
                             <div class="details-grid status-details">
@@ -775,7 +775,7 @@
                                     <span class="detail-value">${habInfo.sucursal}</span>
                                 </div>
                                 <div class="detail-item">
-                                    <span class="status-label">Fecha Inst. (F)</span>
+                                    <span class="status-label">Fecha prevista Inst.</span>
                                     <span class="detail-value">${habInfo.fechaOriginal}</span>
                                 </div>
                             </div>
@@ -933,3 +933,4 @@
     </script>
 </body>
 </html>
+
