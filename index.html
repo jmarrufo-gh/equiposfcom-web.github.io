@@ -141,12 +141,9 @@
         #validate-button:hover { background-color: var(--hover-blue); transform: translateY(-1px); }
         #validate-button:disabled { background-color: var(--border-light); color: var(--text-muted); cursor: not-allowed; transform: none; box-shadow: none; }
 
-        /* --- ALERT BANNER --- */
-        .alert-banner {
+        /* --- BANNERS --- */
+        .alert-banner, .success-banner {
             grid-column: 1 / -1;
-            background-color: var(--error-bg);
-            border: 1px solid var(--error-color);
-            color: #842029;
             padding: 2rem 1.5rem;
             border-radius: 8px;
             margin-bottom: 2rem;
@@ -157,29 +154,13 @@
             justify-content: center;
             gap: 1rem;
             animation: slideDown 0.5s ease-out;
-            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        /* --- SUCCESS BANNER --- */
-        .success-banner {
-            grid-column: 1 / -1;
-            background-color: var(--success-bg);
-            border: 1px solid var(--success-color);
-            color: #065f46;
-            padding: 2rem 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            animation: slideDown 0.5s ease-out;
-            box-shadow: 0 5px 15px rgba(25, 135, 84, 0.1);
-        }
+        .alert-banner { background-color: var(--error-bg); border: 1px solid var(--error-color); color: #842029; }
+        .success-banner { background-color: var(--success-bg); border: 1px solid var(--success-color); color: #065f46; }
 
-        .alert-icon-circle, .success-icon-circle {
+        .banner-icon-circle {
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -192,8 +173,8 @@
             color: white;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-        .alert-icon-circle { background-color: var(--error-color); }
-        .success-icon-circle { background-color: var(--success-color); }
+        .bg-red { background-color: var(--error-color); }
+        .bg-green { background-color: var(--success-color); }
 
         .banner-title { font-size: 1.5rem; font-weight: 800; text-transform: uppercase; margin: 0; }
         .banner-subtitle { font-weight: 700; font-size: 1rem; text-transform: uppercase; margin-bottom: 0.5rem; }
@@ -212,7 +193,7 @@
         }
 
         .alert-detail-item { display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .alert-detail-label { font-size: 0.7rem; color: var(--error-color); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+        .alert-detail-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
         .alert-detail-value { font-size: 1rem; font-weight: 700; color: var(--text-main); }
 
         /* --- RESULTADOS --- */
@@ -274,16 +255,6 @@
         .loading-icon { font-size: 3rem; margin-bottom: 1rem; animation: pulse 2s infinite; }
         .loading-title { font-size: 1.4rem; font-weight: 700; color: var(--hp-blue); margin-bottom: 0.5rem; }
         .loading-subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; }
-        .progress-bar-container { background-color: var(--border-light); border-radius: 10px; height: 10px; overflow: hidden; margin-bottom: 1rem; }
-        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--hp-blue), var(--fcom-blue)); width: 0%; transition: width 0.3s ease; }
-        .loading-steps { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; text-align: left; }
-        .loading-step { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; background-color: var(--bg-soft); border-radius: 6px; font-size: 0.85rem; color: var(--text-muted); opacity: 0.6; }
-        .loading-step.active { opacity: 1; background-color: var(--hover-light); border-left: 3px solid var(--hp-blue); color: var(--text-main); font-weight: 600; }
-        .loading-step.completed { opacity: 1; background-color: #d1e7dd; border-left: 3px solid var(--success-color); color: var(--success-color); }
-        .step-spinner { width: 14px; height: 14px; border: 2px solid var(--border-light); border-top-color: var(--hp-blue); border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
-        .loading-step.active .step-spinner { display: block; }
-        .loading-step.completed .step-check { display: block; }
-        .step-check { display: none; font-weight: bold; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } }
@@ -327,10 +298,6 @@
             <div class="loading-title">Cargando Sistema</div>
             <div class="loading-subtitle" id="loading-subtitle">Conectando servicios...</div>
             <div class="progress-bar-container"><div class="progress-bar-fill" id="progress-bar"></div></div>
-            <div class="progress-info" style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
-                <span id="progress-status">Iniciando</span>
-                <span id="progress-percentage">0%</span>
-            </div>
             <div class="loading-steps">
                 <div class="loading-step" id="step-1"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Base de Datos Inventario</span></div>
                 <div class="loading-step" id="step-2"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Registro de Habilitaciones</span></div>
@@ -361,19 +328,10 @@
     </div>
 
     <script>
-        // UI Helpers originales
         const el = id => document.getElementById(id);
-        const togglePjud = (e) => { 
-            e.stopPropagation(); 
-            el('pjud-list').classList.toggle('active'); 
-        };
+        const togglePjud = (e) => { e.stopPropagation(); el('pjud-list').classList.toggle('active'); };
         el('pjud-toggle').onclick = togglePjud;
-        
-        document.onclick = (e) => { 
-            if (!document.querySelector('.pjud-dropdown-container').contains(e.target)) {
-                el('pjud-list').classList.remove('active'); 
-            }
-        };
+        document.onclick = (e) => { if (!document.querySelector('.pjud-dropdown-container').contains(e.target)) el('pjud-list').classList.remove('active'); };
 
         const sheetURLs = {
             'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
@@ -388,7 +346,6 @@
 
         const updateProgress = (pct, status, sub) => {
             el('progress-bar').style.width = pct + '%';
-            el('progress-percentage').textContent = Math.round(pct) + '%';
             el('progress-status').textContent = status;
             if (sub) el('loading-subtitle').textContent = sub;
         };
@@ -416,7 +373,6 @@
         const parseCSV = (text) => {
             if (!text) return { data: [], headers: [] };
             const lines = text.split('\n').filter(l => l.trim());
-            if (lines.length < 1) return { data: [], headers: [] };
             const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
             const headers = lines[0].split(regex).map(h => h.trim().replace(/"/g, ''));
             const data = lines.slice(1).map(line => {
@@ -494,31 +450,19 @@
 
             if (inHab) {
                 if (habInfo.fecha === "N/A") {
-                    // MODIFICACIÓN SOLICITADA: Búsqueda exacta de "Fecha Instalacion" y "Estado"
-                    const valFechaInst = equipo ? (equipo['Fecha Instalacion'] || 'N/A') : 'N/A';
+                    // SE MUESTRA EL ESTADO (Columna AA)
                     const valEstado = equipo ? (equipo['Estado'] || equipo['ESTADO'] || 'N/A') : 'N/A';
                     
-                    let esAnterior = false;
-                    const hoy = new Date();
-
-                    if (valFechaInst !== 'N/A') {
-                        const p = valFechaInst.split('/');
-                        if (p.length === 3) {
-                            const fInst = new Date(p[2], p[1] - 1, p[0]);
-                            if (fInst < hoy) esAnterior = true;
-                        }
-                    }
-
                     bannerHTML = `
                         <div class="success-banner">
-                            <div class="success-icon-circle">✓</div>
-                            <div class="banner-subtitle">${esAnterior ? 'ESTADO DEL EQUIPO' : 'FECHA DE CAMBIO ESTIPULADA'}</div>
-                            <div class="banner-title" style="color:var(--success-color)">${esAnterior ? valEstado : valFechaInst}</div>
+                            <div class="banner-icon-circle bg-green">✓</div>
+                            <div class="banner-subtitle">ESTADO DEL EQUIPO</div>
+                            <div class="banner-title" style="color:var(--success-color)">${valEstado}</div>
                         </div>`;
                 } else {
                     bannerHTML = `
                         <div class="alert-banner">
-                            <div class="alert-icon-circle"><span>-</span></div>
+                            <div class="banner-icon-circle bg-red"><span>-</span></div>
                             <div class="banner-title">ADVERTENCIA CRÍTICA</div>
                             <div class="banner-subtitle">EQUIPO REEMPLAZADO POR HABILITACIONES</div>
                             <div class="alert-details">
