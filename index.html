@@ -6,6 +6,7 @@
     <title>Consulta de Equipos - HP / FCOM</title>
     <style>
         :root {
+            /* --- PALETA DE COLORES --- */
             --hp-blue: #0071c5;
             --fcom-blue: #0096d6;
             --gradient-blue: #00b4d8;
@@ -18,8 +19,10 @@
             --white: #ffffff;
             --text-main: #2d2d2d;
             --text-muted: #6c757d;
+            
             --error-color: #dc3545;
             --error-bg: #fff5f5;
+            --error-border: #f5c2c7;
             --success-color: #198754;
             --success-bg: #e6fffa;
         }
@@ -39,6 +42,7 @@
             background-attachment: fixed;
         }
 
+        /* --- CONTENEDOR PRINCIPAL --- */
         .container { 
             width: 100%; 
             max-width: 900px; 
@@ -50,6 +54,7 @@
             position: relative;
         }
 
+        /* --- HEADER --- */
         .header-logos {
             display: flex;
             justify-content: space-between;
@@ -59,227 +64,567 @@
             border-bottom: 2px solid var(--border-light);
         }
 
-        .logo-img { height: 60px; width: auto; object-fit: contain; }
-
-        h1 { font-size: 1.8rem; font-weight: 700; color: var(--hp-blue); text-align: center; margin: 0.5rem 0; }
-        p { text-align: center; color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .logo-img {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
         
+        .logo-img:hover { transform: scale(1.05); }
+
+        h1 { 
+            font-size: 1.8rem; 
+            font-weight: 700; 
+            color: var(--hp-blue); 
+            text-align: center; 
+            margin: 0.5rem 0; 
+            line-height: 1.2; 
+        }
+
+        p { 
+            text-align: center; 
+            color: var(--text-muted); 
+            margin-bottom: 1.5rem; 
+            font-size: 0.95rem; 
+        }
+        
+        /* --- ESTADO DB --- */
         .db-status {
-            text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;
-            padding: 0.5rem; background: var(--bg-soft); border-radius: 6px; border: 1px solid var(--border-light);
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            padding: 0.5rem;
+            background: var(--bg-soft);
+            border-radius: 6px;
+            border: 1px solid var(--border-light);
         }
         .db-status span.ok { color: var(--success-color); font-weight: bold; }
+        .db-status span.fail { color: var(--error-color); font-weight: bold; }
 
+        /* --- SEARCH SECTION --- */
         .search-section { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        
         #serie-input { 
-            flex-grow: 1; padding: 0.8rem 1.25rem; border: 2px solid var(--border-light); 
-            border-radius: 50px; background-color: var(--bg-soft); color: var(--text-main); font-size: 1rem; outline: 0;
+            flex-grow: 1; 
+            padding: 0.8rem 1.25rem; 
+            border: 2px solid var(--border-light); 
+            border-radius: 50px; 
+            background-color: var(--bg-soft); 
+            color: var(--text-main); 
+            font-size: 1rem; 
+            width: 100%; 
+            transition: all 0.3s;
+        }
+        
+        #serie-input:focus { 
+            border-color: var(--fcom-blue); 
+            background-color: var(--white);
+            box-shadow: 0 0 0 4px rgba(0, 150, 214, 0.15); 
+            outline: 0; 
         }
 
         #validate-button { 
-            padding: 0.8rem 2rem; background-color: var(--hp-blue); color: var(--white); border: none; 
-            border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s;
+            padding: 0.8rem 2rem; 
+            background-color: var(--hp-blue); 
+            color: var(--white); 
+            border: none; 
+            border-radius: 50px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            white-space: nowrap; 
+            box-shadow: 0 4px 6px rgba(0, 113, 197, 0.3);
+            transition: background-color 0.3s, transform 0.2s;
         }
+        
+        #validate-button:hover { background-color: var(--hover-blue); transform: translateY(-1px); }
+        #validate-button:disabled { background-color: var(--border-light); color: var(--text-muted); cursor: not-allowed; transform: none; box-shadow: none; }
 
-        /* BANNER VERDE */
-        .success-banner {
-            grid-column: 1 / -1; background-color: var(--success-bg); border: 1px solid var(--success-color); 
-            color: #065f46; padding: 2rem 1.5rem; border-radius: 8px; margin-bottom: 2rem;
-            text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 1rem; animation: slideDown 0.5s ease-out; box-shadow: 0 5px 15px rgba(25, 135, 84, 0.1);
-        }
-
-        /* BANNER ROJO */
+        /* --- ALERT BANNER --- */
         .alert-banner {
-            grid-column: 1 / -1; background-color: var(--error-bg); border: 1px solid var(--error-color); 
-            color: #842029; padding: 2rem 1.5rem; border-radius: 8px; margin-bottom: 2rem;
-            text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 1rem; animation: slideDown 0.5s ease-out;
+            grid-column: 1 / -1;
+            background-color: var(--error-bg);
+            border: 1px solid var(--error-color);
+            color: #842029;
+            padding: 2rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            animation: slideDown 0.5s ease-out;
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.1);
         }
 
-        .banner-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: white; margin-bottom: 0.5rem; }
-        .bg-green { background-color: var(--success-color); }
-        .bg-red { background-color: var(--error-color); }
+        /* --- SUCCESS BANNER --- */
+        .success-banner {
+            grid-column: 1 / -1;
+            background-color: var(--success-bg);
+            border: 1px solid var(--success-color);
+            color: #065f46;
+            padding: 2rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            animation: slideDown 0.5s ease-out;
+            box-shadow: 0 5px 15px rgba(25, 135, 84, 0.1);
+        }
+
+        .alert-icon-circle, .success-icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .alert-icon-circle { background-color: var(--error-color); }
+        .success-icon-circle { background-color: var(--success-color); }
 
         .banner-title { font-size: 1.5rem; font-weight: 800; text-transform: uppercase; margin: 0; }
-        .banner-subtitle { font-weight: 700; font-size: 1rem; text-transform: uppercase; }
+        .banner-subtitle { font-weight: 700; font-size: 1rem; text-transform: uppercase; margin-bottom: 0.5rem; }
 
-        .alert-details { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; background-color: #ffffff; padding: 1rem 1.5rem; border-radius: 6px; width: 100%; max-width: 700px; border: 1px solid var(--border-light); }
-        .alert-detail-item { display: flex; flex-direction: column; align-items: center; }
+        .alert-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            background-color: #ffffff;
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+            width: 100%;
+            max-width: 700px;
+            border: 1px solid var(--border-light);
+        }
 
-        #result { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 1.5rem; background-color: var(--bg-soft); border-radius: 8px; border: 1px solid var(--border-light); }
-        .main-serie { grid-column: 1/-1; text-align: center; border-bottom: 2px solid var(--border-light); padding-bottom: 1rem; }
-        .main-serie span { font-size: 1.8rem; color: var(--hp-blue); font-weight: 800; }
-        .info-row { grid-column: 1/-1; display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 1rem; margin: 0.5rem 0; }
+        .alert-detail-item { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .alert-detail-label { font-size: 0.7rem; color: var(--error-color); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+        .alert-detail-value { font-size: 1rem; font-weight: 700; color: var(--text-main); }
+
+        /* --- RESULTADOS --- */
+        #result { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1rem; 
+            padding: 1.5rem; 
+            margin-bottom: 2rem; 
+            background-color: var(--bg-soft); 
+            border-radius: 8px; 
+            border: 1px solid var(--border-light);
+        }
+        
+        .result-item { padding: 0.5rem 0; display: flex; flex-direction: column; word-break: break-word; }
+        .result-item strong { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 0.3rem; }
+        .result-item span { font-weight: 600; color: var(--text-main); font-size: 1.1rem; }
+
+        .main-serie { grid-column: 1/-1; text-align: center; border-bottom: 2px solid var(--border-light); padding-bottom: 1rem; margin-bottom: 0.5rem; }
+        .main-serie span { font-size: 1.8rem; color: var(--hp-blue); font-weight: 800; letter-spacing: 1px; }
+
+        .info-row { grid-column: 1/-1; display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 1rem; align-items: stretch; margin: 0.5rem 0; }
         .highlight { background-color: var(--white); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-light); text-align: center; }
-        .project-item { background: linear-gradient(135deg, var(--btn-bg), var(--hover-light)); padding: 1.2rem; border-radius: 8px; border-left: 5px solid var(--fcom-blue); text-align: center; }
+        .project-item { background: linear-gradient(135deg, var(--btn-bg), var(--hover-light)); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border-light); border-left: 5px solid var(--fcom-blue); text-align: center; }
+        .project-item span { color: var(--hp-blue); font-weight: 800; }
 
+        .total-incidents { grid-column: 1/-1; text-align: center; background-color: var(--btn-bg); padding: 1rem; border-radius: 8px; margin-top: 0.5rem; border: 1px solid var(--border-light); }
+        .total-incidents span { font-size: 1.4rem; font-weight: 800; color: var(--hp-blue); }
+
+        /* --- GRÁFICAS Y DETALLES --- */
+        .unified-chart-container { padding: 1.5rem; background-color: var(--bg-soft); border-radius: 8px; border: 1px solid var(--border-light); }
+        .bar-label { min-width: 200px; font-size: 0.9rem; color: var(--text-main); font-weight: 600; }
+        .bar-container { flex-grow: 1; height: 35px; background-color: var(--border-light); border-radius: 6px; overflow: hidden; cursor: pointer; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, var(--hp-blue), var(--fcom-blue)); border-radius: 6px; transition: all 0.3s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 0.75rem; }
+        .bar-fill:hover { background: linear-gradient(90deg, var(--hover-blue), var(--hp-blue)); }
+        .chart-bars-wrapper { display: flex; flex-direction: column; gap: 0.8rem; }
+        .chart-bar-item { display: flex; align-items: center; gap: 1rem; }
+        .bar-value { color: var(--white); font-weight: 700; font-size: 0.9rem; }
+        .bar-percentage { font-size: 0.75rem; color: var(--text-muted); min-width: 45px; text-align: right; }
+
+        .records-detail { margin-top: 1rem; background-color: var(--white); border-radius: 8px; border: 1px solid var(--border-light); border-left: 4px solid var(--hp-blue); max-height: 0; overflow: hidden; transition: max-height 0.4s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .records-detail.expanded { max-height: 600px; }
+        .detail-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border-light); background-color: var(--btn-bg); }
+        .detail-title { font-weight: 700; color: var(--hp-blue); }
+        .close-detail-btn { background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 4px; cursor: pointer; }
+        .close-detail-btn:hover { background: var(--hp-blue); color: #fff; }
+        .detail-content { max-height: 480px; overflow-y: auto; padding: 1rem; }
+        .record-item { background-color: var(--bg-soft); padding: 1rem; border-radius: 6px; margin-bottom: 0.75rem; border: 1px solid var(--border-light); }
+        .record-date-tag { background-color: var(--border-light); color: var(--hp-blue); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+        .record-field-value { color: var(--text-main); margin-top: 0.5rem; font-size: 0.9rem; line-height: 1.4; }
+
+        .error-message { grid-column: 1/-1; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 1rem; border-radius: 6px; text-align: center; font-weight: 500; }
+        #problems-list-title { font-size: 1.3rem; font-weight: 700; color: var(--text-main); margin: 2rem 0 1rem 0; border-bottom: 2px solid var(--border-light); padding-bottom: 0.5rem; display: none; }
+
+        /* --- LOADING OVERLAY --- */
         .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.95); display: none; justify-content: center; align-items: center; z-index: 9999; }
         .loading-overlay.active { display: flex; }
-        .loading-content { background-color: var(--white); padding: 2.5rem; border-radius: 12px; text-align: center; max-width: 450px; width: 100%; border: 1px solid var(--border-light); }
+        .loading-content { background-color: var(--white); padding: 2.5rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); max-width: 450px; width: 100%; border: 1px solid var(--border-light); text-align: center; }
+        .loading-icon { font-size: 3rem; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        .loading-title { font-size: 1.4rem; font-weight: 700; color: var(--hp-blue); margin-bottom: 0.5rem; }
+        .loading-subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+        .progress-bar-container { background-color: var(--border-light); border-radius: 10px; height: 10px; overflow: hidden; margin-bottom: 1rem; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--hp-blue), var(--fcom-blue)); width: 0%; transition: width 0.3s ease; }
+        .loading-steps { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; text-align: left; }
+        .loading-step { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; background-color: var(--bg-soft); border-radius: 6px; font-size: 0.85rem; color: var(--text-muted); opacity: 0.6; }
+        .loading-step.active { opacity: 1; background-color: var(--hover-light); border-left: 3px solid var(--hp-blue); color: var(--text-main); font-weight: 600; }
+        .loading-step.completed { opacity: 1; background-color: #d1e7dd; border-left: 3px solid var(--success-color); color: var(--success-color); }
+        .step-spinner { width: 14px; height: 14px; border: 2px solid var(--border-light); border-top-color: var(--hp-blue); border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
+        .loading-step.active .step-spinner { display: block; }
+        .loading-step.completed .step-check { display: block; }
+        .step-check { display: none; font-weight: bold; }
 
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- PJUD BUTTON --- */
+        .pjud-dropdown-container { position: absolute; top: 2rem; right: 2rem; z-index: 100; }
+        .pjud-btn { background-color: var(--warning); border: 1px solid #d39e00; color: #212529; padding: 0.6rem 1.2rem; border-radius: 50px; cursor: pointer; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .pjud-list { display: none; position: absolute; top: calc(100% + 10px); right: 0; width: 320px; background-color: var(--white); border: 1px solid var(--border-light); border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; padding: 1rem; }
+        .pjud-list.active { display: block; }
+        .pjud-list h3 { margin-top: 0; color: var(--text-main); font-size: 1rem; border-bottom: 2px solid var(--warning); padding-bottom: 0.5rem; }
+        .pjud-list ul { list-style: none; padding: 0; margin: 0; }
+        .pjud-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--bg-soft); font-size: 0.85rem; color: var(--text-main); }
+        .pjud-list li::before { content: "•"; color: var(--warning); margin-right: 0.5rem; font-weight: bold; }
+
+        @media (max-width: 900px) {
+            .container { padding: 1.5rem; margin-bottom: 70px; }
+            .info-row { grid-template-columns: 1fr; }
+            .alert-details { grid-template-columns: 1fr; }
+            .pjud-dropdown-container { position: fixed; top: auto; right: auto; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; display: flex; justify-content: center; z-index: 1000; margin-bottom: 0; }
+            .pjud-btn { width: 100%; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+            .pjud-list { right: 0; left: 0; width: 100%; transform: none; z-index: 200; top: auto; bottom: 100%; margin-bottom: 10px; }
+        }
     </style>
 </head>
 <body>
 
+    <div class="pjud-dropdown-container">
+        <button class="pjud-btn" id="pjud-toggle">⚠️ Equipamiento PJUD ▼</button>
+        <div class="pjud-list" id="pjud-list">
+            <h3>No están en contrato</h3>
+            <ul>
+                <li>Flow 7500 scanner</li><li>HP EliteBook 1040 G3</li><li>HP EliteBook 1040 G4</li><li>HP EliteDesk 800 G3</li><li>HP EliteDesk 800 G4</li><li>HP EliteBook 820 G2</li><li>HP EliteBook 840 G7</li><li>HP EliteBook G7 840</li><li>HP ProDesk 400 G4</li><li>HP Prodesk 600 G1</li><li>HP Prodesk 600 G2</li><li>HP Prodesk 6200</li><li>Hp s1933</li><li>HP V-202</li><li>HP V-203</li><li>LENOVO ThinkPad T14 Gen 2i</li><li>LG - 29WL50S-B</li>
+            </ul>
+        </div>
+    </div>
+
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-content">
-            <div style="font-size: 3rem;">⚙️</div>
-            <div style="font-size: 1.4rem; font-weight: 700; color: var(--hp-blue);">Cargando Sistema</div>
-            <div id="loading-subtitle" style="font-size: 0.9rem; color: var(--text-muted);">Sincronizando con Google Sheets...</div>
+            <div class="loading-icon">⚙️</div>
+            <div class="loading-title">Cargando Sistema</div>
+            <div class="loading-subtitle" id="loading-subtitle">Conectando servicios...</div>
+            <div class="progress-bar-container"><div class="progress-bar-fill" id="progress-bar"></div></div>
+            <div class="progress-info" style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                <span id="progress-status">Iniciando</span>
+                <span id="progress-percentage">0%</span>
+            </div>
+            <div class="loading-steps">
+                <div class="loading-step" id="step-1"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Base de Datos Inventario</span></div>
+                <div class="loading-step" id="step-2"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Registro de Habilitaciones</span></div>
+                <div class="loading-step" id="step-3"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Finalizando carga</span></div>
+            </div>
         </div>
     </div>
 
     <div class="container">
         <div class="header-logos">
-            <img src="https://fcom.cl/images/logo_simple.png" alt="Logo FCOM" class="logo-img">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/HP_logo_2012.svg" alt="Logo HP" class="logo-img" style="height: 45px;">
+            <img src="https://fcom.cl/images/logo_simple.png" alt="Logo FCOM" class="logo-img" style="height: 45px;">
+            <img src="http://e7.pngegg.com/pngimages/1001/292/png-clipart-hewlett-packard-logo-hp-pavilion-printer-work-blue-cdr.png" alt="Logo HP" class="logo-img" style="height: 55px;">
         </div>
 
         <h1>Consulta de Equipos e Historial</h1>
-        <p>Verificación de inventario y estado de recambio PJUD.</p>
+        <p>Ingrese el número de serie para verificar inventario, habilitaciones e historial de reportes.</p>
         
         <div class="db-status" id="db-status">Iniciando conexión...</div>
 
         <div class="search-section">
-            <input type="text" id="serie-input" placeholder="Ej: MXL0000000">
-            <button id="validate-button" disabled>Cargando...</button>
+            <input type="text" id="serie-input" placeholder="Ej: 5CG9426Q2D">
+            <button id="validate-button">Cargando datos...</button>
         </div>
 
         <div id="result"></div>
+        <h2 id="problems-list-title">Historial de Reportes</h2>
         <div id="problems-container"></div>
     </div>
 
     <script>
+        // UI Helpers originales
         const el = id => document.getElementById(id);
+        const togglePjud = (e) => { 
+            e.stopPropagation(); 
+            el('pjud-list').classList.toggle('active'); 
+        };
+        el('pjud-toggle').onclick = togglePjud;
+        
+        document.onclick = (e) => { 
+            if (!document.querySelector('.pjud-dropdown-container').contains(e.target)) {
+                el('pjud-list').classList.remove('active'); 
+            }
+        };
+
         const sheetURLs = {
             'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
-            'Habilitaciones': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1180790714&single=true&output=csv'
+            'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv',
+            'Habilitaciones': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1180790714&single=true&output=csv' 
         };
 
         let equiposMap = new Map();
         let habilitacionesMap = new Map();
+        let allProblemsData = [];
+        let currentProblemHeaders = [];
 
-        const sanitizeKey = k => String(k || '').trim().replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-
-        // Función para buscar valor en un objeto ignorando espacios y mayúsculas en las llaves
-        const getSafeValue = (obj, targetKey) => {
-            if (!obj) return 'N/A';
-            const cleanTarget = targetKey.toLowerCase().replace(/\s/g, '');
-            const foundKey = Object.keys(obj).find(k => k.toLowerCase().replace(/\s/g, '') === cleanTarget);
-            return foundKey ? obj[foundKey] : 'N/A';
+        const updateProgress = (pct, status, sub) => {
+            el('progress-bar').style.width = pct + '%';
+            el('progress-percentage').textContent = Math.round(pct) + '%';
+            el('progress-status').textContent = status;
+            if (sub) el('loading-subtitle').textContent = sub;
+        };
+        const setStep = (n, state) => {
+            const s = el(`step-${n}`);
+            if (state === 'active') { document.querySelectorAll('.loading-step').forEach(x => x.classList.remove('active')); s.classList.add('active'); }
+            if (state === 'complete') { s.classList.remove('active'); s.classList.add('completed'); }
+        };
+        const showLoading = (show) => {
+            if (show) el('loading-overlay').classList.add('active');
+            else setTimeout(() => el('loading-overlay').classList.remove('active'), 500);
         };
 
-        const parseCSV = text => {
+        const sanitizeKey = (key) => {
+            if (!key) return '';
+            return String(key).trim().replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        };
+
+        const fetchSheet = async (url) => {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(res.status);
+            return (await res.text()).replace(/\r\n|\r/g, '\n');
+        };
+
+        const parseCSV = (text) => {
+            if (!text) return { data: [], headers: [] };
             const lines = text.split('\n').filter(l => l.trim());
-            if (lines.length < 1) return [];
+            if (lines.length < 1) return { data: [], headers: [] };
             const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
             const headers = lines[0].split(regex).map(h => h.trim().replace(/"/g, ''));
-            return lines.slice(1).map(line => {
+            const data = lines.slice(1).map(line => {
                 const vals = line.split(regex);
                 let obj = {};
-                headers.forEach((h, i) => obj[h] = (vals[i] || '').replace(/^"|"$/g, '').trim());
+                headers.forEach((h, i) => obj[h] = (vals[i] || '').replace(/^"|"$/g, '').replace(/""/g, '"').trim());
                 return obj;
             });
+            return { data, headers };
         };
 
-        async function init() {
-            el('loading-overlay').classList.add('active');
-            try {
-                const [csvInv, csvHab] = await Promise.all([
-                    fetch(sheetURLs['Hoja 1']).then(r => r.text()),
-                    fetch(sheetURLs['Habilitaciones']).then(r => r.text())
-                ]);
-
-                parseCSV(csvInv).forEach(item => {
-                    const s = sanitizeKey(item['Serie'] || item['SERIE'] || item['Serial']);
-                    if (s) equiposMap.set(s, item);
-                });
-
-                parseCSV(csvHab).forEach(item => {
-                    const s = sanitizeKey(item['serie principal antigua'] || item['SERIE PRINCIPAL ANTIGUA']);
-                    if (s) {
-                        habilitacionesMap.set(s, {
-                            fecha: item['FECHA DE CAMBIO'] || item['Fecha de Cambio'] || 'N/A',
-                            sucursal: item['SUCURSAL'] || 'N/A',
-                            preSolicitud: item['NRO DE PRE SOLICITUD'] || '-'
+        const parseHabilitaciones = (text) => {
+            if (!text) return;
+            const lines = text.split('\n').filter(l => l.trim());
+            let headerRowIndex = lines.findIndex(l => l.toLowerCase().includes('serie principal antigua'));
+            if (headerRowIndex === -1) headerRowIndex = 0;
+            const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+            const headers = lines[headerRowIndex].split(regex).map(h => h.trim().replace(/"/g, ''));
+            const targetIndex = headers.findIndex(h => h.toLowerCase().includes('serie principal antigua'));
+            if (targetIndex === -1) return;
+            for (let i = headerRowIndex + 1; i < lines.length; i++) {
+                const vals = lines[i].split(regex);
+                if (vals[targetIndex]) {
+                    const cleanVal = vals[targetIndex].replace(/^"|"$/g, '').trim();
+                    if (cleanVal) {
+                        habilitacionesMap.set(sanitizeKey(cleanVal), {
+                            fecha: vals[25] ? vals[25].replace(/^"|"$/g, '').trim() : 'N/A',
+                            sucursal: vals[12] ? vals[12].replace(/^"|"$/g, '').trim() : 'N/A',
+                            preSolicitud: vals[3] ? vals[3].replace(/^"|"$/g, '').trim() : '-'
                         });
                     }
-                });
-
-                el('db-status').innerHTML = `Equipos Sincronizados: <span class="ok">${equiposMap.size}</span>`;
-                el('validate-button').disabled = false;
-                el('validate-button').innerText = 'Buscar Equipo';
-            } catch (e) {
-                el('db-status').innerHTML = '<span style="color:red;">Error de conexión</span>';
+                }
             }
-            el('loading-overlay').classList.remove('active');
-        }
+        };
 
-        function renderResult(serie) {
+        const loadInitialData = async () => {
+            showLoading(true);
+            updateProgress(10, 'Conectando...', 'Estableciendo enlace seguro');
+            setStep(1, 'active');
+            try {
+                const csv1 = await fetchSheet(sheetURLs['Hoja 1']);
+                const res1 = parseCSV(csv1);
+                const serieHeader = res1.headers.find(h => h.toLowerCase().includes('serie') || h.toLowerCase().includes('serial'));
+                if (serieHeader) {
+                    res1.data.forEach(item => {
+                        const s = sanitizeKey(item[serieHeader]);
+                        if (s) equiposMap.set(s, item);
+                    });
+                }
+                setStep(1, 'complete');
+                setStep(2, 'active');
+                updateProgress(50, 'Procesando...', 'Analizando habilitaciones');
+                const csvHab = await fetchSheet(sheetURLs['Habilitaciones']);
+                parseHabilitaciones(csvHab);
+                el('db-status').innerHTML = `Inventario: <span class="ok">${equiposMap.size}</span> | Habilitaciones: <span class="ok">${habilitacionesMap.size}</span>`;
+                setStep(2, 'complete');
+                updateProgress(100, 'Listo', 'Sistema preparado');
+                setStep(3, 'complete');
+                setTimeout(() => showLoading(false), 500);
+                el('validate-button').textContent = 'Buscar Equipo';
+                el('validate-button').disabled = false;
+            } catch (err) {
+                el('db-status').innerHTML = `<span class="fail">Error de conexión</span>`;
+                showLoading(false);
+            }
+        };
+
+        const renderResult = (serie, equipo, totalProblems, counts) => {
             const cleanSerie = sanitizeKey(serie);
-            const equipo = equiposMap.get(cleanSerie);
             const habInfo = habilitacionesMap.get(cleanSerie);
+            const inHab = !!habInfo; 
+            const inInv = !!equipo;
             
             let bannerHTML = '';
 
-            if (habInfo) {
+            if (inHab) {
                 if (habInfo.fecha === "N/A") {
-                    // Búsqueda segura de columnas F (Fecha Instalacion) y AA (Estado)
-                    const valFechaInst = getSafeValue(equipo, "Fecha Instalacion");
-                    const valEstado = getSafeValue(equipo, "Estado");
+                    // MODIFICACIÓN SOLICITADA: Búsqueda exacta de "Fecha Instalacion" y "Estado"
+                    const valFechaInst = equipo ? (equipo['Fecha Instalacion'] || 'N/A') : 'N/A';
+                    const valEstado = equipo ? (equipo['Estado'] || equipo['ESTADO'] || 'N/A') : 'N/A';
                     
-                    let esPasada = false;
+                    let esAnterior = false;
                     const hoy = new Date();
 
                     if (valFechaInst !== 'N/A') {
                         const p = valFechaInst.split('/');
                         if (p.length === 3) {
                             const fInst = new Date(p[2], p[1] - 1, p[0]);
-                            if (fInst < hoy) esPasada = true;
+                            if (fInst < hoy) esAnterior = true;
                         }
                     }
 
                     bannerHTML = `
                         <div class="success-banner">
-                            <div class="banner-icon bg-green">✓</div>
-                            <div class="banner-subtitle">${esPasada ? 'ESTADO ACTUAL DEL EQUIPO' : 'FECHA DE CAMBIO ESTIPULADA'}</div>
-                            <div class="banner-title">${esPasada ? valEstado : valFechaInst}</div>
+                            <div class="success-icon-circle">✓</div>
+                            <div class="banner-subtitle">${esAnterior ? 'ESTADO DEL EQUIPO' : 'FECHA DE CAMBIO ESTIPULADA'}</div>
+                            <div class="banner-title" style="color:var(--success-color)">${esAnterior ? valEstado : valFechaInst}</div>
                         </div>`;
                 } else {
                     bannerHTML = `
                         <div class="alert-banner">
-                            <div class="banner-icon bg-red">-</div>
+                            <div class="alert-icon-circle"><span>-</span></div>
                             <div class="banner-title">ADVERTENCIA CRÍTICA</div>
                             <div class="banner-subtitle">EQUIPO REEMPLAZADO POR HABILITACIONES</div>
                             <div class="alert-details">
-                                <div class="alert-detail-item"><strong>Fecha</strong><br>${habInfo.fecha}</div>
-                                <div class="alert-detail-item"><strong>Pre-Solicitud</strong><br>${habInfo.preSolicitud}</div>
-                                <div class="alert-detail-item"><strong>Dependencia</strong><br>${habInfo.sucursal}</div>
+                                <div class="alert-detail-item"><span class="alert-detail-label">Fecha</span><span class="alert-detail-value">${habInfo.fecha}</span></div>
+                                <div class="alert-detail-item"><span class="alert-detail-label">Pre-Solicitud</span><span class="alert-detail-value">${habInfo.preSolicitud}</span></div>
+                                <div class="alert-detail-item"><span class="alert-detail-label">Dependencia</span><span class="alert-detail-value">${habInfo.sucursal}</span></div>
                             </div>
                         </div>`;
                 }
             }
 
-            if (!equipo && !habInfo) {
-                el('result').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;">⚠️ Serie no encontrada.</div>`;
+            if (!inInv && !inHab && totalProblems === 0) {
+                el('result').innerHTML = `<div class="error-message">⚠️ Serie "${serie}" no encontrada.</div>`;
                 return;
             }
 
+            const tipo = equipo ? (equipo['Tipo'] || 'N/A') : 'No Registrado';
+            const modelo = equipo ? (equipo['Modelo'] || 'N/A') : 'No Registrado';
+            const proyecto = equipo ? (equipo['Proyecto'] || 'N/A') : 'No Registrado';
+
             el('result').innerHTML = `
                 ${bannerHTML}
-                <div class="main-serie"><strong>SERIE</strong><br><span>${cleanSerie}</span></div>
+                <div class="result-item main-serie"><strong>NÚMERO DE SERIE</strong><span>${cleanSerie}</span></div>
                 <div class="info-row">
-                    <div class="highlight"><strong>Tipo</strong><br>${equipo ? equipo['Tipo'] : 'N/A'}</div>
-                    <div class="project-item"><strong>Proyecto</strong><br>${equipo ? equipo['Proyecto'] : 'PJUD'}</div>
-                    <div class="highlight"><strong>Modelo</strong><br>${equipo ? equipo['Modelo'] : 'N/A'}</div>
-                </div>`;
-        }
+                    <div class="result-item highlight"><strong>Tipo</strong> <span>${tipo}</span></div>
+                    <div class="result-item project-item"><strong>Proyecto</strong> <span>${proyecto}</span></div>
+                    <div class="result-item highlight"><strong>Modelo</strong> <span>${modelo}</span></div>
+                </div>
+                <div class="total-incidents"><strong>Total Reportes Registrados</strong><br><span>${totalProblems}</span></div>
+            `;
 
-        el('validate-button').onclick = () => renderResult(el('serie-input').value);
-        el('serie-input').onkeyup = e => e.key === 'Enter' && renderResult(el('serie-input').value);
-        init();
+            el('problems-list-title').style.display = 'block';
+            if (totalProblems === 0) {
+                el('problems-container').innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;background:var(--bg-soft);border-radius:8px;">Sin reportes históricos.</div>';
+            } else {
+                const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+                let bars = '<div class="unified-chart-container"><div class="chart-bars-wrapper">';
+                sorted.forEach(([k, v]) => {
+                    bars += `
+                        <div class="chart-bar-item">
+                            <div class="bar-label">${k}</div>
+                            <div class="bar-container" onclick="toggleDetail('${k.replace(/'/g, "\\'")}', '${cleanSerie}')">
+                                <div class="bar-fill" style="width:${(v/sorted[0][1]*100)}%"><span class="bar-value">${v}</span></div>
+                            </div>
+                            <div class="bar-percentage">${(v/totalProblems*100).toFixed(1)}%</div>
+                        </div>
+                        <div id="detail-${k.replace(/\s/g, '-')}" class="records-detail"></div>
+                    `;
+                });
+                bars += '</div></div>';
+                el('problems-container').innerHTML = bars;
+            }
+        };
+
+        const handleSearch = async () => {
+            const serie = sanitizeKey(el('serie-input').value);
+            if (serie.length < 3) return alert("Ingrese una serie válida");
+            const equipo = equiposMap.get(serie);
+            el('validate-button').disabled = true;
+            el('validate-button').textContent = 'Buscando...';
+            try {
+                const csv2 = await fetchSheet(sheetURLs['BBDD PM 4']);
+                const res2 = parseCSV(csv2);
+                allProblemsData = res2.data;
+                currentProblemHeaders = res2.headers;
+                const hSerie = res2.headers.find(h => h.toLowerCase().includes('serie reportada'));
+                const hNivel = res2.headers.find(h => h.toLowerCase().includes('nivel 2'));
+                let counts = new Map();
+                let total = 0;
+                if (hSerie) {
+                    res2.data.forEach(d => {
+                        if (sanitizeKey(d[hSerie]) === serie) {
+                            total++;
+                            const n = d[hNivel] ? d[hNivel].trim() : 'SIN NIVEL 2';
+                            counts.set(n, (counts.get(n) || 0) + 1);
+                        }
+                    });
+                }
+                renderResult(serie, equipo, total, counts);
+            } catch (e) { alert("Error de consulta"); }
+            finally { el('validate-button').disabled = false; el('validate-button').textContent = 'Buscar Equipo'; }
+        };
+
+        window.toggleDetail = (nivel, serieKey) => {
+             const id = `detail-${nivel.replace(/\s/g, '-')}`;
+             const div = el(id);
+             if(div.classList.contains('expanded')) { div.classList.remove('expanded'); return; }
+             document.querySelectorAll('.records-detail').forEach(d => d.classList.remove('expanded'));
+             const hSerie = currentProblemHeaders.find(h => h.toLowerCase().includes('serie reportada'));
+             const hNivel = currentProblemHeaders.find(h => h.toLowerCase().includes('nivel 2'));
+             const recs = allProblemsData.filter(d => sanitizeKey(d[hSerie]) === sanitizeKey(serieKey) && (d[hNivel] || 'SIN NIVEL 2').trim() === nivel);
+             let html = `<div class="detail-header"><div class="detail-title">${nivel}</div><button class="close-detail-btn" onclick="document.getElementById('${id}').classList.remove('expanded')">Cerrar</button></div><div class="detail-content">`;
+             recs.forEach(r => {
+                 const tkt = Object.entries(r).find(([k]) => k.toLowerCase().includes('ticket'))?.[1] || 'N/A';
+                 const obs = Object.entries(r).find(([k]) => k.toLowerCase().includes('observación'))?.[1] || 'Sin observación';
+                 const fecha = Object.entries(r).find(([k]) => k.toLowerCase().includes('fecha'))?.[1] || '';
+                 html += `<div class="record-item"><div class="record-header-tags"><span class="record-date-tag">${fecha}</span></div><div style="font-weight:700;color:var(--hp-blue);font-size:0.9rem;">Ticket: ${tkt}</div><div class="record-field-value">${obs}</div></div>`;
+             });
+             html += '</div>';
+             div.innerHTML = html;
+             div.classList.add('expanded');
+        };
+
+        el('validate-button').onclick = handleSearch;
+        el('serie-input').onkeyup = (e) => e.key === 'Enter' && handleSearch();
+        loadInitialData();
     </script>
 </body>
 </html>
