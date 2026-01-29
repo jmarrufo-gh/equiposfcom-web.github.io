@@ -20,7 +20,6 @@
             --text-muted: #6c757d;
             --error-color: #dc3545;
             --error-bg: #fff5f5;
-            --error-border: #f5c2c7;
             --success-color: #198754;
             --success-bg: #e6fffa;
         }
@@ -28,279 +27,190 @@
         * { box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', 'Inter', -apple-system, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, var(--hp-blue) 0%, var(--gradient-blue) 100%);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 2rem;
-            margin: 0;
-            background-attachment: fixed;
+            margin: 0; padding: 2rem; display: flex; justify-content: center; min-height: 100vh;
         }
 
         .container { 
-            width: 100%; 
-            max-width: 900px; 
-            background-color: var(--white); 
-            padding: 2.5rem; 
-            border-radius: 12px; 
-            box-shadow: 0 15px 35px rgba(0, 50, 100, 0.3); 
-            margin-top: 1rem; 
-            position: relative;
+            width: 100%; max-width: 900px; background: white; padding: 2.5rem; 
+            border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
         }
 
-        .header-logos {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--border-light);
+        /* LOADING OVERLAY */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.95); display: none;
+            flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
         }
+        .loading-overlay.active { display: flex; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--hp-blue); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .logo-img { height: 50px; width: auto; transition: transform 0.3s ease; }
-        .logo-img:hover { transform: scale(1.05); }
+        /* BANNERS */
+        .header-logos { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-light); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+        .logo-img { height: 45px; }
 
-        h1 { font-size: 1.8rem; color: var(--hp-blue); text-align: center; margin: 0.5rem 0; }
-        p { text-align: center; color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .db-status { text-align: center; font-size: 0.85rem; padding: 0.6rem; background: var(--bg-soft); border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid var(--border-light); }
+        
+        .success-banner { background: var(--success-bg); border: 1px solid var(--success-color); color: #065f46; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; }
+        .alert-banner { background: var(--error-bg); border: 1px solid var(--error-color); color: #842029; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; }
 
-        /* --- BANNERS DE ESTADO --- */
-        .alert-banner, .success-banner {
-            grid-column: 1 / -1;
-            padding: 2rem 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            animation: slideDown 0.5s ease-out;
-        }
-
-        .alert-banner { background-color: var(--error-bg); border: 1px solid var(--error-color); color: #842029; }
-        .success-banner { background-color: var(--success-bg); border: 1px solid var(--success-color); color: #065f46; }
-
-        .alert-icon-circle, .success-icon-circle {
-            width: 50px; height: 50px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; font-weight: bold; color: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .alert-icon-circle { background-color: var(--error-color); }
-        .success-icon-circle { background-color: var(--success-color); }
-
-        .alert-banner-title { font-size: 1.5rem; font-weight: 800; text-transform: uppercase; margin: 0; }
-        .alert-subtitle { font-weight: 700; text-transform: uppercase; font-size: 0.9rem; }
-
-        .alert-details {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
-            background: white; padding: 1rem; border-radius: 6px; width: 100%; max-width: 700px;
-            border: 1px solid var(--border-light);
-        }
-
-        /* --- SEARCH SECTION --- */
+        /* SEARCH */
         .search-section { display: flex; gap: 1rem; margin-bottom: 2rem; }
-        #serie-input { 
-            flex-grow: 1; padding: 0.8rem 1.25rem; 
-            border: 2px solid var(--border-light); 
-            border-radius: 50px; 
-            font-size: 1rem;
-        }
-        #validate-button { 
-            padding: 0.8rem 2rem; 
-            background-color: var(--hp-blue); 
-            color: white; border: none; 
-            border-radius: 50px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            transition: 0.3s;
-        }
-        #validate-button:hover { background-color: var(--hover-blue); }
-        #validate-button:disabled { background-color: #ccc; cursor: not-allowed; }
-        
-        #result { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-            gap: 1rem; 
-            background: var(--bg-soft); 
-            padding: 1.5rem; 
-            border-radius: 8px; 
-            min-height: 50px;
-        }
-        .result-item { display: flex; flex-direction: column; }
-        .main-serie { grid-column: 1/-1; text-align: center; border-bottom: 2px solid var(--border-light); padding-bottom: 1rem; }
-        .main-serie span { font-size: 1.8rem; color: var(--hp-blue); font-weight: 800; }
-        
-        .info-row { grid-column: 1/-1; display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 1rem; margin: 0.5rem 0; }
-        .highlight { background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border-light); text-align: center; }
-        .project-item { background: var(--btn-bg); padding: 1.2rem; border-radius: 8px; border-left: 5px solid var(--fcom-blue); text-align: center; }
-        
-        .db-status { text-align: center; font-size: 0.8rem; margin-bottom: 1.5rem; padding: 0.5rem; background: var(--bg-soft); border-radius: 6px; }
-        .ok { color: var(--success-color); font-weight: bold; }
-        .fail { color: var(--error-color); font-weight: bold; }
+        #serie-input { flex: 1; padding: 0.8rem 1.2rem; border: 2px solid var(--border-light); border-radius: 50px; font-size: 1rem; }
+        #validate-button { padding: 0.8rem 2rem; background: var(--hp-blue); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
 
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        @media (max-width: 768px) { .info-row, .alert-details { grid-template-columns: 1fr; } }
+        /* RESULT GRID */
+        #result { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; background: var(--bg-soft); padding: 1.5rem; border-radius: 8px; }
+        .main-serie { grid-column: 1/-1; text-align: center; font-size: 1.5rem; font-weight: 800; color: var(--hp-blue); border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .info-card { background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border-light); text-align: center; }
+        .info-card strong { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; }
+
+        /* CHARTS */
+        .chart-container { margin-top: 2rem; }
+        .bar-wrapper { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .bar-label { width: 150px; font-size: 0.85rem; font-weight: bold; }
+        .bar-bg { flex: 1; height: 25px; background: #eee; border-radius: 12px; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--fcom-blue); transition: width 1s ease; }
     </style>
 </head>
 <body>
 
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <h2 style="color: var(--hp-blue);">Sincronizando Datos...</h2>
+        <p id="load-msg">Conectando con el inventario de FCOM</p>
+    </div>
+
     <div class="container">
         <div class="header-logos">
-            <img src="https://fcom.cl/images/logo_simple.png" alt="Logo FCOM" class="logo-img">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/HP_logo_2012.svg" alt="Logo HP" class="logo-img" style="height: 40px;">
+            <img src="https://fcom.cl/images/logo_simple.png" alt="FCOM" class="logo-img">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/HP_logo_2012.svg" alt="HP" class="logo-img">
         </div>
 
-        <h1>Gestión de Equipamiento PJUD</h1>
-        <p>Consulta de inventario, habilitaciones y ciclo de vida de activos.</p>
+        <h1 style="text-align: center; color: var(--hp-blue);">Gestión de Equipamiento PJUD</h1>
         
-        <div class="db-status" id="db-status">Iniciando conexión...</div>
+        <div class="db-status" id="db-status">Iniciando sistema...</div>
 
         <div class="search-section">
-            <input type="text" id="serie-input" placeholder="Ingrese Número de Serie">
-            <button id="validate-button" disabled>Cargando...</button>
+            <input type="text" id="serie-input" placeholder="Ingrese Número de Serie (ej: MXL...)">
+            <button id="validate-button">Buscar</button>
         </div>
 
         <div id="result"></div>
+        <div id="history-section" class="chart-container"></div>
     </div>
 
     <script>
         const el = id => document.getElementById(id);
-        
-        const sheetURLs = {
-            'Inventario': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
-            'Habilitaciones': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1180790714&single=true&output=csv'
+        const urls = {
+            inv: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
+            hab: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1180790714&single=true&output=csv',
+            hist: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1086366835&single=true&output=csv'
         };
 
-        let equiposMap = new Map();
-        let habilitacionesMap = new Map();
+        let db = { inv: new Map(), hab: new Map(), hist: [] };
 
-        // Función de limpieza de texto robusta
-        const sanitizeKey = k => String(k || '').trim().replace(/[\s\t\n\r]/g, '').toUpperCase();
+        const clean = str => String(str || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-        // Procesador de CSV mejorado para manejar comas y saltos de línea
         function parseCSV(text) {
-            const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
-            if (lines.length === 0) return [];
-
-            const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-            
+            const lines = text.split(/\r?\n/).filter(l => l.trim());
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
             return lines.slice(1).map(line => {
-                // Regex para dividir por comas pero ignorar comas dentro de comillas
                 const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 let obj = {};
-                headers.forEach((h, i) => {
-                    let val = (values[i] || '').trim().replace(/^"|"$/g, '').replace(/""/g, '"');
-                    obj[h] = val;
-                });
+                headers.forEach((h, i) => obj[h] = (values[i] || '').trim().replace(/^"|"$/g, ''));
                 return obj;
             });
         }
 
         async function init() {
+            el('loading-overlay').classList.add('active');
             try {
-                el('db-status').innerHTML = "Conectando con Google Sheets...";
-                
-                const [resInv, resHab] = await Promise.all([
-                    fetch(sheetURLs.Inventario).then(r => r.text()),
-                    fetch(sheetURLs.Habilitaciones).then(r => r.text())
+                const [rInv, rHab, rHist] = await Promise.all([
+                    fetch(urls.inv).then(r => r.text()),
+                    fetch(urls.hab).then(r => r.text()),
+                    fetch(urls.hist).then(r => r.text())
                 ]);
 
-                // Procesar Inventario
-                const dataInv = parseCSV(resInv);
-                dataInv.forEach(d => {
-                    const s = sanitizeKey(d['Serie'] || d['SERIE'] || d['Serial']);
-                    if(s) equiposMap.set(s, d);
+                parseCSV(rInv).forEach(d => {
+                    const s = clean(d['Serie'] || d['SERIE'] || d['Serial']);
+                    if(s) db.inv.set(s, d);
                 });
 
-                // Procesar Habilitaciones
-                const dataHab = parseCSV(resHab);
-                dataHab.forEach(d => {
-                    const s = sanitizeKey(d['serie principal antigua'] || d['SERIE PRINCIPAL ANTIGUA']);
-                    if(s) {
-                        habilitacionesMap.set(s, {
-                            fecha: d['FECHA DE CAMBIO'] || d['Fecha de Cambio'] || 'N/A',
-                            sucursal: d['SUCURSAL'] || 'N/A',
-                            preSolicitud: d['NRO DE PRE SOLICITUD'] || '-'
-                        });
-                    }
+                parseCSV(rHab).forEach(d => {
+                    const s = clean(d['serie principal antigua'] || d['SERIE PRINCIPAL ANTIGUA']);
+                    if(s) db.hab.set(s, d);
                 });
 
-                el('db-status').innerHTML = `Base de Datos: <span class="ok">Sincronizada</span> | Equipos: ${equiposMap.size}`;
-                el('validate-button').disabled = false;
-                el('validate-button').innerText = 'Buscar';
+                db.hist = parseCSV(rHist);
+
+                el('db-status').innerHTML = `Base de Datos: <span style="color:green;font-weight:bold;">Sincronizada</span> | Equipos: ${db.inv.size}`;
             } catch (e) {
-                console.error(e);
-                el('db-status').innerHTML = `<span class="fail">Error: No se pudo cargar la data</span>`;
+                el('db-status').innerHTML = `<span style="color:red;">Error de conexión</span>`;
             }
+            el('loading-overlay').classList.remove('active');
         }
 
-        function renderResult(serie) {
-            if (!serie.trim()) return;
-            const cleanSerie = sanitizeKey(serie);
-            const equipo = equiposMap.get(cleanSerie);
-            const hab = habilitacionesMap.get(cleanSerie);
+        function search() {
+            const s = clean(el('serie-input').value);
+            if(!s) return;
+
+            const eq = db.inv.get(s);
+            const hb = db.hab.get(s);
             
-            let bannerHTML = '';
-
-            if (hab) {
-                if (hab.fecha === "N/A") {
-                    const fechaInstalacionStr = equipo ? equipo['Fecha de Instalacion'] : null;
-                    const estadoActual = equipo ? equipo['Estado'] : 'SIN ESTADO';
-                    const hoy = new Date();
-                    
-                    let esAntigua = false;
-                    if (fechaInstalacionStr) {
-                        const p = fechaInstalacionStr.split('/');
-                        if (p.length === 3) {
-                            const fI = new Date(p[2], p[1]-1, p[0]);
-                            if (fI < hoy) esAntigua = true;
-                        }
-                    }
-
-                    bannerHTML = `
-                        <div class="success-banner">
-                            <div class="success-icon-circle">✓</div>
-                            <div class="alert-subtitle">${esAntigua ? 'ESTADO ACTUAL DEL EQUIPO' : 'PRÓXIMO RECAMBIO ESTIPULADO'}</div>
-                            <div class="alert-banner-title">${esAntigua ? estadoActual : (fechaInstalacionStr || 'PENDIENTE')}</div>
-                        </div>`;
+            let banner = '';
+            if (hb) {
+                const fHab = hb['FECHA DE CAMBIO'] || hb['Fecha de Cambio'] || 'N/A';
+                if (fHab === "N/A") {
+                    const fInst = eq ? eq['Fecha de Instalacion'] : 'No Definida';
+                    banner = `<div class="success-banner"><strong>✓ RECAMBIO ESTIPULADO</strong><br>Fecha de Instalación: ${fInst}</div>`;
                 } else {
-                    bannerHTML = `
-                        <div class="alert-banner">
-                            <div class="alert-icon-circle">!</div>
-                            <div class="alert-banner-title">ADVERTENCIA CRÍTICA</div>
-                            <div class="alert-subtitle">Equipo reemplazado en Habilitaciones</div>
-                            <div class="alert-details">
-                                <div><strong>Fecha</strong><br>${hab.fecha}</div>
-                                <div><strong>Pre-Solicitud</strong><br>${hab.preSolicitud}</div>
-                                <div><strong>Dependencia</strong><br>${hab.sucursal}</div>
-                            </div>
-                        </div>`;
+                    banner = `<div class="alert-banner"><strong>⚠️ ADVERTENCIA CRÍTICA</strong><br>Reemplazado el ${fHab}<br>Sucursal: ${hb['SUCURSAL']}</div>`;
                 }
             }
 
-            if (!equipo && !hab) {
-                el('result').innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem; color:var(--error-color);">⚠️ Serie "${cleanSerie}" no encontrada en los registros.</div>`;
+            if (!eq && !hb) {
+                el('result').innerHTML = `<p style="color:red; text-align:center; grid-column:1/-1;">Serie no encontrada.</p>`;
                 return;
             }
 
             el('result').innerHTML = `
-                ${bannerHTML}
-                <div class="main-serie"><strong>SERIE</strong><br><span>${cleanSerie}</span></div>
-                <div class="info-row">
-                    <div class="highlight"><strong>Tipo</strong><br>${equipo ? (equipo['Tipo'] || 'N/A') : 'N/A'}</div>
-                    <div class="project-item"><strong>Proyecto</strong><br>${equipo ? (equipo['Proyecto'] || 'N/A') : 'PJUD'}</div>
-                    <div class="highlight"><strong>Modelo</strong><br>${equipo ? (equipo['Modelo'] || 'N/A') : 'N/A'}</div>
-                </div>
+                ${banner}
+                <div class="main-serie">SERIE: ${s}</div>
+                <div class="info-card"><strong>Tipo</strong>${eq ? eq['Tipo'] : 'N/A'}</div>
+                <div class="info-card"><strong>Modelo</strong>${eq ? eq['Modelo'] : 'N/A'}</div>
+                <div class="info-card"><strong>Proyecto</strong>${eq ? eq['Proyecto'] : 'N/A'}</div>
+                <div class="info-card"><strong>Estado</strong>${eq ? eq['Estado'] : 'N/A'}</div>
             `;
+
+            // HISTORIAL
+            const reports = db.hist.filter(h => clean(h['serie reportada'] || h['SERIE']) === s);
+            if(reports.length > 0) {
+                let html = `<h3>Historial de Reportes (${reports.length})</h3>`;
+                const counts = {};
+                reports.forEach(r => {
+                    const n = r['Nivel 2'] || 'Otro';
+                    counts[n] = (counts[n] || 0) + 1;
+                });
+
+                Object.entries(counts).forEach(([k, v]) => {
+                    const pct = (v / reports.length) * 100;
+                    html += `
+                        <div class="bar-wrapper">
+                            <div class="bar-label">${k} (${v})</div>
+                            <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+                        </div>`;
+                });
+                el('history-section').innerHTML = html;
+            } else {
+                el('history-section').innerHTML = '<p style="text-align:center; color:gray;">Sin reportes históricos.</p>';
+            }
         }
 
-        el('validate-button').onclick = () => renderResult(el('serie-input').value);
-        el('serie-input').onkeyup = (e) => e.key === 'Enter' && renderResult(el('serie-input').value);
-
+        el('validate-button').onclick = search;
+        el('serie-input').onkeyup = (e) => e.key === 'Enter' && search();
         init();
     </script>
 </body>
