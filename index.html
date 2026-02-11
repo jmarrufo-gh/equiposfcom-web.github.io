@@ -602,19 +602,19 @@
                 el('pjud-list').classList.remove('active'); 
             }
         };
-
+    
         // --- CONFIGURACIÓN DE LINKS ---
         const sheetURLs = {
             'Hoja 1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=0&single=true&output=csv',
             'BBDD PM 4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1224165675&single=true&output=csv',
             'Habilitaciones': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCZ0aHZlTcVbl13k7sBYGWh1JQr9KVzzaTT08GLbNKMD6Uy8hCmtb2mS_ehnSAJwegxVWt4E80rSrr/pub?gid=1180790714&single=true&output=csv' 
         };
-
+    
         let equiposMap = new Map();
         let habilitacionesMap = new Map();
         let allProblemsData = [];
         let currentProblemHeaders = [];
-
+    
         // UI Functions
         const updateProgress = (pct, status, sub) => {
             el('progress-bar').style.width = pct + '%';
@@ -631,7 +631,7 @@
             if (show) el('loading-overlay').classList.add('active');
             else setTimeout(() => el('loading-overlay').classList.remove('active'), 500);
         };
-
+    
         // --- FUNCIÓN SANITIZE REFORZADA ---
         const sanitizeKey = (key) => {
             if (!key) return ''; 
@@ -641,7 +641,12 @@
                       .replace(/[^a-zA-Z0-9]/g, '') 
                       .toUpperCase();
         };
-
+    
+        // Normaliza texto para búsquedas (quita tildes y pasa a minúsculas)
+        const normalizeStr = (str) => {
+            return String(str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        };
+    
         const fetchSheet = async (url) => {
             const c = new AbortController();
             setTimeout(() => c.abort(), 60000);
@@ -649,7 +654,7 @@
             if (!res.ok) throw new Error(res.status);
             return (await res.text()).replace(/\r\n|\r/g, '\n');
         };
-
+    
         const parseCSV = (text) => {
             if (!text) return { data: [], headers: [] };
             const lines = text.split('\n').filter(l => l.trim());
@@ -667,7 +672,7 @@
             }
             return { data, headers };
         };
-
+    
         const parseHabilitaciones = (text) => {
             if (!text) return;
             const lines = text.split('\n').filter(l => l.trim());
@@ -680,27 +685,22 @@
                 }
             }
             if (headerRowIndex === -1) headerRowIndex = 0; 
-
+    
             const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
             const headers = lines[headerRowIndex].split(regex).map(h => h.trim().replace(/"/g, ''));
             
             const targetIndex = headers.findIndex(h => h.toLowerCase().includes('serie principal antigua'));
             if (targetIndex === -1) return;
-
+    
             for (let i = headerRowIndex + 1; i < lines.length; i++) {
                 const vals = lines[i].split(regex);
                 if (vals[targetIndex]) {
                     const cleanVal = vals[targetIndex].replace(/^"|"$/g, '').trim();
                     if (cleanVal) {
-                        // Columna Z = Índice 25 (Fecha Instalación / Cambio)
                         const fecha = vals[25] ? vals[25].replace(/^"|"$/g, '').trim() : 'N/A';
-                        // Columna AA = Índice 26 (Estado)
                         const estado = vals[26] ? vals[26].replace(/^"|"$/g, '').trim() : 'N/A';
-                        // Columna M = Índice 12 (Sucursal/Dependencia)
                         const sucursal = vals[12] ? vals[12].replace(/^"|"$/g, '').trim() : 'N/A';
-                        // Columna D = Índice 3 (Pre Solicitud)
                         const preSolicitud = vals[3] ? vals[3].replace(/^"|"$/g, '').trim() : '-';
-                        // Columna F = Índice 5 (Fecha Instalación Original)
                         const fechaOriginal = vals[5] ? vals[5].replace(/^"|"$/g, '').trim() : '-';
                         
                         habilitacionesMap.set(sanitizeKey(cleanVal), { fecha, estado, sucursal, preSolicitud, fechaOriginal });
@@ -708,12 +708,12 @@
                 }
             }
         };
-
+    
         const loadInitialData = async () => {
             showLoading(true);
             updateProgress(10, 'Conectando...', 'Estableciendo enlace seguro');
             setStep(1, 'active');
-
+    
             try {
                 const csv1 = await fetchSheet(sheetURLs['Hoja 1']);
                 const res1 = parseCSV(csv1);
@@ -725,7 +725,7 @@
                     });
                 }
                 setStep(1, 'complete');
-
+    
                 setStep(2, 'active');
                 updateProgress(50, 'Procesando Habilitaciones...', 'Analizando base de datos...');
                 const csvHab = await fetchSheet(sheetURLs['Habilitaciones']);
@@ -734,21 +734,21 @@
                 let habStatusClass = habilitacionesMap.size > 0 ? 'ok' : 'fail';
                 el('db-status').innerHTML = `Equipos en Inventario: <span class="ok">${equiposMap.size}</span> | Reg. Habilitaciones: <span class="${habStatusClass}">${habilitacionesMap.size}</span>`;
                 setStep(2, 'complete');
-
+    
                 updateProgress(100, 'Sistema Listo', 'Esperando consulta');
                 setStep(3, 'complete');
                 setTimeout(() => showLoading(false), 600);
-
+    
                 el('validate-button').textContent = 'Buscar Equipo';
                 el('validate-button').disabled = false;
-
+    
             } catch (err) {
                 console.error(err);
                 el('db-status').innerHTML = `<span class="fail">Error de conexión: ${err.message}</span>`;
                 showLoading(false);
             }
         };
-
+    
         const renderResult = (serie, equipo, totalProblems, counts) => {
             const cleanSerie = sanitizeKey(serie);
             const habInfo = habilitacionesMap.get(cleanSerie);
@@ -758,7 +758,6 @@
             let bannerHTML = '';
             
             if (inHab) {
-                // VALIDACIÓN: Si fecha (Z) es N/A mostrar cuadro AZUL con Estado y detalles
                 if (habInfo.fecha.toUpperCase() === 'N/A') {
                     bannerHTML = `
                         <div class="status-banner">
@@ -782,7 +781,6 @@
                         </div>
                     `;
                 } else {
-                    // Si hay fecha, mostrar cuadro ROJO de advertencia crítica
                     bannerHTML = `
                         <div class="alert-banner">
                             <div class="alert-icon-circle"><span>!</span></div>
@@ -807,17 +805,17 @@
                     `;
                 }
             }
-
+    
             if (!inInv && !inHab && totalProblems === 0) {
                 el('result').innerHTML = `<div class="error-message">⚠️ Serie "${serie}" no encontrada en ninguna base de datos.</div>`;
                 el('problems-container').innerHTML = '';
                 return;
             }
-
+    
             const tipo = equipo ? (equipo['Tipo'] || 'N/A') : 'No Registrado';
             const modelo = equipo ? (equipo['Modelo'] || 'N/A') : 'No Registrado';
             const proyecto = equipo ? (equipo['Proyecto'] || 'N/A') : 'No Registrado';
-
+    
             const html = `
                 ${bannerHTML}
                 <div class="result-item main-serie">
@@ -835,40 +833,43 @@
                 </div>
             `;
             el('result').innerHTML = html;
-
+    
             el('problems-list-title').style.display = 'block';
             if (totalProblems === 0) {
                 el('problems-container').innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;background:var(--bg-soft);border-radius:8px;">No se encontraron registros de problemas.</div>';
             } else {
                 const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
                 let bars = '<div class="unified-chart-container"><div class="chart-bars-wrapper">';
-                sorted.forEach(([k, v]) => {
+                
+                sorted.forEach(([k, v], index) => {
                     const pct = (v/totalProblems*100).toFixed(1);
-                    const safeK = k.replace(/'/g, "\\'");
+                    const safeK = k.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const uniqueID = `detail-${index}`;
+                    
                     bars += `
                         <div class="chart-bar-item">
                             <div class="bar-label">${k}</div>
-                            <div class="bar-container" onclick="toggleDetail('${safeK}', '${cleanSerie}')" title="Ver detalles">
+                            <div class="bar-container" onclick="toggleDetail('${safeK}', '${cleanSerie}', '${uniqueID}')" title="Ver detalles">
                                 <div class="bar-fill" style="width:${(v/sorted[0][1]*100)}%"><span class="bar-value" style="padding-right:8px;">${v}</span></div>
                             </div>
                             <div class="bar-percentage">${pct}%</div>
                         </div>
-                        <div id="detail-${k.replace(/\s/g, '-')}" class="records-detail"></div>
+                        <div id="${uniqueID}" class="records-detail"></div>
                     `;
                 });
                 bars += '</div></div>';
                 el('problems-container').innerHTML = bars;
             }
         };
-
+    
         const handleSearch = async () => {
             const rawSerie = el('serie-input').value;
             const serie = sanitizeKey(rawSerie);
-
+    
             if (serie.length < 3) return alert("Ingrese una serie válida");
             
             const equipo = equiposMap.get(serie);
-
+    
             el('validate-button').disabled = true;
             el('validate-button').textContent = 'Consultando...';
             
@@ -895,7 +896,7 @@
                 }
                 
                 renderResult(serie, equipo, total, counts);
-
+    
             } catch (e) {
                 console.error(e);
                 alert("Error consultando historial");
@@ -904,35 +905,46 @@
                 el('validate-button').textContent = 'Buscar Equipo';
             }
         };
-
-        window.toggleDetail = (nivel, serieKey) => {
-             const id = `detail-${nivel.replace(/\s/g, '-')}`;
+    
+        window.toggleDetail = (nivel, serieKey, id) => {
              const div = el(id);
              if(div.classList.contains('expanded')) { div.classList.remove('expanded'); return; }
              document.querySelectorAll('.records-detail').forEach(d => d.classList.remove('expanded'));
              
              const hSerie = currentProblemHeaders.find(h => h.toLowerCase().includes('serie reportada'));
              const hNivel = currentProblemHeaders.find(h => h.toLowerCase().includes('nivel 2'));
-             const recs = allProblemsData.filter(d => sanitizeKey(d[hSerie]) === sanitizeKey(serieKey) && (d[hNivel] || 'SIN NIVEL 2').trim() === nivel);
+             
+             const recs = allProblemsData.filter(d => 
+                sanitizeKey(d[hSerie]) === sanitizeKey(serieKey) && 
+                (d[hNivel] || 'SIN NIVEL 2').trim() === nivel
+             );
              
              let html = `<div class="detail-header"><div class="detail-title">${nivel}</div><button class="close-detail-btn" onclick="document.getElementById('${id}').classList.remove('expanded')">Cerrar</button></div><div class="detail-content">`;
+             
+             // Helper para encontrar columnas ignorando tildes
+             const findVal = (row, ...terms) => {
+                 const entry = Object.entries(row).find(([key]) => {
+                     const normKey = normalizeStr(key);
+                     return terms.some(t => normKey.includes(t));
+                 });
+                 return entry ? entry[1] : null;
+             };
+    
              recs.forEach(r => {
-                 const tkt = Object.entries(r).find(([k]) => k.toLowerCase().includes('ticket'))?.[1] || 'N/A';
-                 const obs = Object.entries(r).find(([k]) => k.toLowerCase().includes('observación'))?.[1] || 'Sin observación';
-                 const fecha = Object.entries(r).find(([k]) => k.toLowerCase().includes('fecha'))?.[1] || '';
+                 const tkt = findVal(r, 'ticket', 'incidente', 'caso') || 'N/A';
+                 const obs = findVal(r, 'observ', 'descrip', 'detalle', 'comentario') || 'Sin observación';
+                 const fecha = findVal(r, 'fecha', 'date', 'creado', 'time') || '';
+                 
                  html += `<div class="record-item"><div class="record-header-tags"><span class="record-date-tag">${fecha}</span></div><div style="font-weight:700;color:var(--hp-blue);font-size:0.9rem;">Ticket: ${tkt}</div><div class="record-field-value">${obs}</div></div>`;
              });
              html += '</div>';
              div.innerHTML = html;
              div.classList.add('expanded');
         };
-
+    
         el('validate-button').onclick = handleSearch;
         el('serie-input').onkeyup = (e) => e.key === 'Enter' && handleSearch();
         loadInitialData();
     </script>
 </body>
 </html>
-
-
-
