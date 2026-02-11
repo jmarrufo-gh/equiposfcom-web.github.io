@@ -667,7 +667,7 @@
             });
         };
 
-        // Parser manual solo para Habilitaciones (porque tiene headers raros)
+        // Parser manual solo para Habilitaciones (restaurado a lógica por posición)
         const fetchAndParseHabilitaciones = async (url) => {
             const res = await fetch(url);
             const text = await res.text();
@@ -682,36 +682,48 @@
                     break;
                 }
             }
+            
+            // Usamos la lógica de índices originales sobre los datos limpios
+            // Col 25 = Fecha Instalacion/Cambio, Col 26 = Estado, etc.
+            
+            const headersLine = lines[headerRowIndex];
+            const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+            const headers = headersLine.split(regex).map(h => h.trim().replace(/"/g, ''));
+            const targetIndex = headers.findIndex(h => h.toLowerCase().includes('serie principal antigua'));
+            
+            if (targetIndex === -1) return;
 
-            // Usamos PapaParse sobre el texto crudo recortado
-            const result = Papa.parse(lines.slice(headerRowIndex).join('\n'), {
-                header: true,
+            // Usamos PapaParse pero en modo array (header: false) para respetar posiciones
+            const result = Papa.parse(lines.slice(headerRowIndex + 1).join('\n'), {
+                header: false,
                 skipEmptyLines: true
             });
-            
-            // Procesar datos
+
             const data = result.data;
-            const headers = result.meta.fields || [];
             
-            const targetKey = findHeader(headers, 'serie principal antigua');
-            
-            if (targetKey) {
-                data.forEach(row => {
-                    const cleanVal = row[targetKey] ? row[targetKey].replace(/^"|"$/g, '').trim() : '';
-                    if (cleanVal) {
-                        // Mapeo flexible por nombres de columna o índices aproximados si fallan nombres
-                        // Para robustez, usamos nombres de columna si existen, sino indices es riesgoso en PapaParse JSON
-                        // Intentamos buscar las columnas clave
-                        const fecha = row[findHeader(headers, 'fecha instalacion', 'fecha cambio')] || 'N/A';
-                        const estado = row[findHeader(headers, 'estado')] || 'N/A';
-                        const sucursal = row[findHeader(headers, 'sucursal', 'dependencia')] || 'N/A';
-                        const preSolicitud = row[findHeader(headers, 'pre solicitud', 'presolicitud')] || '-';
-                        const fechaOriginal = row[findHeader(headers, 'fecha original')] || '-';
-                        
-                        habilitacionesMap.set(sanitizeKey(cleanVal), { fecha, estado, sucursal, preSolicitud, fechaOriginal });
-                    }
-                });
-            }
+            data.forEach(row => {
+                const cleanVal = row[targetIndex] ? row[targetIndex].replace(/^"|"$/g, '').trim() : '';
+                if (cleanVal) {
+                    // Restaurando índices exactos de tu código original:
+                    // Col Z (Indice 25) = Fecha Instalación / Cambio
+                    let fecha = row[25] ? row[25].replace(/^"|"$/g, '').trim() : 'N/A';
+                    if (!fecha || fecha === '') fecha = 'N/A'; // Forzar N/A si está vacío
+
+                    // Col AA (Indice 26) = Estado
+                    const estado = row[26] ? row[26].replace(/^"|"$/g, '').trim() : 'N/A';
+                    
+                    // Col M (Indice 12) = Sucursal
+                    const sucursal = row[12] ? row[12].replace(/^"|"$/g, '').trim() : 'N/A';
+                    
+                    // Col D (Indice 3) = Pre Solicitud
+                    const preSolicitud = row[3] ? row[3].replace(/^"|"$/g, '').trim() : '-';
+                    
+                    // Col F (Indice 5) = Fecha Original
+                    const fechaOriginal = row[5] ? row[5].replace(/^"|"$/g, '').trim() : '-';
+                    
+                    habilitacionesMap.set(sanitizeKey(cleanVal), { fecha, estado, sucursal, preSolicitud, fechaOriginal });
+                }
+            });
         };
     
         const loadInitialData = async () => {
@@ -765,6 +777,7 @@
             let bannerHTML = '';
             
             if (inHab) {
+                // Lógica original: Si fecha es N/A, mostrar banner azul (Estado)
                 if (habInfo.fecha.toUpperCase() === 'N/A') {
                     bannerHTML = `
                         <div class="status-banner">
@@ -822,7 +835,6 @@
     
             el('problems-list-title').style.display = 'block';
             if (totalProblems === 0) {
-                // Debug simple
                 el('problems-container').innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:20px;background:var(--bg-soft);border-radius:8px;">No se encontraron registros de problemas para esta serie.<br>${headersFound ? '' : '⚠️ No se encontró la columna de Serie en el archivo.'}</div>`;
             } else {
                 const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
@@ -866,7 +878,7 @@
                 allProblemsData = res2.data;
                 currentProblemHeaders = res2.meta.fields || [];
                 
-                // Búsqueda flexible de columnas
+                // Búsqueda flexible de columnas para el historial
                 const hSerie = findHeader(currentProblemHeaders, 'serie reportada', 'serie', 'serial', 's/n', 'equipo');
                 const hNivel = findHeader(currentProblemHeaders, 'nivel 2', 'nivel 3', 'categoria', 'problema', 'falla', 'tipificacion');
                 
@@ -875,7 +887,6 @@
                 
                 if (hSerie) {
                     allProblemsData.forEach(d => {
-                        // PapaParse devuelve objetos, accedemos por nombre de clave
                         if (d[hSerie] && sanitizeKey(d[hSerie]) === serie) {
                             total++;
                             const n = hNivel && d[hNivel] ? d[hNivel].trim() : 'SIN CATEGORÍA';
