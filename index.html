@@ -145,7 +145,7 @@
         #validate-button:hover { background-color: var(--hover-blue); transform: translateY(-1px); }
         #validate-button:disabled { background-color: var(--border-light); color: var(--text-muted); cursor: not-allowed; transform: none; box-shadow: none; }
 
-        /* --- ALERT BANNER --- */
+        /* --- BANNERS (ALERT & STATUS) --- */
         .alert-banner {
             grid-column: 1 / -1;
             background-color: var(--error-bg);
@@ -196,46 +196,6 @@
             margin-bottom: 0.5rem;
         }
 
-        /* --- BOTÓN Y CONTENEDOR DE OBSERVACIONES --- */
-        .obs-btn {
-            background-color: transparent;
-            color: #842029;
-            border: 2px solid #842029;
-            padding: 0.5rem 1.2rem;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            margin-top: 0.5rem;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .obs-btn:hover {
-            background-color: #842029;
-            color: var(--white);
-        }
-        .obs-content {
-            display: none;
-            background-color: rgba(255, 255, 255, 0.9);
-            border: 1px solid var(--error-border);
-            padding: 1rem;
-            border-radius: 6px;
-            margin-top: 0.5rem;
-            color: var(--text-main);
-            font-size: 0.9rem;
-            width: 100%;
-            max-width: 700px;
-            text-align: left;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .obs-content.active {
-            display: block;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        /* --- STATUS BANNER (BLUE/INFO) --- */
         .status-banner {
             grid-column: 1 / -1;
             background-color: var(--info-bg);
@@ -253,17 +213,86 @@
             box-shadow: 0 5px 15px rgba(13, 202, 240, 0.1);
         }
 
-        /* Generic Details Grid Structure */
+        /* --- BOTONES Y CONTENEDORES DE OBSERVACIONES --- */
+        /* Estilo para banner rojo */
+        .obs-btn {
+            background-color: transparent;
+            color: #842029;
+            border: 2px solid #842029;
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .obs-btn:hover { background-color: #842029; color: var(--white); }
+        
+        .obs-content {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--error-border);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            width: 100%;
+            max-width: 700px;
+            text-align: left;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .obs-content.active { display: block; animation: slideDown 0.3s ease-out; }
+
+        /* Estilo para banner azul */
+        .obs-btn-info {
+            background-color: transparent;
+            color: var(--info-text);
+            border: 2px solid var(--info-text);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .obs-btn-info:hover { background-color: var(--info-text); color: var(--white); }
+
+        .obs-content-info {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--info-border);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            width: 100%;
+            max-width: 700px;
+            text-align: left;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .obs-content-info.active { display: block; animation: slideDown 0.3s ease-out; }
+
+        /* Generic Details Grid Structure - ACTUALIZADO PARA ADAPTARSE A MÁS ELEMENTOS */
         .details-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 1rem;
             background-color: #ffffff;
             padding: 1rem 1.5rem;
             border-radius: 6px;
             margin-top: 0.5rem;
             width: 100%;
-            max-width: 700px;
+            max-width: 800px;
         }
 
         .detail-item {
@@ -273,11 +302,9 @@
             text-align: center;
         }
 
-        /* Red Style for Alert */
         .alert-details { border: 1px solid var(--error-border); }
         .alert-label { font-size: 0.7rem; color: var(--error-color); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
         
-        /* Blue Style for Status */
         .status-details { border: 1px solid var(--info-border); }
         .status-label { font-size: 0.7rem; color: var(--info-text); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; opacity: 0.8; }
         
@@ -295,102 +322,26 @@
             border: 1px solid var(--border-light);
         }
         
-        .result-item { 
-            padding: 0.5rem 0; 
-            display: flex; 
-            flex-direction: column; 
-            word-break: break-word; 
-        }
-        
-        .result-item strong { 
-            color: var(--text-muted); 
-            font-size: 0.8rem; 
-            text-transform: uppercase; 
-            margin-bottom: 0.3rem; 
-        }
-        
-        .result-item span { 
-            font-weight: 600; 
-            color: var(--text-main); 
-            font-size: 1.1rem;
-        }
+        .result-item { padding: 0.5rem 0; display: flex; flex-direction: column; word-break: break-word; }
+        .result-item strong { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 0.3rem; }
+        .result-item span { font-weight: 600; color: var(--text-main); font-size: 1.1rem; }
 
-        .main-serie { 
-            grid-column: 1/-1; 
-            text-align: center; 
-            border-bottom: 2px solid var(--border-light); 
-            padding-bottom: 1rem; 
-            margin-bottom: 0.5rem; 
-        }
+        .main-serie { grid-column: 1/-1; text-align: center; border-bottom: 2px solid var(--border-light); padding-bottom: 1rem; margin-bottom: 0.5rem; }
         .main-serie span { font-size: 1.8rem; color: var(--hp-blue); font-weight: 800; letter-spacing: 1px; }
 
-        .info-row { 
-            grid-column: 1/-1; 
-            display: grid; 
-            grid-template-columns: 1fr 1.5fr 1fr; 
-            gap: 1rem; 
-            align-items: stretch; 
-            margin: 0.5rem 0; 
-        }
-        
-        .highlight { 
-            background-color: var(--white); 
-            padding: 1rem; 
-            border-radius: 8px; 
-            border: 1px solid var(--border-light);
-            text-align: center;
-        }
-        
-        .project-item { 
-            background: linear-gradient(135deg, var(--btn-bg), var(--hover-light)); 
-            padding: 1.2rem; 
-            border-radius: 8px; 
-            border: 1px solid var(--border-light);
-            border-left: 5px solid var(--fcom-blue); 
-            text-align: center; 
-        }
+        .info-row { grid-column: 1/-1; display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 1rem; align-items: stretch; margin: 0.5rem 0; }
+        .highlight { background-color: var(--white); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-light); text-align: center; }
+        .project-item { background: linear-gradient(135deg, var(--btn-bg), var(--hover-light)); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border-light); border-left: 5px solid var(--fcom-blue); text-align: center; }
         .project-item span { color: var(--hp-blue); font-weight: 800; }
 
-        .total-incidents { 
-            grid-column: 1/-1; 
-            text-align: center; 
-            background-color: var(--btn-bg); 
-            padding: 1rem; 
-            border-radius: 8px; 
-            margin-top: 0.5rem; 
-            border: 1px solid var(--border-light);
-        }
+        .total-incidents { grid-column: 1/-1; text-align: center; background-color: var(--btn-bg); padding: 1rem; border-radius: 8px; margin-top: 0.5rem; border: 1px solid var(--border-light); }
         .total-incidents span { font-size: 1.4rem; font-weight: 800; color: var(--hp-blue); }
 
         /* --- GRÁFICAS Y DETALLES --- */
-        .unified-chart-container { 
-            padding: 1.5rem; 
-            background-color: var(--bg-soft); 
-            border-radius: 8px; 
-            border: 1px solid var(--border-light);
-        }
-        
+        .unified-chart-container { padding: 1.5rem; background-color: var(--bg-soft); border-radius: 8px; border: 1px solid var(--border-light); }
         .bar-label { min-width: 200px; font-size: 0.9rem; color: var(--text-main); font-weight: 600; }
-        
-        .bar-container { 
-            flex-grow: 1; 
-            height: 35px; 
-            background-color: var(--border-light); 
-            border-radius: 6px; 
-            overflow: hidden; 
-            cursor: pointer; 
-        }
-        
-        .bar-fill { 
-            height: 100%; 
-            background: linear-gradient(90deg, var(--hp-blue), var(--fcom-blue)); 
-            border-radius: 6px; 
-            transition: all 0.3s ease; 
-            display: flex; 
-            align-items: center; 
-            justify-content: flex-end; 
-            padding-right: 0.75rem; 
-        }
+        .bar-container { flex-grow: 1; height: 35px; background-color: var(--border-light); border-radius: 6px; overflow: hidden; cursor: pointer; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, var(--hp-blue), var(--fcom-blue)); border-radius: 6px; transition: all 0.3s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 0.75rem; }
         .bar-fill:hover { background: linear-gradient(90deg, var(--hover-blue), var(--hp-blue)); }
         
         .chart-bars-wrapper { display: flex; flex-direction: column; gap: 0.8rem; }
@@ -399,97 +350,31 @@
         .bar-percentage { font-size: 0.75rem; color: var(--text-muted); min-width: 45px; text-align: right; }
 
         /* Detalles expandibles */
-        .records-detail { 
-            margin-top: 1rem; 
-            background-color: var(--white); 
-            border-radius: 8px; 
-            border: 1px solid var(--border-light);
-            border-left: 4px solid var(--hp-blue); 
-            max-height: 0; 
-            overflow: hidden; 
-            transition: max-height 0.4s ease; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
+        .records-detail { margin-top: 1rem; background-color: var(--white); border-radius: 8px; border: 1px solid var(--border-light); border-left: 4px solid var(--hp-blue); max-height: 0; overflow: hidden; transition: max-height 0.4s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .records-detail.expanded { max-height: 600px; }
-        
-        .detail-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 1rem; 
-            border-bottom: 1px solid var(--border-light); 
-            background-color: var(--btn-bg); 
-        }
+        .detail-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border-light); background-color: var(--btn-bg); }
         .detail-title { font-weight: 700; color: var(--hp-blue); }
-        .close-detail-btn { 
-            background: transparent; 
-            border: 1px solid var(--border-light); 
-            color: var(--text-muted); 
-            border-radius: 4px; 
-            cursor: pointer; 
-        }
+        .close-detail-btn { background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 4px; cursor: pointer; }
         .close-detail-btn:hover { background: var(--hp-blue); color: #fff; }
 
         .detail-content { max-height: 480px; overflow-y: auto; padding: 1rem; }
-        
-        .record-item { 
-            background-color: var(--bg-soft); 
-            padding: 1rem; 
-            border-radius: 6px; 
-            margin-bottom: 0.75rem; 
-            border: 1px solid var(--border-light); 
-        }
+        .record-item { background-color: var(--bg-soft); padding: 1rem; border-radius: 6px; margin-bottom: 0.75rem; border: 1px solid var(--border-light); }
         .record-date-tag { background-color: var(--border-light); color: var(--hp-blue); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
         .record-field-value { color: var(--text-main); margin-top: 0.5rem; font-size: 0.9rem; line-height: 1.4; }
 
-        .error-message { 
-            grid-column: 1/-1; 
-            background-color: #f8d7da; 
-            color: #721c24; 
-            border: 1px solid #f5c6cb; 
-            padding: 1rem; 
-            border-radius: 6px; 
-            text-align: center; 
-            font-weight: 500;
-        }
-
-        #problems-list-title { 
-            font-size: 1.3rem; 
-            font-weight: 700; 
-            color: var(--text-main); 
-            margin: 2rem 0 1rem 0; 
-            border-bottom: 2px solid var(--border-light); 
-            padding-bottom: 0.5rem; 
-            display: none; 
-        }
+        .error-message { grid-column: 1/-1; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 1rem; border-radius: 6px; text-align: center; font-weight: 500; }
+        #problems-list-title { font-size: 1.3rem; font-weight: 700; color: var(--text-main); margin: 2rem 0 1rem 0; border-bottom: 2px solid var(--border-light); padding-bottom: 0.5rem; display: none; }
 
         /* --- LOADING OVERLAY --- */
-        .loading-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255, 255, 255, 0.95);
-            display: none;
-            justify-content: center; align-items: center;
-            z-index: 9999;
-        }
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.95); display: none; justify-content: center; align-items: center; z-index: 9999; }
         .loading-overlay.active { display: flex; }
-        
-        .loading-content {
-            background-color: var(--white);
-            padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            max-width: 450px;
-            width: 100%;
-            border: 1px solid var(--border-light);
-            text-align: center;
-        }
+        .loading-content { background-color: var(--white); padding: 2.5rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); max-width: 450px; width: 100%; border: 1px solid var(--border-light); text-align: center; }
         .loading-icon { font-size: 3rem; margin-bottom: 1rem; animation: pulse 2s infinite; }
         .loading-title { font-size: 1.4rem; font-weight: 700; color: var(--hp-blue); margin-bottom: 0.5rem; }
         .loading-subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; }
         
         .progress-bar-container { background-color: var(--border-light); border-radius: 10px; height: 10px; overflow: hidden; margin-bottom: 1rem; }
         .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--hp-blue), var(--fcom-blue)); width: 0%; transition: width 0.3s ease; }
-        
         .loading-steps { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; text-align: left; }
         .loading-step { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; background-color: var(--bg-soft); border-radius: 6px; font-size: 0.85rem; color: var(--text-muted); opacity: 0.6; }
         .loading-step.active { opacity: 1; background-color: var(--hover-light); border-left: 3px solid var(--hp-blue); color: var(--text-main); font-weight: 600; }
@@ -505,34 +390,10 @@
 
         /* --- PJUD BUTTON --- */
         .pjud-dropdown-container { position: absolute; top: 2rem; right: 2rem; z-index: 100; }
-        .pjud-btn { 
-            background-color: var(--warning); 
-            border: 1px solid #d39e00; 
-            color: #212529; 
-            padding: 0.6rem 1.2rem; 
-            border-radius: 50px; 
-            cursor: pointer; 
-            font-size: 0.85rem; 
-            font-weight: 700; 
-            display: flex; align-items: center; gap: 0.5rem; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-        }
+        .pjud-btn { background-color: var(--warning); border: 1px solid #d39e00; color: #212529; padding: 0.6rem 1.2rem; border-radius: 50px; cursor: pointer; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .pjud-btn:hover { background-color: #e0a800; }
         
-        .pjud-list { 
-            display: none; 
-            position: absolute; 
-            top: calc(100% + 10px); 
-            right: 0; 
-            width: 320px; 
-            background-color: var(--white); 
-            border: 1px solid var(--border-light); 
-            border-radius: 8px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
-            max-height: 400px; 
-            overflow-y: auto; 
-            padding: 1rem; 
-        }
+        .pjud-list { display: none; position: absolute; top: calc(100% + 10px); right: 0; width: 320px; background-color: var(--white); border: 1px solid var(--border-light); border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; padding: 1rem; }
         .pjud-list.active { display: block; }
         .pjud-list h3 { margin-top: 0; color: var(--text-main); font-size: 1rem; border-bottom: 2px solid var(--warning); padding-bottom: 0.5rem; }
         .pjud-list ul { list-style: none; padding: 0; margin: 0; }
@@ -540,40 +401,11 @@
         .pjud-list li::before { content: "•"; color: var(--warning); margin-right: 0.5rem; font-weight: bold; }
 
         @media (max-width: 900px) {
-            .container { 
-                padding: 1.5rem; 
-                margin-bottom: 70px;
-            }
+            .container { padding: 1.5rem; margin-bottom: 70px; }
             .info-row { grid-template-columns: 1fr; }
-            .details-grid { grid-template-columns: 1fr; }
-            .pjud-dropdown-container { 
-                position: fixed; 
-                top: auto; 
-                right: auto; 
-                bottom: 20px; 
-                left: 50%; 
-                transform: translateX(-50%); 
-                width: 90%; 
-                display: flex; 
-                justify-content: center; 
-                z-index: 1000; 
-                margin-bottom: 0;
-            }
-            .pjud-btn {
-                width: 100%; 
-                justify-content: center;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            }
-            .pjud-list { 
-                right: 0;
-                left: 0;
-                width: 100%;
-                transform: none; 
-                z-index: 200; 
-                top: auto; 
-                bottom: 100%; 
-                margin-bottom: 10px; 
-            }
+            .pjud-dropdown-container { position: fixed; top: auto; right: auto; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; display: flex; justify-content: center; z-index: 1000; margin-bottom: 0; }
+            .pjud-btn { width: 100%; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+            .pjud-list { right: 0; left: 0; width: 100%; transform: none; z-index: 200; top: auto; bottom: 100%; margin-bottom: 10px; }
         }
     </style>
 </head>
@@ -692,8 +524,6 @@
         };
     
         // --- DATA LOADERS USANDO PAPAPARSE ---
-        
-        // Función Helper para parsear con PapaParse
         const loadCSV = (url) => {
             return new Promise((resolve, reject) => {
                 Papa.parse(url, {
@@ -706,7 +536,7 @@
             });
         };
 
-        // Parser manual solo para Habilitaciones (restaurado a lógica por posición)
+        // Parser manual solo para Habilitaciones
         const fetchAndParseHabilitaciones = async (url) => {
             const res = await fetch(url);
             const text = await res.text();
@@ -714,7 +544,6 @@
             const lines = text.replace(/\r\n|\r/g, '\n').split('\n').filter(l => l.trim());
             
             let headerRowIndex = 0;
-            // Buscar fila real de cabecera
             for (let i = 0; i < Math.min(lines.length, 10); i++) {
                 if (lines[i].toLowerCase().includes('serie principal antigua')) {
                     headerRowIndex = i;
@@ -729,7 +558,6 @@
             
             if (targetIndex === -1) return;
 
-            // Usamos PapaParse pero en modo array (header: false) para respetar posiciones
             const result = Papa.parse(lines.slice(headerRowIndex + 1).join('\n'), {
                 header: false,
                 skipEmptyLines: true
@@ -740,26 +568,20 @@
             data.forEach(row => {
                 const cleanVal = row[targetIndex] ? row[targetIndex].replace(/^"|"$/g, '').trim() : '';
                 if (cleanVal) {
-                    // Col Z (Indice 25) = Fecha Instalación / Cambio
                     let fecha = row[25] ? row[25].replace(/^"|"$/g, '').trim() : 'N/A';
                     if (!fecha || fecha === '') fecha = 'N/A';
 
-                    // Col AA (Indice 26) = Estado
                     const estado = row[26] ? row[26].replace(/^"|"$/g, '').trim() : 'N/A';
-                    
-                    // Col M (Indice 12) = Sucursal
                     const sucursal = row[12] ? row[12].replace(/^"|"$/g, '').trim() : 'N/A';
-                    
-                    // Col D (Indice 3) = Pre Solicitud
                     const preSolicitud = row[3] ? row[3].replace(/^"|"$/g, '').trim() : '-';
-                    
-                    // Col F (Indice 5) = Fecha Original
                     const fechaOriginal = row[5] ? row[5].replace(/^"|"$/g, '').trim() : '-';
 
-                    // NUEVO: Col AL (Indice 37) = Observaciones
+                    // NUEVOS DATOS: Serie Nueva (AE=30), Modelo Nuevo (AF=31) y Observaciones (AL=37)
+                    const serieNueva = row[30] ? row[30].replace(/^"|"$/g, '').trim() : '';
+                    const modeloNuevo = row[31] ? row[31].replace(/^"|"$/g, '').trim() : '';
                     const observaciones = row[37] ? row[37].replace(/^"|"$/g, '').trim() : 'No se registraron observaciones adicionales.';
                     
-                    habilitacionesMap.set(sanitizeKey(cleanVal), { fecha, estado, sucursal, preSolicitud, fechaOriginal, observaciones });
+                    habilitacionesMap.set(sanitizeKey(cleanVal), { fecha, estado, sucursal, preSolicitud, fechaOriginal, observaciones, serieNueva, modeloNuevo });
                 }
             });
         };
@@ -770,7 +592,6 @@
             setStep(1, 'active');
     
             try {
-                // 1. Cargar Inventario
                 const res1 = await loadCSV(sheetURLs['Hoja 1']);
                 const headers1 = res1.meta.fields;
                 const serieHeader = findHeader(headers1, 'serie', 'serial');
@@ -783,7 +604,6 @@
                 }
                 setStep(1, 'complete');
     
-                // 2. Cargar Habilitaciones
                 setStep(2, 'active');
                 updateProgress(50, 'Procesando Habilitaciones...', 'Analizando base de datos...');
                 await fetchAndParseHabilitaciones(sheetURLs['Habilitaciones']);
@@ -815,7 +635,26 @@
             let bannerHTML = '';
             
             if (inHab) {
+                // Función auxiliar para validar si un campo nuevo tiene datos útiles
+                const isValido = (val) => val && val.trim() !== '' && val.toUpperCase() !== 'N/A' && val !== '-';
+                const hasNewDevice = isValido(habInfo.serieNueva) || isValido(habInfo.modeloNuevo);
+
+                // Pre-armar los fragmentos condicionales de serie/modelo nuevo
+                let newDeviceHTMLRed = '';
+                let newDeviceHTMLBlue = '';
+                if (hasNewDevice) {
+                    newDeviceHTMLRed = `
+                        <div class="detail-item"><span class="alert-label">Serie Nueva Inst.</span><span class="detail-value">${habInfo.serieNueva || 'N/A'}</span></div>
+                        <div class="detail-item"><span class="alert-label">Modelo Nuevo</span><span class="detail-value">${habInfo.modeloNuevo || 'N/A'}</span></div>
+                    `;
+                    newDeviceHTMLBlue = `
+                        <div class="detail-item"><span class="status-label">Serie Nueva Inst.</span><span class="detail-value">${habInfo.serieNueva || 'N/A'}</span></div>
+                        <div class="detail-item"><span class="status-label">Modelo Nuevo</span><span class="detail-value">${habInfo.modeloNuevo || 'N/A'}</span></div>
+                    `;
+                }
+
                 if (habInfo.fecha.toUpperCase() === 'N/A') {
+                    // BANNER AZUL (Informativo / Otros Estados)
                     bannerHTML = `
                         <div class="status-banner">
                             <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--info-text); opacity:0.8; font-weight:700;">Estado Actual de la Habilitación</div>
@@ -824,10 +663,19 @@
                                 <div class="detail-item"><span class="status-label">Nro Pre Solicitud</span><span class="detail-value">${habInfo.preSolicitud}</span></div>
                                 <div class="detail-item"><span class="status-label">Dependencia</span><span class="detail-value">${habInfo.sucursal}</span></div>
                                 <div class="detail-item"><span class="status-label">Fecha prevista Inst.</span><span class="detail-value">${habInfo.fechaOriginal}</span></div>
+                                ${newDeviceHTMLBlue}
+                            </div>
+                            
+                            <button class="obs-btn-info" onclick="document.getElementById('obs-${cleanSerie}').classList.toggle('active')">
+                                💬 Observación de Habilitador
+                            </button>
+                            <div id="obs-${cleanSerie}" class="obs-content-info">
+                                <strong>Detalle de observaciones:</strong><br>
+                                ${habInfo.observaciones}
                             </div>
                         </div>`;
                 } else {
-                    // SE AGREGA AQUÍ EL BOTÓN DE OBSERVACIÓN Y SU CONTENEDOR OCULTO
+                    // BANNER ROJO (Advertencia Crítica)
                     bannerHTML = `
                         <div class="alert-banner">
                             <div class="alert-icon-circle"><span>!</span></div>
@@ -837,6 +685,7 @@
                                 <div class="detail-item"><span class="alert-label">Fecha de Cambio</span><span class="detail-value">${habInfo.fecha}</span></div>
                                 <div class="detail-item"><span class="alert-label">Nro de Pre Solicitud</span><span class="detail-value">${habInfo.preSolicitud}</span></div>
                                 <div class="detail-item"><span class="alert-label">Dependencia</span><span class="detail-value">${habInfo.sucursal}</span></div>
+                                ${newDeviceHTMLRed}
                             </div>
                             ${!inInv ? '<div style="margin-top:0.5rem;font-size:0.85rem;color:#842029;">(Detectado en habilitaciones, pero no existe en inventario activo)</div>' : ''}
                             
@@ -919,12 +768,10 @@
             el('validate-button').textContent = 'Consultando Historial...';
             
             try {
-                // Descargar y Parsear BBDD PM 4 con PapaParse
                 const res2 = await loadCSV(sheetURLs['BBDD PM 4']);
                 allProblemsData = res2.data;
                 currentProblemHeaders = res2.meta.fields || [];
                 
-                // Búsqueda flexible de columnas para el historial
                 const hSerie = findHeader(currentProblemHeaders, 'serie reportada', 'serie', 'serial', 's/n', 'equipo');
                 const hNivel = findHeader(currentProblemHeaders, 'nivel 2', 'nivel 3', 'categoria', 'problema', 'falla', 'tipificacion');
                 
@@ -939,8 +786,6 @@
                             counts.set(n, (counts.get(n) || 0) + 1);
                         }
                     });
-                } else {
-                    console.warn("No se encontraron cabeceras compatibles para Serie");
                 }
                 
                 renderResult(serie, equipo, total, counts, !!hSerie);
