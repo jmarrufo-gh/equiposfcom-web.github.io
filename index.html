@@ -196,6 +196,45 @@
             margin-bottom: 0.5rem;
         }
 
+        /* --- BOTÓN Y CONTENEDOR DE OBSERVACIONES --- */
+        .obs-btn {
+            background-color: transparent;
+            color: #842029;
+            border: 2px solid #842029;
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .obs-btn:hover {
+            background-color: #842029;
+            color: var(--white);
+        }
+        .obs-content {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--error-border);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            width: 100%;
+            max-width: 700px;
+            text-align: left;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .obs-content.active {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
         /* --- STATUS BANNER (BLUE/INFO) --- */
         .status-banner {
             grid-column: 1 / -1;
@@ -683,9 +722,6 @@
                 }
             }
             
-            // Usamos la lógica de índices originales sobre los datos limpios
-            // Col 25 = Fecha Instalacion/Cambio, Col 26 = Estado, etc.
-            
             const headersLine = lines[headerRowIndex];
             const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
             const headers = headersLine.split(regex).map(h => h.trim().replace(/"/g, ''));
@@ -704,10 +740,9 @@
             data.forEach(row => {
                 const cleanVal = row[targetIndex] ? row[targetIndex].replace(/^"|"$/g, '').trim() : '';
                 if (cleanVal) {
-                    // Restaurando índices exactos de tu código original:
                     // Col Z (Indice 25) = Fecha Instalación / Cambio
                     let fecha = row[25] ? row[25].replace(/^"|"$/g, '').trim() : 'N/A';
-                    if (!fecha || fecha === '') fecha = 'N/A'; // Forzar N/A si está vacío
+                    if (!fecha || fecha === '') fecha = 'N/A';
 
                     // Col AA (Indice 26) = Estado
                     const estado = row[26] ? row[26].replace(/^"|"$/g, '').trim() : 'N/A';
@@ -720,8 +755,11 @@
                     
                     // Col F (Indice 5) = Fecha Original
                     const fechaOriginal = row[5] ? row[5].replace(/^"|"$/g, '').trim() : '-';
+
+                    // NUEVO: Col AL (Indice 37) = Observaciones
+                    const observaciones = row[37] ? row[37].replace(/^"|"$/g, '').trim() : 'No se registraron observaciones adicionales.';
                     
-                    habilitacionesMap.set(sanitizeKey(cleanVal), { fecha, estado, sucursal, preSolicitud, fechaOriginal });
+                    habilitacionesMap.set(sanitizeKey(cleanVal), { fecha, estado, sucursal, preSolicitud, fechaOriginal, observaciones });
                 }
             });
         };
@@ -777,7 +815,6 @@
             let bannerHTML = '';
             
             if (inHab) {
-                // Lógica original: Si fecha es N/A, mostrar banner azul (Estado)
                 if (habInfo.fecha.toUpperCase() === 'N/A') {
                     bannerHTML = `
                         <div class="status-banner">
@@ -790,6 +827,7 @@
                             </div>
                         </div>`;
                 } else {
+                    // SE AGREGA AQUÍ EL BOTÓN DE OBSERVACIÓN Y SU CONTENEDOR OCULTO
                     bannerHTML = `
                         <div class="alert-banner">
                             <div class="alert-icon-circle"><span>!</span></div>
@@ -801,6 +839,14 @@
                                 <div class="detail-item"><span class="alert-label">Dependencia</span><span class="detail-value">${habInfo.sucursal}</span></div>
                             </div>
                             ${!inInv ? '<div style="margin-top:0.5rem;font-size:0.85rem;color:#842029;">(Detectado en habilitaciones, pero no existe en inventario activo)</div>' : ''}
+                            
+                            <button class="obs-btn" onclick="document.getElementById('obs-${cleanSerie}').classList.toggle('active')">
+                                💬 Observación de Habilitador
+                            </button>
+                            <div id="obs-${cleanSerie}" class="obs-content">
+                                <strong>Detalle de observaciones:</strong><br>
+                                ${habInfo.observaciones}
+                            </div>
                         </div>`;
                 }
             }
