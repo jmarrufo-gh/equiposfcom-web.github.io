@@ -224,7 +224,7 @@
             font-weight: 700;
             font-size: 0.85rem;
             cursor: pointer;
-            margin-top: 0.5rem;
+            margin-top: 1rem;
             transition: all 0.3s;
             display: flex;
             align-items: center;
@@ -258,7 +258,7 @@
             font-weight: 700;
             font-size: 0.85rem;
             cursor: pointer;
-            margin-top: 0.5rem;
+            margin-top: 1rem;
             transition: all 0.3s;
             display: flex;
             align-items: center;
@@ -282,7 +282,46 @@
         }
         .obs-content-info.active { display: block; animation: slideDown 0.3s ease-out; }
 
-        /* Generic Details Grid Structure - ACTUALIZADO PARA ADAPTARSE A MÁS ELEMENTOS */
+        /* NUEVO: CSS para el envoltorio de Serie/Modelo (Estilo Rojo) */
+        .new-device-wrapper {
+            background-color: rgba(255, 255, 255, 0.6); /* Semi-transparente blanco */
+            border: 1px solid var(--error-border); /* Un borde fino para definirlo */
+            border-radius: 100px; /* Forma de píldora/cápsula elíptica horizontal */
+            padding: 1rem 2rem; /* Espaciado interior */
+            margin: 1rem auto 0; /* Centrado horizontal y espacio superior */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem; /* Espacio entre Serie y Modelo */
+            max-width: 600px; /* Limitar el ancho */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Sombra sutil */
+        }
+
+        /* Asegurar que los elementos interiores se vean bien dentro del envoltorio */
+        .new-device-wrapper .detail-item {
+            margin: 0;
+        }
+
+        /* NUEVO: CSS para el envoltorio de Serie/Modelo (Estilo Azul) */
+        .new-device-wrapper-info {
+            background-color: rgba(255, 255, 255, 0.6); /* Semi-transparente blanco */
+            border: 1px solid var(--info-border); /* Borde azul */
+            border-radius: 100px; /* Forma de píldora/cápsula elíptica horizontal */
+            padding: 1rem 2rem;
+            margin: 1rem auto 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            max-width: 600px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .new-device-wrapper-info .detail-item {
+            margin: 0;
+        }
+
+        /* Generic Details Grid Structure - ACTUALIZADO PARA QUITAR EL AJUSTE AUTOMÁTICO */
         .details-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -639,20 +678,6 @@
                 const isValido = (val) => val && val.trim() !== '' && val.toUpperCase() !== 'N/A' && val !== '-';
                 const hasNewDevice = isValido(habInfo.serieNueva) || isValido(habInfo.modeloNuevo);
 
-                // Pre-armar los fragmentos condicionales de serie/modelo nuevo
-                let newDeviceHTMLRed = '';
-                let newDeviceHTMLBlue = '';
-                if (hasNewDevice) {
-                    newDeviceHTMLRed = `
-                        <div class="detail-item"><span class="alert-label">Serie Nueva Inst.</span><span class="detail-value">${habInfo.serieNueva || 'N/A'}</span></div>
-                        <div class="detail-item"><span class="alert-label">Modelo Nuevo</span><span class="detail-value">${habInfo.modeloNuevo || 'N/A'}</span></div>
-                    `;
-                    newDeviceHTMLBlue = `
-                        <div class="detail-item"><span class="status-label">Serie Nueva Inst.</span><span class="detail-value">${habInfo.serieNueva || 'N/A'}</span></div>
-                        <div class="detail-item"><span class="status-label">Modelo Nuevo</span><span class="detail-value">${habInfo.modeloNuevo || 'N/A'}</span></div>
-                    `;
-                }
-
                 if (habInfo.fecha.toUpperCase() === 'N/A') {
                     // BANNER AZUL (Informativo / Otros Estados)
                     bannerHTML = `
@@ -663,8 +688,14 @@
                                 <div class="detail-item"><span class="status-label">Nro Pre Solicitud</span><span class="detail-value">${habInfo.preSolicitud}</span></div>
                                 <div class="detail-item"><span class="status-label">Dependencia</span><span class="detail-value">${habInfo.sucursal}</span></div>
                                 <div class="detail-item"><span class="status-label">Fecha prevista Inst.</span><span class="detail-value">${habInfo.fechaOriginal}</span></div>
-                                ${newDeviceHTMLBlue}
                             </div>
+                            
+                            ${hasNewDevice ? `
+                                <div class="new-device-wrapper-info">
+                                    <div class="detail-item"><span class="status-label">Serie Nueva Inst.</span><span class="detail-value">${habInfo.serieNueva || 'N/A'}</span></div>
+                                    <div class="detail-item"><span class="status-label">Modelo Nuevo</span><span class="detail-value">${habInfo.modeloNuevo || 'N/A'}</span></div>
+                                </div>
+                            ` : ''}
                             
                             <button class="obs-btn-info" onclick="document.getElementById('obs-${cleanSerie}').classList.toggle('active')">
                                 💬 Observación de Habilitador
@@ -685,9 +716,15 @@
                                 <div class="detail-item"><span class="alert-label">Fecha de Cambio</span><span class="detail-value">${habInfo.fecha}</span></div>
                                 <div class="detail-item"><span class="alert-label">Nro de Pre Solicitud</span><span class="detail-value">${habInfo.preSolicitud}</span></div>
                                 <div class="detail-item"><span class="alert-label">Dependencia</span><span class="detail-value">${habInfo.sucursal}</span></div>
-                                ${newDeviceHTMLRed}
                             </div>
                             ${!inInv ? '<div style="margin-top:0.5rem;font-size:0.85rem;color:#842029;">(Detectado en habilitaciones, pero no existe en inventario activo)</div>' : ''}
+                            
+                            ${hasNewDevice ? `
+                                <div class="new-device-wrapper">
+                                    <div class="detail-item"><span class="alert-label">Serie Nueva Inst.</span><span class="detail-value">${habInfo.serieNueva || 'N/A'}</span></div>
+                                    <div class="detail-item"><span class="alert-label">Modelo Nuevo</span><span class="detail-value">${habInfo.modeloNuevo || 'N/A'}</span></div>
+                                </div>
+                            ` : ''}
                             
                             <button class="obs-btn" onclick="document.getElementById('obs-${cleanSerie}').classList.toggle('active')">
                                 💬 Observación de Habilitador
