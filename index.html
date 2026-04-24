@@ -439,6 +439,29 @@
         .pjud-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--bg-soft); font-size: 0.85rem; color: var(--text-main); }
         .pjud-list li::before { content: "•"; color: var(--warning); margin-right: 0.5rem; font-weight: bold; }
 
+        /* --- BOTON MDA --- */
+        .mda-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--hp-blue), var(--fcom-blue));
+            color: var(--white);
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 6px 15px rgba(0, 113, 197, 0.3);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+        .mda-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 113, 197, 0.5);
+            color: var(--white);
+        }
+
         @media (max-width: 900px) {
             .container { padding: 1.5rem; margin-bottom: 70px; }
             .info-row { grid-template-columns: 1fr; }
@@ -486,6 +509,12 @@
 
         <h1>Consulta de Equipos e Historial</h1>
         <p>Ingrese el número de serie para verificar inventario, habilitaciones e historial de reportes.</p>
+
+        <div style="text-align: center;">
+            <a href="https://jmarrufo-gh.github.io/procedimientosfcom.github.io/" target="_blank" class="mda-btn">
+                📚 Procedimientos MDA
+            </a>
+        </div>
         
         <div class="db-status" id="db-status">Iniciando conexión...</div>
 
