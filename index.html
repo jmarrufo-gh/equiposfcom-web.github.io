@@ -46,7 +46,94 @@
             background-attachment: fixed;
         }
 
-        /* --- CONTENEDOR PRINCIPAL --- */
+        /* --- ESTILOS DEL LOGIN DE FIREBASE --- */
+        #login-section {
+            background-color: var(--white);
+            max-width: 400px;
+            width: 100%;
+            margin: auto;
+            margin-top: 10vh;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0, 50, 100, 0.3);
+            text-align: center;
+        }
+
+        #login-section img {
+            height: 50px;
+            margin-bottom: 20px;
+        }
+
+        #login-section h2 {
+            color: var(--hp-blue);
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        #login-section input {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background-color: var(--bg-soft);
+            font-family: inherit;
+            color: var(--text-main);
+        }
+
+        #login-section input:focus {
+            border-color: var(--fcom-blue);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0, 150, 214, 0.15);
+        }
+
+        #login-section button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--hp-blue), var(--fcom-blue));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(0, 113, 197, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        #login-section button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 113, 197, 0.5);
+        }
+
+        #error-msg {
+            color: var(--error-color);
+            background-color: var(--error-bg);
+            border: 1px solid var(--error-border);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        #app-principal { display: none; width: 100%; display: flex; justify-content: center; }
+        
+        #btn-logout {
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: background 0.3s;
+        }
+        #btn-logout:hover { background-color: #bb2d3b; }
+
+
+        /* --- CONTENEDOR PRINCIPAL ORIGINAL --- */
         .container { 
             width: 100%; 
             max-width: 900px; 
@@ -214,11 +301,8 @@
         }
 
         /* --- BOTONES Y CONTENEDORES DE OBSERVACIONES --- */
-        /* Estilo para banner rojo */
-        .obs-btn {
+        .obs-btn, .obs-btn-info {
             background-color: transparent;
-            color: #842029;
-            border: 2px solid #842029;
             padding: 0.5rem 1.2rem;
             border-radius: 50px;
             font-weight: 700;
@@ -230,46 +314,16 @@
             align-items: center;
             gap: 0.5rem;
         }
+        
+        .obs-btn { border: 2px solid #842029; color: #842029; }
         .obs-btn:hover { background-color: #842029; color: var(--white); }
         
-        .obs-content {
-            display: none;
-            background-color: rgba(255, 255, 255, 0.9);
-            border: 1px solid var(--error-border);
-            padding: 1rem;
-            border-radius: 6px;
-            margin-top: 0.5rem;
-            color: var(--text-main);
-            font-size: 0.9rem;
-            width: 100%;
-            max-width: 700px;
-            text-align: left;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .obs-content.active { display: block; animation: slideDown 0.3s ease-out; }
-
-        /* Estilo para banner azul */
-        .obs-btn-info {
-            background-color: transparent;
-            color: var(--info-text);
-            border: 2px solid var(--info-text);
-            padding: 0.5rem 1.2rem;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            margin-top: 1rem;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+        .obs-btn-info { border: 2px solid var(--info-text); color: var(--info-text); }
         .obs-btn-info:hover { background-color: var(--info-text); color: var(--white); }
 
-        .obs-content-info {
+        .obs-content, .obs-content-info {
             display: none;
             background-color: rgba(255, 255, 255, 0.9);
-            border: 1px solid var(--info-border);
             padding: 1rem;
             border-radius: 6px;
             margin-top: 0.5rem;
@@ -280,33 +334,14 @@
             text-align: left;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
-        .obs-content-info.active { display: block; animation: slideDown 0.3s ease-out; }
+        
+        .obs-content { border: 1px solid var(--error-border); }
+        .obs-content-info { border: 1px solid var(--info-border); }
+        .obs-content.active, .obs-content-info.active { display: block; animation: slideDown 0.3s ease-out; }
 
-        /* NUEVO: CSS para el envoltorio de Serie/Modelo (Estilo Rojo) */
-        .new-device-wrapper {
-            background-color: rgba(255, 255, 255, 0.6); /* Semi-transparente blanco */
-            border: 1px solid var(--error-border); /* Un borde fino para definirlo */
-            border-radius: 100px; /* Forma de píldora/cápsula elíptica horizontal */
-            padding: 1rem 2rem; /* Espaciado interior */
-            margin: 1rem auto 0; /* Centrado horizontal y espacio superior */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 2rem; /* Espacio entre Serie y Modelo */
-            max-width: 600px; /* Limitar el ancho */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Sombra sutil */
-        }
-
-        /* Asegurar que los elementos interiores se vean bien dentro del envoltorio */
-        .new-device-wrapper .detail-item {
-            margin: 0;
-        }
-
-        /* NUEVO: CSS para el envoltorio de Serie/Modelo (Estilo Azul) */
-        .new-device-wrapper-info {
-            background-color: rgba(255, 255, 255, 0.6); /* Semi-transparente blanco */
-            border: 1px solid var(--info-border); /* Borde azul */
-            border-radius: 100px; /* Forma de píldora/cápsula elíptica horizontal */
+        .new-device-wrapper, .new-device-wrapper-info {
+            background-color: rgba(255, 255, 255, 0.6);
+            border-radius: 100px;
             padding: 1rem 2rem;
             margin: 1rem auto 0;
             display: flex;
@@ -316,12 +351,10 @@
             max-width: 600px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
+        .new-device-wrapper { border: 1px solid var(--error-border); }
+        .new-device-wrapper-info { border: 1px solid var(--info-border); }
+        .new-device-wrapper .detail-item, .new-device-wrapper-info .detail-item { margin: 0; }
 
-        .new-device-wrapper-info .detail-item {
-            margin: 0;
-        }
-
-        /* Generic Details Grid Structure - ACTUALIZADO PARA QUITAR EL AJUSTE AUTOMÁTICO */
         .details-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -334,19 +367,11 @@
             max-width: 800px;
         }
 
-        .detail-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
+        .detail-item { display: flex; flex-direction: column; align-items: center; text-align: center; }
         .alert-details { border: 1px solid var(--error-border); }
         .alert-label { font-size: 0.7rem; color: var(--error-color); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
-        
         .status-details { border: 1px solid var(--info-border); }
         .status-label { font-size: 0.7rem; color: var(--info-text); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; opacity: 0.8; }
-        
         .detail-value { font-size: 1rem; font-weight: 700; color: var(--text-main); }
 
         /* --- RESULTADOS --- */
@@ -388,14 +413,12 @@
         .bar-value { color: var(--white); font-weight: 700; font-size: 0.9rem; }
         .bar-percentage { font-size: 0.75rem; color: var(--text-muted); min-width: 45px; text-align: right; }
 
-        /* Detalles expandibles */
         .records-detail { margin-top: 1rem; background-color: var(--white); border-radius: 8px; border: 1px solid var(--border-light); border-left: 4px solid var(--hp-blue); max-height: 0; overflow: hidden; transition: max-height 0.4s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .records-detail.expanded { max-height: 600px; }
         .detail-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border-light); background-color: var(--btn-bg); }
         .detail-title { font-weight: 700; color: var(--hp-blue); }
         .close-detail-btn { background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 4px; cursor: pointer; }
         .close-detail-btn:hover { background: var(--hp-blue); color: #fff; }
-
         .detail-content { max-height: 480px; overflow-y: auto; padding: 1rem; }
         .record-item { background-color: var(--bg-soft); padding: 1rem; border-radius: 6px; margin-bottom: 0.75rem; border: 1px solid var(--border-light); }
         .record-date-tag { background-color: var(--border-light); color: var(--hp-blue); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
@@ -440,27 +463,8 @@
         .pjud-list li::before { content: "•"; color: var(--warning); margin-right: 0.5rem; font-weight: bold; }
 
         /* --- BOTON MDA --- */
-        .mda-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            background: linear-gradient(135deg, var(--hp-blue), var(--fcom-blue));
-            color: var(--white);
-            padding: 0.8rem 2rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.1rem;
-            box-shadow: 0 6px 15px rgba(0, 113, 197, 0.3);
-            transition: all 0.3s ease;
-            margin-bottom: 1.5rem;
-        }
-        .mda-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 113, 197, 0.5);
-            color: var(--white);
-        }
+        .mda-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: linear-gradient(135deg, var(--hp-blue), var(--fcom-blue)); color: var(--white); padding: 0.8rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 1.1rem; box-shadow: 0 6px 15px rgba(0, 113, 197, 0.3); transition: all 0.3s ease; margin-bottom: 1.5rem; }
+        .mda-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 113, 197, 0.5); color: var(--white); }
 
         @media (max-width: 900px) {
             .container { padding: 1.5rem; margin-bottom: 70px; }
@@ -473,61 +477,138 @@
 </head>
 <body>
 
-    <div class="pjud-dropdown-container">
-        <button class="pjud-btn" id="pjud-toggle">⚠️ Equipamiento PJUD ▼</button>
-        <div class="pjud-list" id="pjud-list">
-            <h3>No están en contrato</h3>
-            <ul>
-                <li>Flow 7500 scanner</li><li>HP EliteBook 1040 G3</li><li>HP EliteBook 1040 G4</li><li>HP EliteDesk 800 G3</li><li>HP EliteDesk 800 G4</li><li>HP EliteBook 820 G2</li><li>HP EliteBook 840 G7</li><li>HP EliteBook G7 840</li><li>HP ProDesk 400 G4</li><li>HP Prodesk 600 G1</li><li>HP Prodesk 600 G2</li><li>HP Prodesk 6200</li><li>Hp s1933</li><li>HP V-202</li><li>HP V-203</li><li>LENOVO ThinkPad T14 Gen 2i</li><li>LG - 29WL50S-B</li>
-            </ul>
-        </div>
+    <!-- 1. PANTALLA DE INICIO DE SESIÓN -->
+    <div id="login-section">
+        <img src="https://fcom.cl/images/logo_simple.png" alt="Logo FCOM">
+        <h2>Acceso Restringido</h2>
+        <input type="email" id="email" placeholder="Correo electrónico">
+        <input type="password" id="password" placeholder="Contraseña">
+        <button id="btn-login">Iniciar Sesión</button>
+        <p id="error-msg">Credenciales incorrectas o no autorizadas.</p>
     </div>
 
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="loading-content">
-            <div class="loading-icon">⚙️</div>
-            <div class="loading-title">Cargando Sistema</div>
-            <div class="loading-subtitle" id="loading-subtitle">Conectando servicios...</div>
-            <div class="progress-bar-container"><div class="progress-bar-fill" id="progress-bar"></div></div>
-            <div class="progress-info" style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
-                <span id="progress-status">Iniciando</span>
-                <span id="progress-percentage">0%</span>
-            </div>
-            <div class="loading-steps">
-                <div class="loading-step" id="step-1"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Base de Datos Inventario</span></div>
-                <div class="loading-step" id="step-2"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Registro de Habilitaciones</span></div>
-                <div class="loading-step" id="step-3"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Finalizando carga</span></div>
+    <!-- 2. APLICACIÓN PRINCIPAL (Oculta por defecto) -->
+    <div id="app-principal" style="display: none;">
+
+        <div class="pjud-dropdown-container">
+            <button class="pjud-btn" id="pjud-toggle">⚠️ Equipamiento PJUD ▼</button>
+            <div class="pjud-list" id="pjud-list">
+                <h3>No están en contrato</h3>
+                <ul>
+                    <li>Flow 7500 scanner</li><li>HP EliteBook 1040 G3</li><li>HP EliteBook 1040 G4</li><li>HP EliteDesk 800 G3</li><li>HP EliteDesk 800 G4</li><li>HP EliteBook 820 G2</li><li>HP EliteBook 840 G7</li><li>HP EliteBook G7 840</li><li>HP ProDesk 400 G4</li><li>HP Prodesk 600 G1</li><li>HP Prodesk 600 G2</li><li>HP Prodesk 6200</li><li>Hp s1933</li><li>HP V-202</li><li>HP V-203</li><li>LENOVO ThinkPad T14 Gen 2i</li><li>LG - 29WL50S-B</li>
+                </ul>
             </div>
         </div>
+
+        <div id="loading-overlay" class="loading-overlay">
+            <div class="loading-content">
+                <div class="loading-icon">⚙️</div>
+                <div class="loading-title">Cargando Sistema</div>
+                <div class="loading-subtitle" id="loading-subtitle">Conectando servicios...</div>
+                <div class="progress-bar-container"><div class="progress-bar-fill" id="progress-bar"></div></div>
+                <div class="progress-info" style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                    <span id="progress-status">Iniciando</span>
+                    <span id="progress-percentage">0%</span>
+                </div>
+                <div class="loading-steps">
+                    <div class="loading-step" id="step-1"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Base de Datos Inventario</span></div>
+                    <div class="loading-step" id="step-2"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Registro de Habilitaciones</span></div>
+                    <div class="loading-step" id="step-3"><div class="step-spinner"></div><span class="step-check">✓</span> <span class="step-text">Finalizando carga</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="header-logos">
+                <img src="https://fcom.cl/images/logo_simple.png" alt="Logo FCOM" class="logo-img" style="height: 45px;">
+                <!-- Botón de logout ubicado en el header -->
+                <button id="btn-logout">Cerrar Sesión</button>
+                <img src="http://e7.pngegg.com/pngimages/1001/292/png-clipart-hewlett-packard-logo-hp-pavilion-printer-work-blue-cdr.png" alt="Logo HP" class="logo-img" style="height: 55px;">
+            </div>
+
+            <h1>Consulta de Equipos e Historial</h1>
+            <p>Ingrese el número de serie para verificar inventario, habilitaciones e historial de reportes.</p>
+
+            <div style="text-align: center;">
+                <a href="https://jmarrufo-gh.github.io/procedimientosfcom.github.io/" target="_blank" class="mda-btn">
+                    📚 Procedimientos MDA
+                </a>
+            </div>
+            
+            <div class="db-status" id="db-status">Iniciando conexión...</div>
+
+            <div class="search-section">
+                <input type="text" id="serie-input" placeholder="Ej: 5CG9426Q2D">
+                <button id="validate-button">Cargando datos...</button>
+            </div>
+
+            <div id="result"></div>
+            <h2 id="problems-list-title">Historial de Reportes</h2>
+            <div id="problems-container"></div>
+        </div>
+
     </div>
 
-    <div class="container">
-        <div class="header-logos">
-            <img src="https://fcom.cl/images/logo_simple.png" alt="Logo FCOM" class="logo-img" style="height: 45px;">
-            <img src="http://e7.pngegg.com/pngimages/1001/292/png-clipart-hewlett-packard-logo-hp-pavilion-printer-work-blue-cdr.png" alt="Logo HP" class="logo-img" style="height: 55px;">
-        </div>
+    <!-- 3. SCRIPT DE SEGURIDAD (FIREBASE) -->
+    <script type="module">
+        // Importaciones actualizadas a la versión 12.13.0
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
-        <h1>Consulta de Equipos e Historial</h1>
-        <p>Ingrese el número de serie para verificar inventario, habilitaciones e historial de reportes.</p>
+        // === TU CONFIGURACIÓN DE FIREBASE (YA INTEGRADA) ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDxnnM5kRIh5RB0dUxOk4J7sxcFQdbQvo",
+            authDomain: "validacion-equipos-fcom.firebaseapp.com",
+            projectId: "validacion-equipos-fcom",
+            storageBucket: "validacion-equipos-fcom.firebasestorage.app",
+            messagingSenderId: "53412217670",
+            appId: "1:53412217670:web:4d01fbb6b64309a6519b47"
+        };
+        // ==================================================
 
-        <div style="text-align: center;">
-            <a href="https://jmarrufo-gh.github.io/procedimientosfcom.github.io/" target="_blank" class="mda-btn">
-                📚 Procedimientos MDA
-            </a>
-        </div>
-        
-        <div class="db-status" id="db-status">Iniciando conexión...</div>
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-        <div class="search-section">
-            <input type="text" id="serie-input" placeholder="Ej: 5CG9426Q2D">
-            <button id="validate-button">Cargando datos...</button>
-        </div>
+        const loginSection = document.getElementById('login-section');
+        const appPrincipal = document.getElementById('app-principal');
+        const btnLogin = document.getElementById('btn-login');
+        const btnLogout = document.getElementById('btn-logout');
+        const errorMsg = document.getElementById('error-msg');
 
-        <div id="result"></div>
-        <h2 id="problems-list-title">Historial de Reportes</h2>
-        <div id="problems-container"></div>
-    </div>
+        btnLogin.addEventListener('click', () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
+            signInWithEmailAndPassword(auth, email, password)
+                .catch((error) => {
+                    errorMsg.style.display = "block";
+                });
+        });
+
+        btnLogout.addEventListener('click', () => {
+            signOut(auth);
+            // Al cerrar sesión, recargamos la página para limpiar memoria y resultados
+            window.location.reload(); 
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Usuario logueado: Ocultamos login, mostramos app y empezamos a descargar el Excel
+                loginSection.style.display = "none";
+                appPrincipal.style.display = "flex";
+                errorMsg.style.display = "none";
+                
+                // Llamamos a la función global para que la app cargue los datos de Drive
+                if (window.iniciarAplicacion) window.iniciarAplicacion();
+            } else {
+                // Sin sesión: Mostrar login, ocultar aplicación
+                loginSection.style.display = "block";
+                appPrincipal.style.display = "none";
+            }
+        });
+    </script>
+
+    <!-- 4. TU SCRIPT ORIGINAL DE LA APLICACIÓN -->
     <script>
         // UI Helpers
         const el = id => document.getElementById(id);
@@ -604,7 +685,6 @@
             });
         };
 
-        // Parser manual solo para Habilitaciones
         const fetchAndParseHabilitaciones = async (url) => {
             const res = await fetch(url);
             const text = await res.text();
@@ -644,7 +724,6 @@
                     const preSolicitud = row[3] ? row[3].replace(/^"|"$/g, '').trim() : '-';
                     const fechaOriginal = row[5] ? row[5].replace(/^"|"$/g, '').trim() : '-';
 
-                    // NUEVOS DATOS: Serie Nueva (AE=30), Modelo Nuevo (AF=31) y Observaciones (AL=37)
                     const serieNueva = row[30] ? row[30].replace(/^"|"$/g, '').trim() : '';
                     const modeloNuevo = row[31] ? row[31].replace(/^"|"$/g, '').trim() : '';
                     const observaciones = row[37] ? row[37].replace(/^"|"$/g, '').trim() : 'No se registraron observaciones adicionales.';
@@ -703,12 +782,10 @@
             let bannerHTML = '';
             
             if (inHab) {
-                // Función auxiliar para validar si un campo nuevo tiene datos útiles
                 const isValido = (val) => val && val.trim() !== '' && val.toUpperCase() !== 'N/A' && val !== '-';
                 const hasNewDevice = isValido(habInfo.serieNueva) || isValido(habInfo.modeloNuevo);
 
                 if (habInfo.fecha.toUpperCase() === 'N/A') {
-                    // BANNER AZUL (Informativo / Otros Estados)
                     bannerHTML = `
                         <div class="status-banner">
                             <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--info-text); opacity:0.8; font-weight:700;">Estado Actual de la Habilitación</div>
@@ -735,7 +812,6 @@
                             </div>
                         </div>`;
                 } else {
-                    // BANNER ROJO (Advertencia Crítica)
                     bannerHTML = `
                         <div class="alert-banner">
                             <div class="alert-icon-circle"><span>!</span></div>
@@ -902,7 +978,16 @@
     
         el('validate-button').onclick = handleSearch;
         el('serie-input').onkeyup = (e) => e.key === 'Enter' && handleSearch();
-        loadInitialData();
+        
+        // --- NUEVA LÓGICA DE CARGA ---
+        let appIniciada = false;
+        window.iniciarAplicacion = () => {
+            if (!appIniciada) {
+                loadInitialData();
+                appIniciada = true;
+            }
+        };
+
     </script>
 </body>
 </html>
